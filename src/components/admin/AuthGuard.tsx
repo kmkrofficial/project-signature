@@ -2,27 +2,112 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { Terminal } from "lucide-react";
+import { Terminal, ShieldAlert } from "lucide-react";
+
+// Get admin emails from environment variable
+const getAdminEmails = (): string[] => {
+    const emails = process.env.NEXT_PUBLIC_ADMIN_EMAILS || "";
+    return emails.split(",").map(email => email.trim().toLowerCase()).filter(Boolean);
+};
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState<any>(null);
+    const [isAuthorized, setIsAuthorized] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        // Single auth check - no streaming
+        const checkAuth = async () => {
+            // Wait for auth to initialize
+            await new Promise(resolve => {
+                if (auth.currentUser !== undefined) {
+                    resolve(null);
+                } else {
+                    const unsubscribe = auth.onAuthStateChanged(() => {
+                        unsubscribe();
+                        resolve(null);
+                    });
+                }
+            });
+
+            const currentUser = auth.currentUser;
+
             if (!currentUser) {
                 router.push("/admin/login");
-            } else {
-                setUser(currentUser);
+                setLoading(false);
+                return;
             }
-            setLoading(false);
-        });
 
-        return () => unsubscribe();
+            // Check if user's email is in the admin list
+            const adminEmails = getAdminEmails();
+            const userEmail = currentUser.email?.toLowerCase() || "";
+            const hasAdminAccess = adminEmails.includes(userEmail);
+
+            if (!hasAdminAccess) {
+                router.push("/unauthorized");
+                setLoading(false);
+                return;
+            }
+
+            // Initial Session Check
+            const SESSION_TIMEOUT_MS = 6 * 60 * 60 * 1000; // 6 hours
+            const lastAccessed = localStorage.getItem('admin_last_accessed');
+
+            if (lastAccessed) {
+                const timeSinceLastAccess = Date.now() - parseInt(lastAccessed);
+                if (timeSinceLastAccess > SESSION_TIMEOUT_MS) {
+                    await auth.signOut();
+                    localStorage.removeItem('admin_last_accessed');
+                    router.push("/admin/login");
+                    return;
+                }
+            }
+
+            // Update access time on successful auth check
+            localStorage.setItem('admin_last_accessed', Date.now().toString());
+
+            setIsAuthorized(true);
+            setLoading(false);
+        };
+
+        checkAuth();
     }, [router]);
+
+    // Activity tracking and periodic session check
+    useEffect(() => {
+        if (!isAuthorized) return;
+
+        const updateLastAccessed = () => {
+            localStorage.setItem('admin_last_accessed', Date.now().toString());
+        };
+
+        const checkSession = async () => {
+            const SESSION_TIMEOUT_MS = 6 * 60 * 60 * 1000; // 6 hours
+            const lastAccessed = localStorage.getItem('admin_last_accessed');
+            if (lastAccessed) {
+                const timeSinceLastAccess = Date.now() - parseInt(lastAccessed);
+                if (timeSinceLastAccess > SESSION_TIMEOUT_MS) {
+                    await auth.signOut();
+                    localStorage.removeItem('admin_last_accessed');
+                    router.push("/admin/login");
+                }
+            }
+        };
+
+        window.addEventListener('mousemove', updateLastAccessed);
+        window.addEventListener('keydown', updateLastAccessed);
+        window.addEventListener('click', updateLastAccessed);
+
+        const interval = setInterval(checkSession, 60 * 1000); // Check every minute
+
+        return () => {
+            window.removeEventListener('mousemove', updateLastAccessed);
+            window.removeEventListener('keydown', updateLastAccessed);
+            window.removeEventListener('click', updateLastAccessed);
+            clearInterval(interval);
+        };
+    }, [isAuthorized, router]);
 
     if (loading) {
         return (
@@ -35,7 +120,19 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         );
     }
 
-    if (!user) return null;
+    if (!isAuthorized) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-background">
+                <div className="flex flex-col items-center gap-4 text-center max-w-md">
+                    <ShieldAlert className="text-red-500" size={64} />
+                    <h1 className="text-2xl font-bold text-foreground">Access Denied</h1>
+                    <p className="text-muted-foreground">
+                        Verifying administrator permissions...
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return <>{children}</>;
 }

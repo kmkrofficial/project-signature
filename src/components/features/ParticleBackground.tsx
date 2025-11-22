@@ -5,7 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useTheme } from "@/components/layout/ThemeProvider";
 
-function Particles({ count = 2000 }) {
+function Particles({ count = 500 }) { // Reduced from 2000 to 500
     const mesh = useRef<THREE.InstancedMesh>(null);
     const { theme } = useTheme();
 
@@ -26,7 +26,7 @@ function Particles({ count = 2000 }) {
         return temp;
     }, [count]);
 
-    useFrame((state) => {
+    useFrame(() => {
         if (!mesh.current) return;
 
         particles.forEach((particle, i) => {
@@ -53,7 +53,7 @@ function Particles({ count = 2000 }) {
     return (
         <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
             <dodecahedronGeometry args={[0.05, 0]} />
-            <meshPhongMaterial color={color} transparent opacity={0.4} />
+            <meshPhongMaterial color={color} transparent opacity={0.3} />
         </instancedMesh>
     );
 }
@@ -61,7 +61,7 @@ function Particles({ count = 2000 }) {
 export function ParticleBackground() {
     return (
         <div className="absolute inset-0 -z-20">
-            <Canvas camera={{ position: [0, 0, 20], fov: 75 }}>
+            <Canvas camera={{ position: [0, 0, 20], fov: 75 }} dpr={[1, 1.5]}> {/* Limited DPR for performance */}
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} />
                 <Particles />

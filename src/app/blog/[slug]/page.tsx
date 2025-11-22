@@ -51,8 +51,9 @@ Scaling is not just about adding more servers; it's about reducing the state eac
     };
 };
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-    const post = getPostContent(params.slug);
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const post = getPostContent(slug);
 
     return (
         <div className="pt-20 min-h-screen">

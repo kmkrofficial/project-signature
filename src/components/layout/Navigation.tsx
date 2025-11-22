@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Home, User, Code, Cpu, BookOpen, Sun, Moon } from "lucide-react";
+import { Home, User, Code, Cpu, BookOpen, Sun, Moon, Brain, FileText, Terminal } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,10 +10,11 @@ import { clsx } from "clsx";
 
 const navItems = [
     { name: "Core", path: "/", id: "hero", icon: Home },
-    { name: "Skills", path: "#skills", id: "skills", icon: Cpu },
-    { name: "Logs", path: "#experience", id: "experience", icon: User },
-    { name: "Modules", path: "#projects", id: "projects", icon: Code },
-    { name: "Research", path: "/blog", id: "blog", icon: BookOpen },
+    { name: "Skills", path: "/#skills", id: "skills", icon: Cpu },
+    { name: "Logs", path: "/#experience", id: "experience", icon: User },
+    { name: "Modules", path: "/#projects", id: "projects", icon: Code },
+    { name: "Kernel Training", path: "/#achievements", id: "achievements", icon: Brain },
+    { name: "System Docs", path: "/blog", id: "blog", icon: FileText },
 ];
 
 export function Navigation() {
@@ -57,7 +58,9 @@ export function Navigation() {
                 className="hidden md:flex flex-col fixed left-0 top-0 h-full w-20 border-r border-border bg-background/80 backdrop-blur-md z-50 items-center py-8"
             >
                 <div className="mb-12">
-                    <div className="w-10 h-10 bg-primary rounded-sm animate-pulse-slow shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 shadow-[0_0_15px_rgba(var(--primary),0.3)]">
+                        <Brain className="text-primary" size={28} />
+                    </div>
                 </div>
 
                 <div className="flex flex-col gap-8 flex-1 w-full items-center">
@@ -93,9 +96,32 @@ export function Navigation() {
                     })}
                 </div>
 
+                <Link
+                    href="/admin"
+                    className={clsx(
+                        "p-3 rounded-lg transition-colors mb-2 w-12 h-12 flex items-center justify-center group relative",
+                        pathname.startsWith("/admin")
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                >
+                    <Terminal size={24} />
+                    <span className="absolute left-14 bg-card px-3 py-1.5 rounded border border-border opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none text-sm font-mono z-50 shadow-xl">
+                        Admin
+                    </span>
+                    {/* Active Indicator */}
+                    {pathname.startsWith("/admin") && (
+                        <motion.div
+                            layoutId="activeNav"
+                            className="absolute left-0 top-0 w-1 h-full bg-primary rounded-r-full"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
+                    )}
+                </Link>
+
                 <button
                     onClick={toggleTheme}
-                    className="p-3 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors mt-auto"
+                    className="p-3 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
                 >
                     {theme === "deepSystem" ? <Sun size={24} /> : <Moon size={24} />}
                 </button>

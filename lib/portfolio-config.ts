@@ -16,6 +16,15 @@ export const PORTFOLIO_CONFIG = {
         location: "Coimbatore",
         email: "contact@keerthiraajan.dev", // Placeholder email as none was provided
         summary: "Architecting high-availability systems for 10M+ users. Specializing in the intersection of scalable backend logic (Cache, Kafka, WebSockets) and AI integration (LLMs).",
+        ctaPrimary: "INITIATE_PROTOCOL",
+        ctaSecondary: "ESTABLISH_UPLINK",
+        casual: {
+            name: "Keerthi Raajan K M",
+            title: "Creative Developer & AI Enthusiast",
+            summary: "Hi! I build cool stuff with code. I love making apps that are fast, smart, and look great. I mix backend power with AI magic to create unique experiences.",
+            ctaPrimary: "View Projects",
+            ctaSecondary: "Contact Me"
+        },
         social: {
             github: "https://github.com/keerthiraajan",
             linkedin: "https://linkedin.com/in/keerthiraajan",

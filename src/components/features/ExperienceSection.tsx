@@ -1,70 +1,103 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Section } from "@/components/layout/Section";
 import { Container } from "@/components/layout/Container";
-import { PORTFOLIO_CONFIG } from "../../../lib/portfolio-config";
-import { FileText, GitCommit, Terminal } from "lucide-react";
+import { Briefcase, Calendar, Terminal } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { useTheme } from "@/components/layout/ThemeProvider";
 
 export function ExperienceSection() {
-    return (
-        <Section id="experience">
-            <Container>
-                <div className="flex items-center gap-2 mb-12">
-                    <FileText className="text-primary" />
-                    <h2 className="text-3xl font-bold tracking-tight">System Logs</h2>
-                    <div className="h-px flex-1 bg-border ml-4" />
-                </div>
+    const { theme } = useTheme();
+    const isDark = theme === "deepSystem";
+    const [experience, setExperience] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-                <div className="relative border-l border-border ml-3 md:ml-6 space-y-12">
-                    {PORTFOLIO_CONFIG.experience.map((exp, index) => (
+    useEffect(() => {
+        const fetchExperience = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(db, "experience"));
+                setExperience(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            } catch (error) {
+                console.error("Error fetching experience:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchExperience();
+    }, []);
+
+    return (
+        <section id="experience" className="py-12 bg-secondary/5">
+            <Container>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="mb-16"
+                >
+                    <div className="flex items-center gap-2 text-primary mb-4">
+                        <Terminal size={20} />
+                        <span className="font-mono text-sm tracking-wider">
+                            {isDark ? "SYSTEM_LOGS" : "Experience"}
+                        </span>
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold">
+                        {isDark ? "Professional Experience" : "Work History"}
+                    </h2>
+                </motion.div>
+
+                <div className="space-y-8">
+                    {experience.map((job, index) => (
                         <motion.div
-                            key={exp.id}
+                            key={job.id}
                             initial={{ opacity: 0, x: -20 }}
                             whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
                             viewport={{ once: true }}
-                            className="relative pl-8 md:pl-12"
+                            transition={{ delay: index * 0.1 }}
+                            className="bg-card border border-border p-6 md:p-8 rounded-lg hover:border-primary/50 transition-all group"
                         >
-                            {/* Timeline Node */}
-                            <div className="absolute left-[-5px] top-2 w-2.5 h-2.5 rounded-full bg-background border-2 border-primary ring-4 ring-background" />
-
-                            <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-8 group">
-                                {/* Metadata */}
-                                <div className="md:w-48 flex-shrink-0 pt-1">
-                                    <div className="font-mono text-sm text-primary mb-1">{exp.period}</div>
-                                    <div className="text-muted-foreground text-sm">{exp.company}</div>
-                                    <div className="text-xs text-muted-foreground/50 font-mono mt-2">ID: {exp.id.toUpperCase()}</div>
+                            <div className="flex flex-col md:flex-row md:items-start gap-6">
+                                <div className="p-3 bg-primary/10 rounded text-primary h-fit">
+                                    <Briefcase size={24} />
                                 </div>
 
-                                {/* Content Card */}
-                                <div className="flex-1 bg-card border border-border p-6 rounded-lg relative overflow-hidden group-hover:border-primary/30 transition-colors">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary/50" />
+                                <div className="flex-1">
+                                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-4">
+                                        <div>
+                                            <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                                                {job.role}
+                                            </h3>
+                                            <p className="text-lg text-muted-foreground">{job.company}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground bg-secondary/50 px-3 py-1 rounded">
+                                            <Calendar size={14} />
+                                            {job.period}
+                                        </div>
+                                    </div>
 
-                                    <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-                                        {exp.role}
-                                        <span className="text-xs font-normal font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">
-                                            v.{PORTFOLIO_CONFIG.experience.length - index}.0
-                                        </span>
-                                    </h3>
+                                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                                        {job.description}
+                                    </p>
 
-                                    <p className="text-muted-foreground mb-4">{exp.description}</p>
-
-                                    <ul className="space-y-2 mb-6">
-                                        {exp.achievements.map((achievement, i) => (
-                                            <li key={i} className="flex items-start gap-2 text-sm">
-                                                <span className="text-primary mt-1">›</span>
-                                                <span>{achievement}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    {job.achievements && job.achievements.length > 0 && (
+                                        <div className="mb-6 space-y-2">
+                                            {job.achievements.map((achievement: string, i: number) => (
+                                                <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                    <span className="text-primary mt-1.5">▹</span>
+                                                    <span>{achievement}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
                                     <div className="flex flex-wrap gap-2">
-                                        {exp.tech.map((tech) => (
+                                        {job.techStack && job.techStack.map((tech: string) => (
                                             <span
                                                 key={tech}
-                                                className="text-xs font-mono px-2 py-1 rounded border border-border bg-secondary/20 text-muted-foreground"
+                                                className="text-xs font-mono px-2 py-1 rounded bg-primary/5 border border-primary/20 text-primary"
                                             >
                                                 {tech}
                                             </span>
@@ -76,6 +109,6 @@ export function ExperienceSection() {
                     ))}
                 </div>
             </Container>
-        </Section>
+        </section>
     );
 }
