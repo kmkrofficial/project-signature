@@ -16,8 +16,9 @@ export default function LoginPage() {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
             router.push("/admin");
-        } catch (err) {
-            setError("Access Denied: Google Auth Failed");
+        } catch (err: any) {
+            console.error("Login error:", err);
+            setError(err.message || "Access Denied: Google Auth Failed");
         }
     };
 

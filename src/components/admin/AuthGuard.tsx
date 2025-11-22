@@ -17,23 +17,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // Single auth check - no streaming
-        const checkAuth = async () => {
-            // Wait for auth to initialize
-            await new Promise(resolve => {
-                if (auth.currentUser !== undefined) {
-                    resolve(null);
-                } else {
-                    const unsubscribe = auth.onAuthStateChanged(() => {
-                        unsubscribe();
-                        resolve(null);
-                    });
-                }
-            });
-
-            const currentUser = auth.currentUser;
-
-            if (!currentUser) {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            if (!user) {
                 router.push("/admin/login");
                 setLoading(false);
                 return;
@@ -41,10 +26,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
             // Check if user's email is in the admin list
             const adminEmails = getAdminEmails();
-            const userEmail = currentUser.email?.toLowerCase() || "";
+            const userEmail = user.email?.toLowerCase() || "";
             const hasAdminAccess = adminEmails.includes(userEmail);
 
             if (!hasAdminAccess) {
+                console.warn(`Access denied for email: ${userEmail}. Allowed emails: ${adminEmails.join(", ")}`);
                 router.push("/unauthorized");
                 setLoading(false);
                 return;
@@ -69,9 +55,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
             setIsAuthorized(true);
             setLoading(false);
-        };
+        });
 
-        checkAuth();
+        return () => unsubscribe();
     }, [router]);
 
     // Activity tracking and periodic session check
