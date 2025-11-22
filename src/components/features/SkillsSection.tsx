@@ -18,12 +18,19 @@ const CATEGORIES = [
     "Other"
 ];
 
+interface Skill {
+    id: string;
+    name: string;
+    category: string;
+    associatedProjects?: string[];
+}
+
 export function SkillsSection() {
     const { theme } = useTheme();
     const isDark = theme === "deepSystem";
-    const [skills, setSkills] = useState<any[]>([]);
+    const [skills, setSkills] = useState<Skill[]>([]);
     const [openCategory, setOpenCategory] = useState<string | null>("AI & ML");
-    const [selectedSkill, setSelectedSkill] = useState<any | null>(null);
+    const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
 
 
@@ -32,7 +39,7 @@ export function SkillsSection() {
             try {
                 const querySnapshot = await getDocs(collection(db, "skills"));
                 if (!querySnapshot.empty) {
-                    setSkills(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                    setSkills(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Skill)));
                 } else {
                     // Fallback to PORTFOLIO_CONFIG if Firestore is empty
                     const configSkills = PORTFOLIO_CONFIG.skills.flatMap(category =>
@@ -69,7 +76,7 @@ export function SkillsSection() {
         if (!acc[category]) acc[category] = [];
         acc[category].push(skill);
         return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, Skill[]>);
 
     return (
         <section id="skills" className="py-12 relative overflow-hidden">

@@ -18,8 +18,15 @@ const CATEGORIES = [
     "Other"
 ];
 
+interface Skill {
+    id: string;
+    name: string;
+    category: string;
+    associatedProjects?: string[];
+}
+
 export default function SkillsAdminPage() {
-    const [skills, setSkills] = useState<any[]>([]);
+    const [skills, setSkills] = useState<Skill[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
@@ -41,7 +48,7 @@ export default function SkillsAdminPage() {
             const skillsData = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
-            }));
+            })) as Skill[];
             setSkills(skillsData);
         } catch (error) {
             showError("Failed to load skills");
@@ -85,7 +92,7 @@ export default function SkillsAdminPage() {
         }
     };
 
-    const handleEdit = (skill: any) => {
+    const handleEdit = (skill: Skill) => {
         setEditingId(skill.id);
         setFormData({
             name: skill.name || "",
@@ -121,7 +128,7 @@ export default function SkillsAdminPage() {
         if (!acc[category]) acc[category] = [];
         acc[category].push(skill);
         return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, Skill[]>);
 
     return (
         <div className="space-y-8">

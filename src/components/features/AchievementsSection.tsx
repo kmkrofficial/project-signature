@@ -8,11 +8,27 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { useTheme } from "@/components/layout/ThemeProvider";
 
+interface Education {
+    id: string;
+    degree: string;
+    institution: string;
+    year: string;
+    grade?: string;
+}
+
+interface Paper {
+    id: string;
+    title: string;
+    abstract: string;
+    link?: string;
+    tags?: string[];
+}
+
 export function AchievementsSection() {
     const { theme } = useTheme();
     const isDark = theme === "deepSystem";
-    const [education, setEducation] = useState<any[]>([]);
-    const [papers, setPapers] = useState<any[]>([]);
+    const [education, setEducation] = useState<Education[]>([]);
+    const [papers, setPapers] = useState<Paper[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,8 +39,8 @@ export function AchievementsSection() {
                     getDocs(collection(db, "papers"))
                 ]);
 
-                setEducation(eduSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                setPapers(papersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                setEducation(eduSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Education)));
+                setPapers(papersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Paper)));
             } catch (error) {
                 console.error("Error fetching achievements:", error);
             } finally {

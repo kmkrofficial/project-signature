@@ -8,17 +8,27 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useTheme } from "@/components/layout/ThemeProvider";
 
+interface Experience {
+    id: string;
+    role: string;
+    company: string;
+    period: string;
+    description: string;
+    achievements?: string[];
+    techStack?: string[];
+}
+
 export function ExperienceSection() {
     const { theme } = useTheme();
     const isDark = theme === "deepSystem";
-    const [experience, setExperience] = useState<any[]>([]);
+    const [experience, setExperience] = useState<Experience[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchExperience = async () => {
             try {
                 const querySnapshot = await getDocs(collection(db, "experience"));
-                setExperience(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                setExperience(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Experience)));
             } catch (error) {
                 console.error("Error fetching experience:", error);
             } finally {

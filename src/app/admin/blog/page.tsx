@@ -9,8 +9,20 @@ import { useToast } from "@/hooks/useToast";
 import { ToastContainer } from "@/components/admin/Toast";
 import Link from "next/link";
 
+interface BlogPost {
+    id: string;
+    title: string;
+    slug: string;
+    excerpt: string;
+    content: string;
+    tags: string[];
+    published: boolean;
+    createdAt?: { seconds: number; nanoseconds: number };
+    updatedAt?: { seconds: number; nanoseconds: number };
+}
+
 export default function BlogAdminPage() {
-    const [posts, setPosts] = useState<any[]>([]);
+    const [posts, setPosts] = useState<BlogPost[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
@@ -35,8 +47,8 @@ export default function BlogAdminPage() {
             const postsData = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
-            }));
-            setPosts(postsData.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds));
+            })) as BlogPost[];
+            setPosts(postsData.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
         } catch (error) {
             showError("Failed to load blog posts");
             console.error(error);
