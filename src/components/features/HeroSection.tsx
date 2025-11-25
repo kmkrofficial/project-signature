@@ -15,7 +15,7 @@ import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
-const NetworkCore = dynamic(() => import("./NetworkCore").then(mod => mod.NetworkCore), {
+const NetworkCore = dynamic(() => import("./NetworkCore"), {
     ssr: false,
     loading: () => <div className="absolute inset-0 bg-background/50" />
 });
