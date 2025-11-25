@@ -107,6 +107,18 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     if (!isAuthorized) {
+        // If not authorized and no user, we are redirecting, so show loading or nothing
+        if (!auth.currentUser) {
+            return (
+                <div className="h-screen w-full flex items-center justify-center bg-background text-primary">
+                    <div className="flex flex-col items-center gap-4">
+                        <Terminal className="animate-pulse" size={48} />
+                        <p className="font-mono text-sm tracking-wider">REDIRECTING...</p>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="h-screen w-full flex items-center justify-center bg-background">
                 <div className="flex flex-col items-center gap-4 text-center max-w-md p-6">
