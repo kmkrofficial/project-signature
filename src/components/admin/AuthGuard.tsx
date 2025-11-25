@@ -109,12 +109,24 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!isAuthorized) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-background">
-                <div className="flex flex-col items-center gap-4 text-center max-w-md">
+                <div className="flex flex-col items-center gap-4 text-center max-w-md p-6">
                     <ShieldAlert className="text-red-500" size={64} />
                     <h1 className="text-2xl font-bold text-foreground">Access Denied</h1>
                     <p className="text-muted-foreground">
-                        Verifying administrator permissions...
+                        You are not authorized to access this area.
                     </p>
+                    {auth.currentUser && (
+                        <div className="mt-2 p-3 bg-secondary/50 rounded-lg border border-border">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Current Account</p>
+                            <p className="font-mono text-sm">{auth.currentUser.email}</p>
+                        </div>
+                    )}
+                    <button
+                        onClick={() => auth.signOut().then(() => router.push("/admin/login"))}
+                        className="mt-4 px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground rounded transition-colors"
+                    >
+                        Sign Out
+                    </button>
                 </div>
             </div>
         );
