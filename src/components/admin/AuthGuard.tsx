@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { Terminal, ShieldAlert } from "lucide-react";
 
@@ -15,8 +15,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
+        // Bypass auth check for login page
+        if (pathname === "/admin/login") {
+            setLoading(false);
+            return;
+        }
+
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 router.push("/admin/login");
@@ -58,7 +65,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         });
 
         return () => unsubscribe();
-    }, [router]);
+    }, [router, pathname]);
 
     // Activity tracking and periodic session check
     useEffect(() => {
@@ -94,6 +101,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             clearInterval(interval);
         };
     }, [isAuthorized, router]);
+
+    // If on login page, just render children
+    if (pathname === "/admin/login") {
+        return <>{children}</>;
+    }
 
     if (loading) {
         return (

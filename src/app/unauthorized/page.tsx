@@ -2,8 +2,17 @@
 
 import { ShieldX } from "lucide-react";
 import Link from "next/link";
+import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 
 export default function UnauthorizedPage() {
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await auth.signOut();
+        router.push("/admin/login");
+    };
+
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-6 text-center max-w-lg px-6">
@@ -16,12 +25,20 @@ export default function UnauthorizedPage() {
                     This section is restricted to authorized administrators only.
                     If you believe you should have access, please contact the site administrator.
                 </p>
-                <Link
-                    href="/"
-                    className="mt-4 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                >
-                    Return to Homepage
-                </Link>
+                <div className="flex gap-4 mt-4">
+                    <Link
+                        href="/"
+                        className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+                    >
+                        Return to Homepage
+                    </Link>
+                    <button
+                        onClick={handleLogout}
+                        className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                    >
+                        Sign Out
+                    </button>
+                </div>
             </div>
         </div>
     );

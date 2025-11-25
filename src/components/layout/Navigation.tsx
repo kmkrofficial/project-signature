@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 
 const navItems = [
-    { name: "Core", path: "/", id: "hero", icon: Home },
+    { name: "Core", path: "/", id: "home", icon: Home },
     { name: "Skills", path: "/#skills", id: "skills", icon: Cpu },
     { name: "Logs", path: "/#experience", id: "experience", icon: User },
     { name: "Modules", path: "/#projects", id: "projects", icon: Code },
@@ -20,7 +20,7 @@ const navItems = [
 export function Navigation() {
     const { theme, toggleTheme } = useTheme();
     const pathname = usePathname();
-    const [activeSection, setActiveSection] = useState("hero");
+    const [activeSection, setActiveSection] = useState("home");
 
     useEffect(() => {
         if (pathname !== "/") {
@@ -28,25 +28,35 @@ export function Navigation() {
             return;
         }
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setActiveSection(entry.target.id);
+        const handleScroll = () => {
+            // Explicit check for top of page
+            if (window.scrollY < 100) {
+                setActiveSection("home");
+                return;
+            }
+
+            const sections = ["home", "skills", "experience", "projects", "achievements"];
+            const scrollPosition = window.scrollY + 300; // Increased offset for better triggering
+
+            for (const id of sections) {
+                const element = document.getElementById(id);
+                if (element) {
+                    const offsetTop = element.offsetTop;
+                    const offsetBottom = offsetTop + element.offsetHeight;
+
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
+                        setActiveSection(id);
+                        break;
                     }
-                });
-            },
-            { threshold: 0.5 }
-        );
+                }
+            }
+        };
 
-        // Observe sections
-        const sections = ["hero", "skills", "experience", "projects", "achievements"];
-        sections.forEach((id) => {
-            const element = document.getElementById(id);
-            if (element) observer.observe(element);
-        });
+        window.addEventListener("scroll", handleScroll);
+        // Initial check
+        handleScroll();
 
-        return () => observer.disconnect();
+        return () => window.removeEventListener("scroll", handleScroll);
     }, [pathname]);
 
     return (
