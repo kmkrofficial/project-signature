@@ -95,7 +95,7 @@ export function AchievementsSection() {
                                     className="relative pl-8 pb-12 last:pb-0 group"
                                 >
                                     {/* Marker Dot */}
-                                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-background border-2 border-border group-hover:border-primary group-hover:scale-110 transition-all duration-300" />
+                                    <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-background border-2 border-border group-hover:border-primary group-hover:scale-110 transition-all duration-300" />
 
                                     <h4 className="text-xl font-bold group-hover:text-primary transition-colors">
                                         {edu.degree}
@@ -159,9 +159,10 @@ export function AchievementsSection() {
                                                 href={paper.link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="p-2 hover:bg-primary/10 text-primary rounded transition-colors"
+                                                className="flex items-center gap-1 text-sm text-primary hover:underline mt-2"
                                             >
-                                                <ExternalLink size={20} />
+                                                <ExternalLink size={14} />
+                                                View Paper
                                             </a>
                                         )}
                                     </div>

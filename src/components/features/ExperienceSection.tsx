@@ -96,7 +96,7 @@ export function ExperienceSection() {
                                         <div className="mb-6 space-y-2">
                                             {job.achievements.map((achievement: string, i: number) => (
                                                 <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                                    <span className="text-primary mt-1.5">▹</span>
+                                                    <span className="text-primary mt-1">▹</span>
                                                     <span>{achievement}</span>
                                                 </div>
                                             ))}

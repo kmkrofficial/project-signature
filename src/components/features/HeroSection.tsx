@@ -56,7 +56,7 @@ export function HeroSection() {
         badge: "SYSTEM ONLINE // V.2.0.24",
         badgeIcon: <Terminal size={18} />,
     } : {
-        badge: "HELLO THERE! 👋",
+        badge: "HELLO THERE!!! ",
         badgeIcon: <Sparkles size={18} />,
     };
 

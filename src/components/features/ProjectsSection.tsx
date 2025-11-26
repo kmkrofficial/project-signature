@@ -7,6 +7,7 @@ import { Container } from "@/components/layout/Container";
 import { Box, ExternalLink, Maximize2, Terminal, X, Loader2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { useTheme } from "@/components/layout/ThemeProvider";
 
 interface Project {
     id: string;
@@ -18,6 +19,7 @@ interface Project {
 }
 
 export function ProjectsSection() {
+    const { theme } = useTheme();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -49,11 +51,13 @@ export function ProjectsSection() {
     const selectedProject = projects.find(p => p.id === selectedId);
 
     return (
-        <Section id="projects" className="bg-secondary/5">
+        <Section id="projects" className="bg-secondary/5 !py-8 !md:py-12">
             <Container>
-                <div className="flex items-center gap-2 mb-12">
+                <div className="flex items-center gap-2 mb-8">
                     <Box className="text-primary" />
-                    <h2 className="text-3xl font-bold tracking-tight">Deployed Modules</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">
+                        {theme === "deepSystem" ? "Deployed Modules" : "Featured Projects"}
+                    </h2>
                     <div className="h-px flex-1 bg-border ml-4" />
                 </div>
 
@@ -77,7 +81,7 @@ export function ProjectsSection() {
                                 transition={{ delay: index * 0.1 }}
                                 layoutId={`card-${project.id}`}
                                 onClick={() => setSelectedId(project.id)}
-                                className="cursor-pointer group relative bg-card border border-border p-6 rounded-lg hover:border-primary/50 transition-colors"
+                                className="cursor-pointer group relative bg-card border border-border p-6 rounded-lg hover:border-primary/50 transition-colors h-full flex flex-col"
                             >
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="p-3 rounded bg-primary/10 text-primary">
@@ -86,15 +90,15 @@ export function ProjectsSection() {
                                     <Maximize2 size={16} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
 
-                                <motion.h3 layoutId={`title-${project.id}`} className="text-xl font-bold mb-2">
+                                <motion.h3 className="text-xl font-bold mb-2">
                                     {project.title}
                                 </motion.h3>
 
-                                <motion.p layoutId={`desc-${project.id}`} className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                                <motion.p className="text-muted-foreground text-sm mb-4 line-clamp-2 flex-1">
                                     {project.description}
                                 </motion.p>
 
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-2 mt-auto">
                                     {project.tech.slice(0, 3).map((tech) => (
                                         <span key={tech} className="text-xs font-mono px-2 py-1 rounded bg-secondary text-secondary-foreground">
                                             {tech}
@@ -139,14 +143,14 @@ export function ProjectsSection() {
                                 <div className="p-6">
                                     <div className="flex items-start justify-between mb-6">
                                         <div>
-                                            <motion.h3 layoutId={`title-${selectedProject.id}`} className="text-2xl font-bold mb-1">
+                                            <motion.h3 className="text-2xl font-bold mb-1">
                                                 {selectedProject.title}
                                             </motion.h3>
                                         </div>
                                         <Terminal size={32} className="text-muted-foreground/20" />
                                     </div>
 
-                                    <motion.p layoutId={`desc-${selectedProject.id}`} className="text-muted-foreground mb-8">
+                                    <motion.p className="text-muted-foreground mb-8">
                                         {selectedProject.description}
                                     </motion.p>
 

@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-mono`}>
         <ThemeProvider>
           <Navigation />
-          <main className="md:pl-20 min-h-screen">
+          <main className="lg:pl-20 min-h-screen">
             {children}
           </main>
         </ThemeProvider>

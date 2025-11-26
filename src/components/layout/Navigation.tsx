@@ -35,6 +35,12 @@ export function Navigation() {
                 return;
             }
 
+            // Check for bottom of page
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
+                setActiveSection("achievements");
+                return;
+            }
+
             const sections = ["home", "skills", "experience", "projects", "achievements"];
             const scrollPosition = window.scrollY + 300; // Increased offset for better triggering
 
@@ -65,7 +71,7 @@ export function Navigation() {
             <motion.nav
                 initial={{ x: -100, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                className="hidden md:flex flex-col fixed left-0 top-0 h-full w-20 border-r border-border bg-background/80 backdrop-blur-md z-50 items-center py-8"
+                className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-20 border-r border-border bg-background/80 backdrop-blur-md z-50 items-center py-8"
             >
                 <div className="mb-12">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 shadow-[0_0_15px_rgba(var(--primary),0.3)]">
@@ -141,7 +147,7 @@ export function Navigation() {
             <motion.nav
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="md:hidden fixed bottom-0 left-0 w-full bg-background/90 backdrop-blur-lg border-t border-border z-50 px-6 py-4 flex justify-between items-center"
+                className="lg:hidden fixed bottom-0 left-0 w-full bg-background/90 backdrop-blur-lg border-t border-border z-50 px-6 py-4 flex justify-between items-center"
             >
                 {navItems.map((item) => {
                     const isActive = pathname === "/" ? activeSection === item.id : pathname.startsWith(item.path);
@@ -150,21 +156,19 @@ export function Navigation() {
                             key={item.name}
                             href={item.path}
                             className={clsx(
-                                "flex flex-col items-center gap-1",
+                                "flex flex-col items-center",
                                 isActive ? "text-primary" : "text-muted-foreground"
                             )}
                         >
                             <item.icon size={20} />
-                            <span className="text-[10px] uppercase tracking-wider">{item.name}</span>
                         </Link>
                     )
                 })}
                 <button
                     onClick={toggleTheme}
-                    className="flex flex-col items-center gap-1 text-muted-foreground"
+                    className="flex flex-col items-center text-muted-foreground"
                 >
                     {theme === "deepSystem" ? <Sun size={20} /> : <Moon size={20} />}
-                    <span className="text-[10px] uppercase tracking-wider">Theme</span>
                 </button>
             </motion.nav>
         </>

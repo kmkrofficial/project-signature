@@ -14,7 +14,16 @@ export default function PapersAdminPage() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        title: string;
+        authors: string;
+        publication: string;
+        year: number | string;
+        doi: string;
+        abstract: string;
+        tags: string;
+        published: boolean;
+    }>({
         title: "",
         authors: "",
         publication: "",
@@ -64,7 +73,7 @@ export default function PapersAdminPage() {
 
         try {
             setLoading(true);
-            const paperData = {
+            const baseData = {
                 title: formData.title,
                 authors: formData.authors.split(",").map((a) => a.trim()).filter(Boolean),
                 publication: formData.publication,
@@ -73,17 +82,19 @@ export default function PapersAdminPage() {
                 abstract: formData.abstract || "",
                 tags: formData.tags.split(",").map((t) => t.trim()).filter(Boolean),
                 published: formData.published,
-                createdAt: editingId ? undefined : Timestamp.now(),
                 updatedAt: Timestamp.now(),
             };
 
             if (editingId) {
                 // Update existing
-                await updateDoc(doc(db, "papers", editingId), paperData);
+                await updateDoc(doc(db, "papers", editingId), baseData);
                 showSuccess("Paper updated successfully");
             } else {
                 // Create new
-                await addDoc(collection(db, "papers"), paperData);
+                await addDoc(collection(db, "papers"), {
+                    ...baseData,
+                    createdAt: Timestamp.now(),
+                });
                 showSuccess("Paper created successfully");
             }
 
@@ -212,7 +223,7 @@ export default function PapersAdminPage() {
                                 type="number"
                                 placeholder="Year"
                                 value={formData.year}
-                                onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
+                                onChange={(e) => setFormData({ ...formData, year: e.target.value === "" ? "" : parseInt(e.target.value) })}
                                 className="bg-secondary/20 border border-border rounded p-3 text-foreground focus:outline-none focus:border-primary"
                             />
                         </div>
