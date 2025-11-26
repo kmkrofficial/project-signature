@@ -70,7 +70,7 @@ export function ExperienceSection() {
                             className="bg-card border border-border p-6 md:p-8 rounded-lg hover:border-primary/50 transition-all group"
                         >
                             <div className="flex flex-col md:flex-row md:items-start gap-6">
-                                <div className="p-3 bg-primary/10 rounded text-primary h-fit">
+                                <div className="p-3 bg-primary/10 rounded text-primary h-fit w-fit">
                                     <Briefcase size={24} />
                                 </div>
 
@@ -82,7 +82,7 @@ export function ExperienceSection() {
                                             </h3>
                                             <p className="text-lg text-muted-foreground">{job.company}</p>
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground bg-secondary/50 px-3 py-1 rounded">
+                                        <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground bg-secondary/50 px-3 py-1 rounded w-fit">
                                             <Calendar size={14} />
                                             {job.period}
                                         </div>
