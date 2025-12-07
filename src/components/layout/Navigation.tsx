@@ -4,23 +4,27 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Home, User, Code, Cpu, BookOpen, Sun, Moon, Brain, FileText, Terminal } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { useThemeLanguage } from "@/hooks/useThemeLanguage";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 
-const navItems = [
-    { name: "Core", path: "/", id: "home", icon: Home },
-    { name: "Skills", path: "/#skills", id: "skills", icon: Cpu },
-    { name: "Logs", path: "/#experience", id: "experience", icon: User },
-    { name: "Modules", path: "/#projects", id: "projects", icon: Code },
-    { name: "Kernel Training", path: "/#achievements", id: "achievements", icon: Brain },
-    { name: "System Docs", path: "/blog", id: "blog", icon: FileText },
-];
+// Moved inside component for hook access
 
 export function Navigation() {
     const { theme, toggleTheme } = useTheme();
+    const t = useThemeLanguage();
     const pathname = usePathname();
     const [activeSection, setActiveSection] = useState("home");
+
+    const navItems = [
+        { name: t.nav.home, path: "/", id: "home", icon: Home },
+        { name: t.nav.skills, path: "/#skills", id: "skills", icon: Cpu },
+        { name: t.nav.experience, path: "/#experience", id: "experience", icon: User },
+        { name: t.nav.projects, path: "/#projects", id: "projects", icon: Code },
+        { name: t.nav.achievements, path: "/#achievements", id: "achievements", icon: Brain },
+        { name: t.nav.blog, path: "/blog", id: "blog", icon: FileText },
+    ];
 
     useEffect(() => {
         if (pathname !== "/") {
@@ -134,6 +138,8 @@ export function Navigation() {
                         />
                     )}
                 </Link>
+
+
 
                 <button
                     onClick={toggleTheme}

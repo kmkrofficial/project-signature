@@ -62,11 +62,11 @@ export default function AdminDashboard() {
 
     const adminModules = [
         {
-            title: "Blog Posts",
+            title: "Blog CMS",
             icon: FileText,
             count: counts.blog,
-            status: "Active",
-            path: "/admin/blog",
+            status: "FireCMS",
+            path: "/cms",
             color: "text-primary",
             bgColor: "bg-primary/10",
         },
