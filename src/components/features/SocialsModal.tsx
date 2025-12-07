@@ -46,14 +46,34 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
 
         try {
             setSending(true);
+
+            // 1. Save to Firebase (Backup)
             await addDoc(collection(db, "messages"), {
-                to: "kmkrworks@gmail.com",
+                to: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "kmkrworks@gmail.com",
                 from: emailForm.email,
                 name: emailForm.name,
                 message: emailForm.message,
                 createdAt: Timestamp.now(),
                 read: false
             });
+
+            // 2. Send actual email via API
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: emailForm.name,
+                    email: emailForm.email,
+                    message: emailForm.message
+                }),
+            });
+
+            if (!response.ok) {
+                console.warn("Email API failed, but saved to database.");
+            }
+
             setSent(true);
             setEmailForm({ name: "", email: "", message: "" });
             setTimeout(() => setSent(false), 3000);
@@ -123,9 +143,12 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
 
                             {/* Direct Message Form */}
                             <div>
-                                <h3 className="text-sm font-mono text-muted-foreground uppercase tracking-wider mb-4">
+                                <h3 className="text-sm font-mono text-muted-foreground uppercase tracking-wider mb-2">
                                     Direct Transmission
                                 </h3>
+                                <p className="text-xs text-muted-foreground mb-4">
+                                    Send a secured message directly to my inbox. Responses typically within 24 hours.
+                                </p>
 
                                 {sent ? (
                                     <div className="h-full flex flex-col items-center justify-center text-center p-6 bg-green-500/10 rounded-lg border border-green-500/20">
