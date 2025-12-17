@@ -3,14 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
-import { ArrowLeft, Calendar, Clock, Tag, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag, Loader2, Eye, Heart } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, increment, doc } from "firebase/firestore";
 import { useThemeLanguage } from "@/hooks/useThemeLanguage";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { useParams } from "next/navigation";
@@ -23,6 +24,8 @@ interface BlogPost {
     date: string;
     readTime: string;
     tags: string[];
+    views?: number;
+    likes?: number;
 }
 
 export default function BlogPostPage() {
@@ -31,6 +34,56 @@ export default function BlogPostPage() {
     const t = useThemeLanguage();
     const { theme } = useTheme();
     const [post, setPost] = useState<BlogPost | null>(null);
+    const [likes, setLikes] = useState(0);
+    const [hasLiked, setHasLiked] = useState(false);
+    const [isFooterVisible, setIsFooterVisible] = useState(false);
+
+    // Footer visibility for floating button
+    useEffect(() => {
+        const handleScroll = () => {
+            const footer = document.getElementById('site-footer');
+            if (!footer) return;
+            const rect = footer.getBoundingClientRect();
+            setIsFooterVisible(rect.top <= window.innerHeight);
+        };
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleScroll);
+        handleScroll();
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleScroll);
+        };
+    }, []);
+
+    const handleLike = async () => {
+        if (!post) return;
+
+        const viewedKey = `liked_${post.id}`;
+
+        try {
+            if (hasLiked) {
+                // Unlike logic
+                setLikes(prev => Math.max(0, prev - 1));
+                setHasLiked(false);
+                sessionStorage.removeItem(viewedKey);
+
+                await updateDoc(doc(db, "blog", post.id), {
+                    likes: increment(-1)
+                });
+            } else {
+                // Like logic
+                setLikes(prev => prev + 1);
+                setHasLiked(true);
+                sessionStorage.setItem(viewedKey, 'true');
+
+                await updateDoc(doc(db, "blog", post.id), {
+                    likes: increment(1)
+                });
+            }
+        } catch (error) {
+            console.error("Error toggling like:", error);
+        }
+    };
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
 
@@ -43,17 +96,33 @@ export default function BlogPostPage() {
                 if (querySnapshot.empty) {
                     setNotFound(true);
                 } else {
-                    const doc = querySnapshot.docs[0];
-                    const data = doc.data();
+                    const docSnap = querySnapshot.docs[0];
+                    const data = docSnap.data();
+
+                    // Increment views if not already viewed this session
+                    const viewedKey = `viewed_${docSnap.id}`;
+                    if (!sessionStorage.getItem(viewedKey)) {
+                        await updateDoc(doc(db, "blog", docSnap.id), {
+                            views: increment(1)
+                        });
+                        sessionStorage.setItem(viewedKey, 'true');
+                    }
+
                     setPost({
-                        id: doc.id,
+                        id: docSnap.id,
                         title: data.title,
                         slug: data.slug,
                         content: data.content,
                         tags: data.tags || [],
                         date: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : "Unknown",
                         readTime: `${Math.max(1, Math.ceil((data.content?.split(/\s+/).length || 0) / 200))} min read`,
-                    });
+                        views: (data.views || 0) + (sessionStorage.getItem(viewedKey) ? 1 : 0) // Optimistic update
+                    } as BlogPost);
+
+                    setLikes(data.likes || 0);
+                    if (sessionStorage.getItem(`liked_${docSnap.id}`)) {
+                        setHasLiked(true);
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching post:", error);
@@ -114,11 +183,29 @@ export default function BlogPostPage() {
                                 <Clock size={14} />
                                 {post.readTime.replace("read", "").trim()} {t.blog.readTime}
                             </div>
+                            {post.views !== undefined && (
+                                <div className="flex items-center gap-2 ml-2">
+                                    <span className="text-secondary-foreground/50">|</span>
+                                    <Eye size={14} />
+                                    <span className="flex items-center gap-1" title="Views">
+                                        {post.views} Views
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                            {post.title}
-                        </h1>
+                        <div className="flex items-center justify-between gap-4 mb-6">
+                            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+                                {post.title}
+                            </h1>
+                            <button
+                                onClick={handleLike}
+                                className={`p-3 rounded-full transition-all duration-300 group flex-shrink-0 ${hasLiked ? 'bg-red-500/10 text-red-500' : 'bg-secondary hover:bg-red-500/10 hover:text-red-500 text-muted-foreground'}`}
+                                title={hasLiked ? "Unlike this post" : "Like this post"}
+                            >
+                                <Heart size={24} className={`${hasLiked ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
+                            </button>
+                        </div>
 
                         <div className="flex gap-2">
                             {post.tags.map(tag => (
@@ -214,6 +301,42 @@ export default function BlogPostPage() {
                     </article>
                 </Container>
             </Section>
+
+            <AnimatePresence>
+                {!isFooterVisible && (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.5, y: 20, rotate: -20 }}
+                        animate={{
+                            opacity: 1,
+                            scale: 1,
+                            y: 0,
+                            rotate: 0,
+                            transition: {
+                                type: "spring",
+                                stiffness: 260,
+                                damping: 20
+                            }
+                        }}
+                        exit={{
+                            opacity: 0,
+                            scale: 0.5,
+                            y: 20,
+                            transition: { duration: 0.2 }
+                        }}
+                        whileHover={{ scale: 1.1, rotate: 10 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={handleLike}
+                        className={`fixed bottom-24 right-6 z-40 p-4 rounded-full shadow-lg border transition-all duration-300 group flex items-center gap-2 ${hasLiked
+                            ? 'bg-red-500 text-white border-red-600 shadow-red-500/20'
+                            : 'bg-card text-foreground border-border hover:border-red-500/50 hover:text-red-500'
+                            }`}
+                        title={hasLiked ? "Unlike this post" : "Like this post"}
+                    >
+                        <Heart size={24} className={hasLiked ? 'fill-current' : ''} />
+                        {likes > 0 && <span className="font-mono font-bold">{likes}</span>}
+                    </motion.button>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

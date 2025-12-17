@@ -15,9 +15,11 @@ interface BlogPost {
     id: string;
     title: string;
     slug: string;
+    excerpt: string;
     content: string;
     tags: string[];
     createdAt: any;
+    published?: boolean;
 }
 
 export default function CMSPage() {
@@ -67,8 +69,10 @@ export default function CMSPage() {
         setCurrentPost({
             title: "",
             slug: "",
+            excerpt: "",
             content: "",
             tags: [],
+            published: true,
         });
         setView("editor");
     };
@@ -101,8 +105,10 @@ export default function CMSPage() {
             const postData = {
                 title: currentPost.title,
                 slug: currentPost.slug,
+                excerpt: currentPost.excerpt || "",
                 content: currentPost.content,
                 tags: currentPost.tags || [],
+                published: currentPost.published !== false,
                 updatedAt: Timestamp.now(),
             };
 
@@ -113,6 +119,7 @@ export default function CMSPage() {
                 // Create new
                 await setDoc(doc(collection(db, "blog")), {
                     ...postData,
+                    published: true,
                     createdAt: Timestamp.now(),
                 });
             }
@@ -254,6 +261,16 @@ export default function CMSPage() {
                         </div>
 
                         <div className="space-y-2">
+                            <label className="text-sm font-medium">Short Description</label>
+                            <textarea
+                                value={currentPost.excerpt || ""}
+                                onChange={(e) => setCurrentPost({ ...currentPost, excerpt: e.target.value })}
+                                className="w-full p-2 rounded bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none h-20 resize-none"
+                                placeholder="Brief summary of the post..."
+                            />
+                        </div>
+
+                        <div className="space-y-2">
                             <label className="text-sm font-medium">Tags (comma separated)</label>
                             <input
                                 type="text"
@@ -262,6 +279,17 @@ export default function CMSPage() {
                                 className="w-full p-2 rounded bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none"
                                 placeholder="react, typescript, tutorial"
                             />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="published"
+                                checked={currentPost.published !== false}
+                                onChange={(e) => setCurrentPost({ ...currentPost, published: e.target.checked })}
+                                className="w-4 h-4 rounded border-border bg-secondary"
+                            />
+                            <label htmlFor="published" className="text-sm font-medium cursor-pointer">Published (Visible on site)</label>
                         </div>
 
                         <div className="space-y-2" data-color-mode="dark">

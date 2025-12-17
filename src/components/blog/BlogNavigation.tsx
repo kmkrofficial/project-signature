@@ -2,15 +2,16 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, User, Sun, Moon } from "lucide-react";
+import { ArrowLeft, User, Sun, Moon, BookOpen } from "lucide-react";
 import { useTheme } from "@/components/layout/ThemeProvider";
 
 export function BlogNavigation() {
     const { theme, toggleTheme } = useTheme();
     return (
         <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border h-16 flex items-center px-6 justify-between">
-            <Link href="/blog" className="text-xl font-bold tracking-tight hover:text-primary transition-colors">
-                SYSTEM LOGS
+            <Link href="/blog" className="flex items-center gap-2 text-xl font-bold tracking-tight hover:text-primary transition-colors">
+                <BookOpen size={24} />
+                <span>SYSTEM LOGS</span>
             </Link>
 
             <div className="flex items-center gap-4">
