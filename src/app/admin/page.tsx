@@ -65,7 +65,7 @@ export default function AdminDashboard() {
             title: "Blog CMS",
             icon: FileText,
             count: counts.blog,
-            status: "FireCMS",
+            status: "Active",
             path: "/cms",
             color: "text-primary",
             bgColor: "bg-primary/10",

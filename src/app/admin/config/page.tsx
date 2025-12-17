@@ -21,6 +21,7 @@ export default function ConfigAdminPage() {
         email: "",
         buymeacoffee: "",
         resumeLink: "",
+        ogImageUrl: "",
     });
     const { toasts, removeToast, showSuccess, showError } = useToast();
 
@@ -47,6 +48,7 @@ export default function ConfigAdminPage() {
                     email: data.email || "",
                     buymeacoffee: data.buymeacoffee || "",
                     resumeLink: data.resumeLink || "",
+                    ogImageUrl: data.ogImageUrl || "",
                 });
             }
         } catch (error) {
@@ -240,6 +242,20 @@ export default function ConfigAdminPage() {
                             className="w-full bg-secondary/20 border border-border rounded p-3 text-foreground focus:outline-none focus:border-primary"
                             placeholder="https://drive.google.com/... or /resume.pdf"
                         />
+                    </div>
+
+                    <div className="mt-4">
+                        <label className="block text-sm font-medium mb-2">
+                            LinkedIn OG Image URL
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.ogImageUrl}
+                            onChange={(e) => setFormData({ ...formData, ogImageUrl: e.target.value })}
+                            className="w-full bg-secondary/20 border border-border rounded p-3 text-foreground focus:outline-none focus:border-primary"
+                            placeholder="https://example.com/image.png"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Image to be displayed when sharing on LinkedIn (not visible on site).</p>
                     </div>
 
                     <div className="flex gap-2 mt-8 pt-6 border-t border-border">

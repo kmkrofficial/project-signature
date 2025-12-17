@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
+import { BlogContactSection } from "@/components/features/BlogContactSection";
 import { Search, Tag, ArrowRight, BookOpen, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useThemeLanguage } from "@/hooks/useThemeLanguage";
@@ -175,6 +176,8 @@ export default function BlogPage() {
                     )}
                 </Container>
             </Section>
-        </div>
+
+            <BlogContactSection />
+        </div >
     );
 }
