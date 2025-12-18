@@ -6,7 +6,7 @@ import { FileStack, Edit, Trash2, Save, X, ArrowLeft, Loader2, Plus } from "luci
 import { db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
 import { useToast } from "@/hooks/useToast";
-import { ToastContainer } from "@/components/admin/Toast";
+import { ToastContainer } from "@/components/ui/Toast";
 import Link from "next/link";
 
 export default function PapersAdminPage() {

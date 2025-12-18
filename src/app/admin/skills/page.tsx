@@ -6,7 +6,7 @@ import { Plus, Edit, Trash2, Save, X, ArrowLeft, Loader2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/useToast";
-import { ToastContainer } from "@/components/admin/Toast";
+import { ToastContainer } from "@/components/ui/Toast";
 import Link from "next/link";
 
 const CATEGORIES = [

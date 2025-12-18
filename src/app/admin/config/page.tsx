@@ -5,7 +5,7 @@ import { Save, ArrowLeft, Loader2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/useToast";
-import { ToastContainer } from "@/components/admin/Toast";
+import { ToastContainer } from "@/components/ui/Toast";
 import Link from "next/link";
 
 export default function ConfigAdminPage() {
