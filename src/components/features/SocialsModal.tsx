@@ -92,16 +92,16 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-card border border-border rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl"
+                        className="bg-card border border-border rounded-2xl w-[95%] sm:w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl"
                     >
-                        <div className="flex items-center justify-between p-6 border-b border-border">
+                        <div className="flex items-center justify-between p-4 md:p-6 border-b border-border sticky top-0 bg-card z-10">
                             <h2 className="text-2xl font-bold">Initialize Communications</h2>
                             <button onClick={onClose} className="p-2 hover:bg-secondary rounded-full transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <div className="p-6 grid md:grid-cols-2 gap-8">
+                        <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                             {/* Social Links */}
                             <div className="space-y-4">
                                 <h3 className="text-sm font-mono text-muted-foreground uppercase tracking-wider mb-4">

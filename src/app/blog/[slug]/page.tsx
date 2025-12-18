@@ -36,24 +36,7 @@ export default function BlogPostPage() {
     const [post, setPost] = useState<BlogPost | null>(null);
     const [likes, setLikes] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
-    const [isFooterVisible, setIsFooterVisible] = useState(false);
 
-    // Footer visibility for floating button
-    useEffect(() => {
-        const handleScroll = () => {
-            const footer = document.getElementById('site-footer');
-            if (!footer) return;
-            const rect = footer.getBoundingClientRect();
-            setIsFooterVisible(rect.top <= window.innerHeight);
-        };
-        window.addEventListener('scroll', handleScroll);
-        window.addEventListener('resize', handleScroll);
-        handleScroll();
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', handleScroll);
-        };
-    }, []);
 
     const handleLike = async () => {
         if (!post) return;
@@ -192,6 +175,17 @@ export default function BlogPostPage() {
                                     </span>
                                 </div>
                             )}
+                            <button
+                                onClick={handleLike}
+                                className={`flex items-center gap-2 ml-4 transition-colors ${hasLiked ? 'text-red-500' : 'hover:text-red-500'}`}
+                                title={hasLiked ? "Unlike" : "Like"}
+                            >
+                                <span className="text-secondary-foreground/50">|</span>
+                                <Heart size={14} className={hasLiked ? 'fill-current' : ''} />
+                                <span className="flex items-center gap-1">
+                                    {likes} Likes
+                                </span>
+                            </button>
                         </div>
 
                         <div className="flex items-center justify-between gap-4 mb-6">
@@ -200,17 +194,17 @@ export default function BlogPostPage() {
                             </h1>
                             <button
                                 onClick={handleLike}
-                                className={`p-3 rounded-full transition-all duration-300 group flex-shrink-0 ${hasLiked ? 'bg-red-500/10 text-red-500' : 'bg-secondary hover:bg-red-500/10 hover:text-red-500 text-muted-foreground'}`}
+                                className={`p-3 rounded-full transition-all duration-300 group flex-shrink-0 hidden md:flex ${hasLiked ? 'bg-red-500/10 text-red-500' : 'bg-secondary hover:bg-red-500/10 hover:text-red-500 text-muted-foreground'}`}
                                 title={hasLiked ? "Unlike this post" : "Like this post"}
                             >
                                 <Heart size={24} className={`${hasLiked ? 'fill-current' : 'group-hover:scale-110'} transition-transform`} />
                             </button>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                             {post.tags.map(tag => (
-                                <span key={tag} className="flex items-center gap-1 text-xs font-mono px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20">
-                                    <Tag size={10} />
+                                <span key={tag} className="flex-shrink-0 flex items-center gap-1 text-[10px] md:text-xs font-mono px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20 whitespace-nowrap">
+                                    <Tag size={10} className="shrink-0" />
                                     {tag}
                                 </span>
                             ))}
@@ -270,21 +264,21 @@ export default function BlogPostPage() {
                                 },
                                 img({ src, alt }) {
                                     return (
-                                        <div className="my-8">
-                                            <div className="relative rounded-lg overflow-hidden border border-border group">
+                                        <span className="block my-8">
+                                            <span className="block relative rounded-lg overflow-hidden border border-border group">
                                                 <img
                                                     src={src}
                                                     alt={alt}
                                                     className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                                                 />
-                                                <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors pointer-events-none" />
-                                            </div>
+                                                <span className="block absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors pointer-events-none" />
+                                            </span>
                                             {alt && (
-                                                <p className="text-center text-xs text-muted-foreground mt-2 font-mono">
+                                                <span className="block text-center text-xs text-muted-foreground mt-2 font-mono">
                                                     // {alt}
-                                                </p>
+                                                </span>
                                             )}
-                                        </div>
+                                        </span>
                                     );
                                 },
                                 blockquote({ children }) {
@@ -302,41 +296,6 @@ export default function BlogPostPage() {
                 </Container>
             </Section>
 
-            <AnimatePresence>
-                {!isFooterVisible && (
-                    <motion.button
-                        initial={{ opacity: 0, scale: 0.5, y: 20, rotate: -20 }}
-                        animate={{
-                            opacity: 1,
-                            scale: 1,
-                            y: 0,
-                            rotate: 0,
-                            transition: {
-                                type: "spring",
-                                stiffness: 260,
-                                damping: 20
-                            }
-                        }}
-                        exit={{
-                            opacity: 0,
-                            scale: 0.5,
-                            y: 20,
-                            transition: { duration: 0.2 }
-                        }}
-                        whileHover={{ scale: 1.1, rotate: 10 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleLike}
-                        className={`fixed bottom-24 right-6 z-40 p-4 rounded-full shadow-lg border transition-all duration-300 group flex items-center gap-2 ${hasLiked
-                            ? 'bg-red-500 text-white border-red-600 shadow-red-500/20'
-                            : 'bg-card text-foreground border-border hover:border-red-500/50 hover:text-red-500'
-                            }`}
-                        title={hasLiked ? "Unlike this post" : "Like this post"}
-                    >
-                        <Heart size={24} className={hasLiked ? 'fill-current' : ''} />
-                        {likes > 0 && <span className="font-mono font-bold">{likes}</span>}
-                    </motion.button>
-                )}
-            </AnimatePresence>
         </div>
     );
 }

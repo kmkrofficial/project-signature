@@ -5,11 +5,16 @@ import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { collection, query, getDocs, doc, setDoc, deleteDoc, Timestamp, orderBy } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "@/lib/firebase";
 import Link from "next/link";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
-import { Loader2, Plus, LogOut, ArrowLeft, Edit, Trash2, Save, X } from "lucide-react";
+import { Loader2, Plus, LogOut, ArrowLeft, Edit, Trash2, Save, X, Image as ImageIcon, Copy, Check } from "lucide-react";
 import MDEditor from "@uiw/react-md-editor";
+
+import { ImageManager } from "@/components/admin/ImageManager";
+import { useToast } from "@/context/ToastContext";
 
 interface BlogPost {
     id: string;
@@ -24,12 +29,25 @@ interface BlogPost {
 
 export default function CMSPage() {
     const router = useRouter();
+    const { addToast } = useToast();
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [view, setView] = useState<"list" | "editor">("list");
     const [currentPost, setCurrentPost] = useState<Partial<BlogPost>>({});
     const [saving, setSaving] = useState(false);
+
+    const [tagsInput, setTagsInput] = useState("");
+    const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+
+    const [showImageSidebar, setShowImageSidebar] = useState(false);
+
+    // filtered and sorted posts
+    const sortedPosts = [...posts].sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+    });
 
     // Auth check
     useEffect(() => {
@@ -57,6 +75,7 @@ export default function CMSPage() {
             setPosts(fetchedPosts);
         } catch (error) {
             console.error("Error fetching posts:", error);
+            addToast("Failed to fetch posts", "error");
         }
     };
 
@@ -74,11 +93,13 @@ export default function CMSPage() {
             tags: [],
             published: true,
         });
+        setTagsInput("");
         setView("editor");
     };
 
     const handleEdit = (post: BlogPost) => {
         setCurrentPost(post);
+        setTagsInput(post.tags?.join(", ") || "");
         setView("editor");
     };
 
@@ -87,27 +108,30 @@ export default function CMSPage() {
             try {
                 await deleteDoc(doc(db, "blog", id));
                 fetchPosts();
+                addToast("Post deleted successfully", "success");
             } catch (error) {
                 console.error("Error deleting post:", error);
-                alert("Failed to delete post");
+                addToast("Failed to delete post", "error");
             }
         }
     };
 
     const handleSave = async () => {
         if (!currentPost.title || !currentPost.slug || !currentPost.content) {
-            alert("Title, Slug, and Content are required");
+            addToast("Title, Slug, and Content are required", "error");
             return;
         }
 
         setSaving(true);
         try {
+            const finalTags = tagsInput.split(",").map(t => t.trim()).filter(Boolean);
+
             const postData = {
                 title: currentPost.title,
                 slug: currentPost.slug,
                 excerpt: currentPost.excerpt || "",
                 content: currentPost.content,
-                tags: currentPost.tags || [],
+                tags: finalTags,
                 published: currentPost.published !== false,
                 updatedAt: Timestamp.now(),
             };
@@ -126,12 +150,23 @@ export default function CMSPage() {
 
             setView("list");
             fetchPosts();
-        } catch (error) {
+            addToast("Post saved successfully!", "success");
+        } catch (error: any) {
             console.error("Error saving post:", error);
-            alert("Failed to save post: " + error);
+            addToast("Failed to save post: " + error.message, "error");
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleImageSelect = (url: string, name: string) => {
+        const markdownInfo = `![${name}](${url})`;
+
+        // Always copy to clipboard for convenience
+        navigator.clipboard.writeText(markdownInfo);
+        addToast("Markdown copied to clipboard!", "success");
+
+        // Removed appending logic as requested by user.
     };
 
     if (loading) {
@@ -145,7 +180,21 @@ export default function CMSPage() {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-background pt-20 pb-10">
+        <div className="min-h-screen bg-background pt-20 pb-10 relative overflow-x-hidden">
+
+            {/* Image Sidebar */}
+            <div className={`fixed right-0 top-0 h-full w-80 bg-background border-l border-border z-50 transform transition-transform duration-300 shadow-2xl ${showImageSidebar ? "translate-x-0" : "translate-x-full"}`}>
+                <div className="flex justify-between items-center p-4 border-b border-border">
+                    <h3 className="font-bold">Images</h3>
+                    <button onClick={() => setShowImageSidebar(false)} className="p-1 hover:bg-secondary rounded">
+                        <X size={18} />
+                    </button>
+                </div>
+                <div className="h-[calc(100vh-60px)] overflow-hidden">
+                    <ImageManager mode="sidebar" onSelect={handleImageSelect} />
+                </div>
+            </div>
+
             <Container>
                 <header className="flex justify-between items-center mb-10 border-b border-border pb-4">
                     <div className="flex items-center gap-4">
@@ -157,18 +206,44 @@ export default function CMSPage() {
                         </Link>
                         <h1 className="text-3xl font-bold font-mono">CMS // DASHBOARD</h1>
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 text-red-500 hover:text-red-400 transition-colors"
-                    >
-                        <LogOut size={18} />
-                        Logout
-                    </button>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setShowImageSidebar(true)}
+                            className="flex items-center gap-2 px-3 py-2 bg-secondary/50 hover:bg-secondary rounded transition-colors text-sm font-medium"
+                            title="Open Image Library"
+                        >
+                            <ImageIcon size={18} />
+                            <span className="hidden sm:inline">Images</span>
+                        </button>
+
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 text-red-500 hover:text-red-400 transition-colors px-3 py-2"
+                        >
+                            <LogOut size={18} />
+                            <span className="hidden sm:inline">Logout</span>
+                        </button>
+                    </div>
                 </header>
 
                 {view === "list" && (
                     <MotionDiv>
-                        <div className="flex justify-end mb-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setSortOrder("desc")}
+                                    className={`px-3 py-1.5 text-sm rounded border ${sortOrder === "desc" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-secondary"}`}
+                                >
+                                    Newest
+                                </button>
+                                <button
+                                    onClick={() => setSortOrder("asc")}
+                                    className={`px-3 py-1.5 text-sm rounded border ${sortOrder === "asc" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-secondary"}`}
+                                >
+                                    Oldest
+                                </button>
+                            </div>
                             <button
                                 onClick={handleCreateNew}
                                 className="bg-primary text-primary-foreground px-4 py-2 rounded flex items-center gap-2 hover:opacity-90 transition-opacity"
@@ -179,13 +254,16 @@ export default function CMSPage() {
                         </div>
 
                         <div className="grid gap-4">
-                            {posts.map((post) => (
+                            {sortedPosts.map((post) => (
                                 <div
                                     key={post.id}
                                     className="p-4 border border-border rounded bg-card flex justify-between items-center hover:border-primary transition-colors"
                                 >
                                     <div>
-                                        <h3 className="font-bold text-lg">{post.title}</h3>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-lg">{post.title}</h3>
+                                            {!post.published && <span className="text-xs bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded border border-yellow-500/20">Draft</span>}
+                                        </div>
                                         <p className="text-sm text-muted-foreground font-mono">/{post.slug}</p>
                                         <div className="flex gap-2 mt-2">
                                             {post.tags.map(tag => (
@@ -274,8 +352,8 @@ export default function CMSPage() {
                             <label className="text-sm font-medium">Tags (comma separated)</label>
                             <input
                                 type="text"
-                                value={currentPost.tags?.join(", ")}
-                                onChange={(e) => setCurrentPost({ ...currentPost, tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean) })}
+                                value={tagsInput}
+                                onChange={(e) => setTagsInput(e.target.value)}
                                 className="w-full p-2 rounded bg-secondary border border-border focus:ring-2 focus:ring-primary outline-none"
                                 placeholder="react, typescript, tutorial"
                             />

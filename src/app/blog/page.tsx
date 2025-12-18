@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 
-import { Search, Tag, ArrowRight, BookOpen, Loader2, Eye, Heart, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { Search, Tag, ArrowRight, BookOpen, Loader2, Eye, Heart, ChevronLeft, ChevronRight, SlidersHorizontal, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useThemeLanguage } from "@/hooks/useThemeLanguage";
 import { db } from "@/lib/firebase";
@@ -36,6 +36,7 @@ export default function BlogPage() {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortOption, setSortOption] = useState<SortOption>("newest");
+    const [isSortOpen, setIsSortOpen] = useState(false);
     const postsPerPage = 10;
 
     useEffect(() => {
@@ -103,6 +104,13 @@ export default function BlogPage() {
         setCurrentPage(1);
     }, [searchQuery, selectedCategory]);
 
+    const sortLabels: Record<SortOption, string> = {
+        "newest": "Newest First",
+        "oldest": "Oldest First",
+        "views": "Most Viewed",
+        "likes": "Most Liked"
+    };
+
     return (
         <div className="pt-20 min-h-screen">
             <Section className="py-12 md:py-16">
@@ -116,20 +124,40 @@ export default function BlogPage() {
                             <h1 className="text-4xl font-bold tracking-tight">{t.blog.title}</h1>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center relative z-20">
                             {/* Sort Dropdown / Controls */}
-                            <div className="flex items-center gap-2 bg-secondary/20 border border-border rounded px-3 py-2">
-                                <SlidersHorizontal size={16} className="text-muted-foreground" />
-                                <select
-                                    value={sortOption}
-                                    onChange={(e) => setSortOption(e.target.value as SortOption)}
-                                    className="bg-transparent border-none text-sm focus:outline-none"
+                            <div className="relative w-full sm:w-48">
+                                <button
+                                    onClick={() => setIsSortOpen(!isSortOpen)}
+                                    className="w-full flex items-center justify-between gap-2 bg-secondary/20 border border-border rounded px-3 py-2 text-sm hover:border-primary/50 transition-colors"
                                 >
-                                    <option value="newest">Newest First</option>
-                                    <option value="oldest">Oldest First</option>
-                                    <option value="views">Most Viewed</option>
-                                    <option value="likes">Most Liked</option>
-                                </select>
+                                    <div className="flex items-center gap-2">
+                                        <SlidersHorizontal size={16} className="text-muted-foreground" />
+                                        <span>{sortLabels[sortOption]}</span>
+                                    </div>
+                                    <ChevronDown size={14} className={`transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {isSortOpen && (
+                                    <>
+                                        <div className="fixed inset-0 z-10" onClick={() => setIsSortOpen(false)} /> {/* Backdrop to close */}
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded shadow-xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                                            {(Object.keys(sortLabels) as SortOption[]).map((option) => (
+                                                <button
+                                                    key={option}
+                                                    onClick={() => {
+                                                        setSortOption(option);
+                                                        setIsSortOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${sortOption === option ? 'bg-primary/10 text-primary' : 'hover:bg-secondary text-muted-foreground hover:text-foreground'}`}
+                                                >
+                                                    {sortLabels[option]}
+                                                    {sortOption === option && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             <div className="relative w-full sm:w-auto">
@@ -220,13 +248,13 @@ export default function BlogPage() {
                                                                 {post.excerpt}
                                                             </p>
                                                         </div>
-                                                        <ArrowRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all mt-2 md:mt-0" />
+                                                        <ArrowRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all mt-2 md:mt-0 hidden md:block" />
                                                     </div>
 
-                                                    <div className="flex gap-2 mt-4">
+                                                    <div className="flex gap-2 mt-4 overflow-x-auto pb-1 no-scrollbar mask-gradient-right">
                                                         {post.tags.map(tag => (
-                                                            <span key={tag} className="flex items-center gap-1 text-xs font-mono px-2 py-1 rounded bg-secondary/30 text-muted-foreground">
-                                                                <Tag size={10} />
+                                                            <span key={tag} className="flex-shrink-0 flex items-center gap-1 text-[10px] sm:text-xs font-mono px-2 py-1 rounded bg-secondary/30 text-muted-foreground whitespace-nowrap">
+                                                                <Tag size={10} className="shrink-0" />
                                                                 {tag}
                                                             </span>
                                                         ))}

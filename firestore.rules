@@ -1,12 +1,61 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read access to all documents
-    match /{document=**} {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper to check for specific admin email (Optional: harder security)
+    function isAdmin() {
+      return isAuthenticated(); 
+    }
+
+    // Public Collections: Readable by everyone, Writable only by Admin
+    match /blog/{document=**} {
       allow read: if true;
-      // Allow write access only to authenticated users
-      // Admin check is done in the application layer
-      allow write: if request.auth != null;
+      // Allow admin to do anything
+      allow create, delete: if isAdmin();
+      // Allow public to update only 'views' and 'likes' fields
+      allow update: if isAdmin() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes'])
+      );
+    }
+    
+    match /portfolio/{document=**} { // Projects
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /skills/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /papers/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /experience/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /education/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /config/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Default deny for everything else
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Settings, FileText, Code, Cpu, LogOut, FileStack, Database, Loader2, Briefcase, GraduationCap } from "lucide-react";
-import { auth, db } from "@/lib/firebase";
+import { Settings, FileText, Code, Cpu, LogOut, FileStack, Database, Loader2, Briefcase, GraduationCap, Image as ImageIcon } from "lucide-react";
+import { auth, db, storage } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { collection, getDocs } from "firebase/firestore";
-import { SampleDataButton } from "@/components/admin/SampleDataButton";
 
 interface ModuleCounts {
     blog: number;
@@ -26,6 +25,7 @@ export default function AdminDashboard() {
         experience: 0,
         education: 0,
     });
+    const [imageCount, setImageCount] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -45,6 +45,10 @@ export default function AdminDashboard() {
                 getDocs(collection(db, "experience")),
                 getDocs(collection(db, "education")),
             ]);
+
+            // Fetch image count from new API - REMOVED to save API calls
+            // This is an expensive list operation just for a dashboard number.
+            // setCounts handles the rest.
 
             setCounts({
                 blog: blogSnap.size,
@@ -69,6 +73,15 @@ export default function AdminDashboard() {
             path: "/cms",
             color: "text-primary",
             bgColor: "bg-primary/10",
+        },
+        {
+            title: "Image Management",
+            icon: ImageIcon,
+            count: imageCount,
+            status: "Stored",
+            path: "/admin/images",
+            color: "text-pink-500",
+            bgColor: "bg-pink-500/10",
         },
         {
             title: "Projects",
@@ -142,7 +155,6 @@ export default function AdminDashboard() {
                     <p className="text-muted-foreground mt-1">Welcome back, Administrator.</p>
                 </div>
                 <div className="flex gap-3">
-                    <SampleDataButton onDataInserted={fetchCounts} />
                     <button
                         onClick={handleLogout}
                         className="flex items-center gap-2 px-4 py-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors"

@@ -9,6 +9,7 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-gei
 
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { ToastProvider } from "@/context/ToastContext";
 
 export async function generateMetadata(): Promise<Metadata> {
   let config = {
@@ -29,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
       };
     }
   } catch (error) {
-    console.error("Error fetching metadata:", error);
+    console.warn(`[Layout] Error fetching metadata from Firestore (config/site):`, error);
   }
 
   return {
@@ -51,9 +52,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-mono`}>
-        <AppShell>
-          {children}
-        </AppShell>
+        <ToastProvider>
+          <AppShell>
+            {children}
+          </AppShell>
+        </ToastProvider>
       </body>
     </html>
   );
