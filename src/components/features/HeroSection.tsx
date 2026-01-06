@@ -64,11 +64,11 @@ export function HeroSection() {
         <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {!hasSelectedTheme && <ThemeWelcome />}
 
-            {isDark ? <ParticleBackground /> : null}
+            {hasSelectedTheme && isDark ? <ParticleBackground /> : null}
 
             {/* 3D Background */}
             <div className="absolute inset-0 z-0">
-                {isDark ? <NetworkCore /> : <CreativeCore />}
+                {hasSelectedTheme && (isDark ? <NetworkCore /> : <CreativeCore />)}
             </div>
 
             <Container className="relative z-10">

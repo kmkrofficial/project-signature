@@ -46,9 +46,28 @@ function DigitalAtmosphere() {
 }
 
 export default function CreativeCore() {
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsMounted(true);
+        }, 500); // 500ms delay to allow browser resources to stabilize
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (!isMounted) return <div className="w-full h-full absolute inset-0 -z-10 bg-gradient-to-br from-white via-slate-50 to-white" />;
+
     return (
-        <div className="w-full h-full absolute inset-0 -z-10 opacity-80 bg-gradient-to-br from-white via-slate-50 to-white">
-            <Canvas camera={{ position: [0, 0, 5] }} dpr={[1, 2]} gl={{ antialias: false }}>
+        <div className="w-full h-full absolute inset-0 -z-10 bg-gradient-to-br from-white via-slate-50 to-white">
+            <Canvas
+                camera={{ position: [0, 0, 5] }}
+                dpr={[1, 1.5]}
+                gl={{
+                    antialias: true,
+                    powerPreference: "high-performance",
+                    failIfMajorPerformanceCaveat: false,
+                }}
+            >
                 <DigitalAtmosphere />
             </Canvas>
         </div>

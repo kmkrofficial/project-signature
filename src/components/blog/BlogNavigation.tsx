@@ -17,10 +17,9 @@ export function BlogNavigation() {
             <div className="flex items-center gap-4">
                 <Link
                     href="/"
-                    className="flex items-center gap-2 text-sm font-mono text-muted-foreground hover:text-primary transition-colors border border-border rounded-full px-4 py-2 hover:border-primary/50"
+                    className="flex items-center gap-2 text-sm font-mono text-muted-foreground hover:text-primary transition-colors pr-2"
                 >
-                    <User size={14} />
-                    <span className="hidden sm:inline">ABOUT AUTHOR</span>
+                    <span className="hidden sm:inline">Portfolio</span>
                     <ArrowLeft size={14} className="rotate-180" />
                 </Link>
 
