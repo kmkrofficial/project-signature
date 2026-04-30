@@ -1,9 +1,34 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function escapeHtml(input: string): string {
+    return input
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 export async function POST(req: Request) {
     try {
-        const { name, email, message } = await req.json();
+        const body = await req.json();
+        const name = typeof body?.name === "string" ? body.name.trim() : "";
+        const email = typeof body?.email === "string" ? body.email.trim() : "";
+        const message = typeof body?.message === "string" ? body.message.trim() : "";
+
+        // Input validation
+        if (!name || name.length > 100) {
+            return NextResponse.json({ error: "Invalid name (1-100 chars required)" }, { status: 400 });
+        }
+        if (!email || email.length > 254 || !EMAIL_REGEX.test(email)) {
+            return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+        }
+        if (!message || message.length > 5000) {
+            return NextResponse.json({ error: "Message must be 1-5000 chars" }, { status: 400 });
+        }
 
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             console.error("Missing email configuration");
@@ -39,13 +64,6 @@ export async function POST(req: Request) {
             // We'll proceed to allow email if DB is down, as failsafe.
         }
 
-        // Debug logging (Remove in production)
-        console.log("Debug - Email Config:", {
-            user: process.env.EMAIL_USER,
-            passLength: process.env.EMAIL_PASS?.length,
-            passExists: !!process.env.EMAIL_PASS
-        });
-
         // Clean password: remove spaces and trim
         const cleanPass = process.env.EMAIL_PASS?.replace(/\s+/g, '').trim();
 
@@ -57,24 +75,23 @@ export async function POST(req: Request) {
             },
         });
 
+        const safeName = escapeHtml(name);
+        const safeEmail = escapeHtml(email);
+        const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: process.env.EMAIL_TO || process.env.EMAIL_USER, // Default to sender if no specific 'to' address
+            replyTo: email,
+            to: process.env.EMAIL_TO || process.env.EMAIL_USER,
             subject: `New Portfolio Message from ${name}`,
-            text: `
-Name: ${name}
-Email: ${email}
-
-Message:
-${message}
-            `,
+            text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
             html: `
 <h3>New Message from Portfolio</h3>
-<p><strong>Name:</strong> ${name}</p>
-<p><strong>Email:</strong> ${email}</p>
+<p><strong>Name:</strong> ${safeName}</p>
+<p><strong>Email:</strong> ${safeEmail}</p>
 <br/>
 <p><strong>Message:</strong></p>
-<p>${message.replace(/\n/g, '<br>')}</p>
+<p>${safeMessage}</p>
             `,
         };
 
@@ -84,7 +101,7 @@ ${message}
     } catch (error: any) {
         console.error('Error sending email:', error);
         return NextResponse.json(
-            { error: 'Failed to send email', details: error.message },
+            { error: 'Failed to send email' },
             { status: 500 }
         );
     }

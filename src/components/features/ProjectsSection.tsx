@@ -28,6 +28,20 @@ export function ProjectsSection() {
         fetchProjects();
     }, []);
 
+    useEffect(() => {
+        if (!selectedId) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setSelectedId(null);
+        };
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        window.addEventListener("keydown", onKey);
+        return () => {
+            window.removeEventListener("keydown", onKey);
+            document.body.style.overflow = prev;
+        };
+    }, [selectedId]);
+
     const fetchProjects = async () => {
         try {
             setLoading(true);
@@ -118,6 +132,9 @@ export function ProjectsSection() {
                 <AnimatePresence>
                     {selectedId && selectedProject && (
                         <div
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label={selectedProject.title}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
                             onClick={() => setSelectedId(null)}
                         >
@@ -134,9 +151,10 @@ export function ProjectsSection() {
                                     </div>
                                     <button
                                         onClick={() => setSelectedId(null)}
+                                        aria-label="Close project details"
                                         className="p-1 hover:bg-red-500/20 hover:text-red-500 rounded transition-colors"
                                     >
-                                        <X size={16} />
+                                        <X size={16} aria-hidden="true" />
                                     </button>
                                 </div>
 

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { BlogPostClient } from "./BlogPostClient";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase-admin";
 
 type Props = {
     params: Promise<{ slug: string }>;
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
+
+export const revalidate = 600;
 
 export async function generateMetadata(
     { params }: Props
@@ -14,11 +15,10 @@ export async function generateMetadata(
     const slug = (await params).slug;
 
     try {
-        const q = query(collection(db, "blog"), where("slug", "==", slug));
-        const querySnapshot = await getDocs(q);
+        const snap = await db.collection("blog").where("slug", "==", slug).limit(1).get();
 
-        if (!querySnapshot.empty) {
-            const data = querySnapshot.docs[0].data();
+        if (!snap.empty) {
+            const data = snap.docs[0].data();
             return {
                 title: `${data.title} | Keerthi Raajan K M`,
                 description: data.excerpt || "Read this blog post on Keerthi Raajan's portfolio.",

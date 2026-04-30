@@ -71,8 +71,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isAuthorized) return;
 
+        let lastUpdate = 0;
+        const THROTTLE_MS = 30 * 1000; // throttle activity writes to once per 30s
+
         const updateLastAccessed = () => {
-            localStorage.setItem('admin_last_accessed', Date.now().toString());
+            const now = Date.now();
+            if (now - lastUpdate < THROTTLE_MS) return;
+            lastUpdate = now;
+            localStorage.setItem('admin_last_accessed', now.toString());
         };
 
         const checkSession = async () => {
@@ -88,9 +94,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             }
         };
 
-        window.addEventListener('mousemove', updateLastAccessed);
-        window.addEventListener('keydown', updateLastAccessed);
-        window.addEventListener('click', updateLastAccessed);
+        const opts: AddEventListenerOptions = { passive: true };
+        window.addEventListener('mousemove', updateLastAccessed, opts);
+        window.addEventListener('keydown', updateLastAccessed, opts);
+        window.addEventListener('click', updateLastAccessed, opts);
 
         const interval = setInterval(checkSession, 60 * 1000); // Check every minute
 

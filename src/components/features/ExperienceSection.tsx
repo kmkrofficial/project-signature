@@ -60,7 +60,20 @@ export function ExperienceSection() {
                 </motion.div>
 
                 <div className="space-y-8">
-                    {experience.map((job, index) => (
+                    {loading && experience.length === 0 ? (
+                        <>
+                            {[0, 1].map((i) => (
+                                <div key={i} className="bg-card border border-border p-6 md:p-8 rounded-lg animate-pulse">
+                                    <div className="h-5 w-1/3 bg-secondary/40 rounded mb-3" />
+                                    <div className="h-4 w-1/4 bg-secondary/30 rounded mb-6" />
+                                    <div className="h-3 w-full bg-secondary/30 rounded mb-2" />
+                                    <div className="h-3 w-5/6 bg-secondary/30 rounded" />
+                                </div>
+                            ))}
+                        </>
+                    ) : experience.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-10">No experience entries yet.</p>
+                    ) : experience.map((job, index) => (
                         <motion.div
                             key={job.id}
                             initial={{ opacity: 0, x: -20 }}

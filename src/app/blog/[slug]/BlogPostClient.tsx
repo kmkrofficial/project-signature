@@ -263,12 +263,15 @@ export function BlogPostClient() {
                                     );
                                 },
                                 img({ src, alt }) {
+                                    const safeAlt = alt && alt.trim().length > 0 ? alt : "Blog post image";
                                     return (
                                         <span className="block my-8">
                                             <span className="block relative rounded-lg overflow-hidden border border-border group">
                                                 <img
                                                     src={src}
-                                                    alt={alt}
+                                                    alt={safeAlt}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                                                 />
                                                 <span className="block absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-colors pointer-events-none" />

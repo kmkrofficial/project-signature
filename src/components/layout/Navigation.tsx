@@ -32,7 +32,9 @@ export function Navigation() {
             return;
         }
 
-        const handleScroll = () => {
+        let ticking = false;
+        const computeActiveSection = () => {
+            ticking = false;
             // Explicit check for top of page
             if (window.scrollY < 100) {
                 setActiveSection("home");
@@ -46,7 +48,7 @@ export function Navigation() {
             }
 
             const sections = ["home", "skills", "experience", "projects", "achievements"];
-            const scrollPosition = window.scrollY + 300; // Increased offset for better triggering
+            const scrollPosition = window.scrollY + 300;
 
             for (const id of sections) {
                 const element = document.getElementById(id);
@@ -62,9 +64,16 @@ export function Navigation() {
             }
         };
 
-        window.addEventListener("scroll", handleScroll);
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(computeActiveSection);
+                ticking = true;
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
         // Initial check
-        handleScroll();
+        computeActiveSection();
 
         return () => window.removeEventListener("scroll", handleScroll);
     }, [pathname]);
@@ -91,6 +100,8 @@ export function Navigation() {
                             <Link
                                 key={item.name}
                                 href={item.path}
+                                aria-current={isActive ? "page" : undefined}
+                                aria-label={item.name}
                                 className={clsx(
                                     "p-3 rounded-lg transition-all duration-300 relative group w-12 h-12 flex items-center justify-center",
                                     isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/5"
@@ -118,6 +129,8 @@ export function Navigation() {
 
                 <Link
                     href="/admin"
+                    aria-label="Admin"
+                    aria-current={pathname.startsWith("/admin") ? "page" : undefined}
                     className={clsx(
                         "p-3 rounded-lg transition-colors mb-2 w-12 h-12 flex items-center justify-center group relative",
                         pathname.startsWith("/admin")
@@ -143,6 +156,7 @@ export function Navigation() {
 
                 <button
                     onClick={toggleTheme}
+                    aria-label="Toggle theme"
                     className="p-3 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
                 >
                     {theme === "deepSystem" ? <Sun size={24} /> : <Moon size={24} />}
@@ -161,6 +175,8 @@ export function Navigation() {
                         <Link
                             key={item.name}
                             href={item.path}
+                            aria-current={isActive ? "page" : undefined}
+                            aria-label={item.name}
                             className={clsx(
                                 "flex flex-col items-center",
                                 isActive ? "text-primary" : "text-muted-foreground"
@@ -172,6 +188,7 @@ export function Navigation() {
                 })}
                 <button
                     onClick={toggleTheme}
+                    aria-label="Toggle theme"
                     className="flex flex-col items-center text-muted-foreground"
                 >
                     {theme === "deepSystem" ? <Sun size={20} /> : <Moon size={20} />}

@@ -75,6 +75,15 @@ export async function GET() {
     }
 }
 
+const ALLOWED_MIME_TYPES = new Set([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'image/avif',
+]);
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+
 export async function POST(request: Request) {
     try {
         const formData = await request.formData();
@@ -82,6 +91,20 @@ export async function POST(request: Request) {
 
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+        }
+
+        if (!ALLOWED_MIME_TYPES.has(file.type)) {
+            return NextResponse.json(
+                { error: `Unsupported file type: ${file.type}. Allowed: JPEG, PNG, WebP, GIF, AVIF.` },
+                { status: 400 }
+            );
+        }
+
+        if (file.size > MAX_UPLOAD_BYTES) {
+            return NextResponse.json(
+                { error: `File too large. Max ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB.` },
+                { status: 413 }
+            );
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());

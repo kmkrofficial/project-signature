@@ -28,6 +28,20 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        window.addEventListener("keydown", onKey);
+        return () => {
+            window.removeEventListener("keydown", onKey);
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [isOpen, onClose]);
+
     const fetchLinks = async () => {
         try {
             const docRef = doc(db, "config", "site");
@@ -87,17 +101,28 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="socials-modal-title"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                    onClick={onClose}
+                >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
+                        onClick={(e) => e.stopPropagation()}
                         className="bg-card border border-border rounded-2xl w-[95%] sm:w-full max-w-2xl max-h-[85vh] overflow-y-auto shadow-2xl"
                     >
                         <div className="flex items-center justify-between p-4 md:p-6 border-b border-border sticky top-0 bg-card z-10">
-                            <h2 className="text-2xl font-bold">Initialize Communications</h2>
-                            <button onClick={onClose} className="p-2 hover:bg-secondary rounded-full transition-colors">
-                                <X size={20} />
+                            <h2 id="socials-modal-title" className="text-2xl font-bold">Initialize Communications</h2>
+                            <button
+                                onClick={onClose}
+                                aria-label="Close dialog"
+                                className="p-2 hover:bg-secondary rounded-full transition-colors"
+                            >
+                                <X size={20} aria-hidden="true" />
                             </button>
                         </div>
 
@@ -158,29 +183,47 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
                                     </div>
                                 ) : (
                                     <form onSubmit={handleSendEmail} className="space-y-4">
-                                        <input
-                                            type="text"
-                                            placeholder="Identity (Name)"
-                                            value={emailForm.name}
-                                            onChange={e => setEmailForm({ ...emailForm, name: e.target.value })}
-                                            className="w-full bg-secondary/20 border border-border rounded p-3 text-sm focus:outline-none focus:border-primary"
-                                            required
-                                        />
-                                        <input
-                                            type="email"
-                                            placeholder="Return Address (Email)"
-                                            value={emailForm.email}
-                                            onChange={e => setEmailForm({ ...emailForm, email: e.target.value })}
-                                            className="w-full bg-secondary/20 border border-border rounded p-3 text-sm focus:outline-none focus:border-primary"
-                                            required
-                                        />
-                                        <textarea
-                                            placeholder="Transmission Content..."
-                                            value={emailForm.message}
-                                            onChange={e => setEmailForm({ ...emailForm, message: e.target.value })}
-                                            className="w-full bg-secondary/20 border border-border rounded p-3 text-sm focus:outline-none focus:border-primary h-32 resize-none"
-                                            required
-                                        />
+                                        <div>
+                                            <label htmlFor="socials-name" className="sr-only">Name</label>
+                                            <input
+                                                id="socials-name"
+                                                type="text"
+                                                placeholder="Identity (Name)"
+                                                aria-label="Your name"
+                                                maxLength={100}
+                                                value={emailForm.name}
+                                                onChange={e => setEmailForm({ ...emailForm, name: e.target.value })}
+                                                className="w-full bg-secondary/20 border border-border rounded p-3 text-sm focus:outline-none focus:border-primary"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="socials-email" className="sr-only">Email</label>
+                                            <input
+                                                id="socials-email"
+                                                type="email"
+                                                placeholder="Return Address (Email)"
+                                                aria-label="Your email address"
+                                                maxLength={254}
+                                                value={emailForm.email}
+                                                onChange={e => setEmailForm({ ...emailForm, email: e.target.value })}
+                                                className="w-full bg-secondary/20 border border-border rounded p-3 text-sm focus:outline-none focus:border-primary"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="socials-message" className="sr-only">Message</label>
+                                            <textarea
+                                                id="socials-message"
+                                                placeholder="Transmission Content..."
+                                                aria-label="Your message"
+                                                maxLength={5000}
+                                                value={emailForm.message}
+                                                onChange={e => setEmailForm({ ...emailForm, message: e.target.value })}
+                                                className="w-full bg-secondary/20 border border-border rounded p-3 text-sm focus:outline-none focus:border-primary h-32 resize-none"
+                                                required
+                                            />
+                                        </div>
                                         <button
                                             type="submit"
                                             disabled={sending}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export async function GET() {
     try {
@@ -17,12 +17,14 @@ export async function GET() {
         const projects = projectsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         const personal = personalSnap.exists ? personalSnap.data() : {};
 
-        return NextResponse.json({
-            personal,
-            skills,
-            experience,
-            projects,
-        });
+        return NextResponse.json(
+            { personal, skills, experience, projects },
+            {
+                headers: {
+                    "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+                },
+            }
+        );
     } catch (error) {
         console.error("Error fetching portfolio data:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
