@@ -109,7 +109,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         <input
                             ref={inputRef}
                             type="text"
-                            placeholder="Search essays, tags, topics..."
+                            placeholder="Search articles, tags, topics..."
                             value={queryText}
                             onChange={(e) => {
                                 setQueryText(e.target.value);
@@ -129,7 +129,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <div className="overflow-y-auto p-2 divide-y divide-border/30">
                         {filtered.length === 0 ? (
                             <div className="py-12 text-center text-muted-foreground text-sm">
-                                {loading ? "Indexing articles..." : `No articles found for "${queryText}".`}
+                                {loading ? "Loading articles..." : `No articles found for "${queryText}".`}
                             </div>
                         ) : (
                             filtered.map((post, idx) => (

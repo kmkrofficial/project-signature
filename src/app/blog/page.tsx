@@ -3,7 +3,7 @@ import { BlogListClient } from "./BlogListClient";
 
 export const metadata: Metadata = {
     title: "Blog | Keerthi Raajan K M",
-    description: "Explore my thoughts on AI, Software Architecture, and the future of technology.",
+    description: "Articles on technology, building software, and ideas for the future.",
 };
 
 export default function BlogPage() {

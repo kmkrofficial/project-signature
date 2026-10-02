@@ -76,10 +76,10 @@ interface StoredImage {
 }
 
 const CATEGORIES = [
-    "AI & Machine Learning",
-    "Systems & Architecture",
-    "Backend & Cloud",
-    "Engineering Craft",
+    "Artificial Intelligence",
+    "Web & Software",
+    "Cloud & Data",
+    "Guides & Tips",
 ];
 
 export default function AdminStudio() {
@@ -483,7 +483,7 @@ export default function AdminStudio() {
                         )}
                     >
                         <Edit3 size={14} />
-                        <span>{currentPost.id ? "Edit Essay" : "Write Essay"}</span>
+                        <span>{currentPost.id ? "Edit Article" : "Write Article"}</span>
                     </button>
 
                     <button
@@ -614,7 +614,7 @@ export default function AdminStudio() {
                             <FileText size={36} className="mx-auto text-muted-foreground/40 mb-3" />
                             <h3 className="text-sm font-semibold text-foreground mb-1">No articles found</h3>
                             <p className="text-xs text-muted-foreground mb-4">
-                                {searchQuery ? "Try refining your search terms or filters." : "Start by composing your first engineering essay."}
+                                {searchQuery ? "Try refining your search terms or filters." : "Start by writing your first article."}
                             </p>
                             <button
                                 type="button"
@@ -622,7 +622,7 @@ export default function AdminStudio() {
                                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-xs hover:opacity-90 transition-opacity cursor-pointer"
                             >
                                 <Plus size={14} />
-                                <span>Create Essay</span>
+                                <span>New Article</span>
                             </button>
                         </div>
                     ) : (
@@ -729,7 +729,7 @@ export default function AdminStudio() {
                             </button>
                             <div>
                                 <h2 className="text-sm font-bold text-foreground">
-                                    {currentPost.id ? "Edit Essay Canvas" : "New Essay Canvas"}
+                                    {currentPost.id ? "Edit Article" : "Write New Article"}
                                 </h2>
                                 <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
                                     <span>{wordCount} words</span>

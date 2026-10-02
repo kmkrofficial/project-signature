@@ -13,6 +13,7 @@ import { ReadingProgressBar } from "@/components/blog/ReadingProgressBar";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { CodeBlock } from "@/components/blog/CodeBlock";
 import { useToast } from "@/context/ToastContext";
+import { toFriendlyCategory } from "@/app/blog/BlogListClient";
 import { clsx } from "clsx";
 
 interface BlogPost {
@@ -69,7 +70,7 @@ export function BlogPostClient() {
                         excerpt: data.excerpt,
                         content: data.content,
                         tags: data.tags || [],
-                        category: data.category || (data.tags && data.tags[0]) || "Engineering Craft",
+                        category: toFriendlyCategory(data.category || (data.tags && data.tags[0]) || "Technology"),
                         date: data.createdAt
                             ? new Date(data.createdAt.seconds * 1000).toLocaleDateString("en-US", {
                                   month: "short",
@@ -150,7 +151,7 @@ export function BlogPostClient() {
             <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
                 <h1 className="text-3xl font-bold mb-3 text-foreground">Article Not Found</h1>
                 <p className="text-muted-foreground text-sm mb-6 max-w-md">
-                    The requested essay does not exist or may have been archived.
+                    The requested article does not exist or may have been moved.
                 </p>
                 <Link
                     href="/"
@@ -321,7 +322,7 @@ export function BlogPostClient() {
                                 className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
                             >
                                 <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform text-primary" />
-                                <span>Back to all essays</span>
+                                <span>Back to all articles</span>
                             </Link>
 
                             <div className="flex items-center gap-2">

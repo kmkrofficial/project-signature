@@ -40,7 +40,7 @@ export function Footer() {
                             Keerthi Raajan
                         </Link>
                         <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                            Thoughts and essays on distributed architecture, full-stack AI, and systems engineering.
+                            Writing about technology, how software works, and lessons learned along the way.
                         </p>
                     </div>
 

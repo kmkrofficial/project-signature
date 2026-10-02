@@ -28,11 +28,22 @@ type SortOption = "newest" | "oldest" | "views" | "likes";
 
 const PREDEFINED_CATEGORIES = [
     "All",
-    "AI & Machine Learning",
-    "Systems & Architecture",
-    "Backend & Cloud",
-    "Engineering Craft",
+    "Artificial Intelligence",
+    "Web & Software",
+    "Cloud & Data",
+    "Guides & Tips",
 ];
+
+// Map overly technical categories to friendly, accessible names
+export function toFriendlyCategory(cat?: string): string {
+    if (!cat) return "Technology";
+    const lower = cat.toLowerCase();
+    if (lower.includes("systems") || lower.includes("architecture")) return "Web & Software";
+    if (lower.includes("backend") || lower.includes("cloud")) return "Cloud & Data";
+    if (lower.includes("craft") || lower.includes("engineering craft")) return "Guides & Tips";
+    if (lower.includes("machine learning")) return "Artificial Intelligence";
+    return cat;
+}
 
 export function BlogListClient() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -51,6 +62,7 @@ export function BlogListClient() {
                 const querySnapshot = await getDocs(q);
                 const postsData = querySnapshot.docs.map(doc => {
                     const data = doc.data();
+                    const rawCat = data.category || (data.tags && data.tags.length > 0 ? data.tags[0] : "Technology");
                     return {
                         id: doc.id,
                         ...data,
@@ -62,7 +74,7 @@ export function BlogListClient() {
                               })
                             : "Recent",
                         readTime: `${Math.max(1, Math.ceil((data.content?.split(/\s+/).length || 0) / 200))} min read`,
-                        category: data.category || (data.tags && data.tags.length > 0 ? data.tags[0] : "Engineering Craft"),
+                        category: toFriendlyCategory(rawCat),
                         views: data.views || 0,
                         likes: data.likes || 0,
                     };
@@ -90,6 +102,25 @@ export function BlogListClient() {
             const matchesCategory =
                 selectedCategory === "All" ||
                 (post.category && post.category.toLowerCase() === selectedCategory.toLowerCase()) ||
+                (selectedCategory === "Artificial Intelligence" &&
+                    (post.category?.toLowerCase().includes("ai") ||
+                     post.category?.toLowerCase().includes("intelligence") ||
+                     post.tags.some(t => /ai|llm|agent|machine/i.test(t)))) ||
+                (selectedCategory === "Web & Software" &&
+                    (post.category?.toLowerCase().includes("software") ||
+                     post.category?.toLowerCase().includes("web") ||
+                     post.category?.toLowerCase().includes("system") ||
+                     post.tags.some(t => /web|architecture|http|frontend|system/i.test(t)))) ||
+                (selectedCategory === "Cloud & Data" &&
+                    (post.category?.toLowerCase().includes("cloud") ||
+                     post.category?.toLowerCase().includes("data") ||
+                     post.category?.toLowerCase().includes("backend") ||
+                     post.tags.some(t => /redis|cloud|database|cache|backend/i.test(t)))) ||
+                (selectedCategory === "Guides & Tips" &&
+                    (post.category?.toLowerCase().includes("guide") ||
+                     post.category?.toLowerCase().includes("tip") ||
+                     post.category?.toLowerCase().includes("craft") ||
+                     post.tags.some(t => /guide|tip|tutorial|best-practice/i.test(t)))) ||
                 post.tags.some(t => t.toLowerCase() === selectedCategory.toLowerCase());
 
             return matchesSearch && matchesCategory;
@@ -135,13 +166,13 @@ export function BlogListClient() {
                     <div>
                         <div className="flex items-center gap-2 text-primary text-xs font-mono tracking-wider uppercase mb-2">
                             <Sparkles size={14} />
-                            <span>Engineering Journal</span>
+                            <span>Personal Blog</span>
                         </div>
                         <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2.5">
-                            Writings on systems, AI & architecture.
+                            Thoughts on technology, software, and building projects.
                         </h1>
                         <p className="text-muted-foreground text-sm sm:text-base max-w-2xl leading-relaxed">
-                            Hi, I’m Keerthi Raajan. I write deep dives on high-concurrency systems, full-stack AI integrations, and software engineering craft.
+                            Hi, I’m Keerthi Raajan. I write about modern tech, how software works behind the scenes, and practical lessons from building digital products.
                         </p>
                     </div>
                 </div>
@@ -151,7 +182,7 @@ export function BlogListClient() {
                         href="/about"
                         className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline group"
                     >
-                        <span>Read my background & portfolio</span>
+                        <span>Learn more about me & my work</span>
                         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
@@ -190,7 +221,7 @@ export function BlogListClient() {
                     <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                         type="text"
-                        placeholder="Search essays, topics, or tags..."
+                        placeholder="Search articles, topics, or tags..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 text-sm bg-secondary/30 border border-border/80 rounded-xl focus:outline-none focus:border-primary/60 transition-colors"

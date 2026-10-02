@@ -49,7 +49,7 @@ export default function AboutPage() {
                     <div>
                         <div className="flex items-center gap-2 text-primary text-xs font-mono tracking-wider uppercase mb-2">
                             <Sparkles size={14} />
-                            <span>Software Engineer & Architect</span>
+                            <span>Software Developer & Builder</span>
                         </div>
                         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
                             {personal.name}
@@ -95,10 +95,10 @@ export default function AboutPage() {
 
                 <div className="space-y-4 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-3xl">
                     <p>
-                        I specialize in the intersection of scalable backend architectures (Cache systems, Kafka streaming, high-concurrency WebSockets) and practical AI integration (LLM orchestration, RAG, and agentic workflows).
+                        I build reliable software and intelligent tools that solve everyday problems. My work focuses on creating fast, dependable web applications and integrating practical AI features that genuinely help people.
                     </p>
                     <p>
-                        Over the past several years, I have architected and optimized caching infrastructure supporting 10M+ users, scaled Browser-as-a-Service clusters, and developed hackathon-winning AI computer vision and security modules.
+                        Over the past several years, I have built systems supporting millions of users, designed high-performance cloud tools, and developed award-winning AI projects for computer vision and security.
                     </p>
                 </div>
             </section>
@@ -111,7 +111,7 @@ export default function AboutPage() {
                             Selected Projects
                         </h2>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Curated systems, AI models, and hackathon-winning solutions.
+                            Featured projects, web apps, and award-winning solutions.
                         </p>
                     </div>
                 </div>
@@ -178,7 +178,7 @@ export default function AboutPage() {
                         Work Experience
                     </h2>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Professional roles and engineering impact.
+                        Career journey and past roles.
                     </p>
                 </div>
 
@@ -239,7 +239,7 @@ export default function AboutPage() {
                         Skills & Technologies
                     </h2>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Core tooling, languages, and technical competencies.
+                        Tools, languages, and technologies I work with.
                     </p>
                 </div>
 

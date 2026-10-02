@@ -43,7 +43,7 @@ let mut server_config = ServerConfig::builder()
 - Enable UDP port 443 on edge load balancers
 - Configure \`Alt-Svc: h3=":443"; ma=86400\` response headers
 - Monitor fallback rates and 0-RTT replay protection`,
-        category: "Systems & Architecture",
+        category: "Web & Software",
         tags: ["HTTP3", "QUIC", "Networking", "Architecture"],
         published: true,
         featured: true,
@@ -72,7 +72,7 @@ function shouldRefreshEarly(ttl: number, delta: number, beta = 1.0): boolean {
 \`\`\`
 
 This guarantees zero latency spikes and steady backend resource utilization.`,
-        category: "Backend & Cloud",
+        category: "Cloud & Data",
         tags: ["Redis", "Caching", "Distributed Systems", "Performance"],
         published: true,
         featured: false,
@@ -92,7 +92,7 @@ Agent systems that rely solely on free-form prompt cascades tend to accumulate h
 
 ### Structured Tool Execution
 By constraining agent actions to strictly typed schemas and isolated workspaces, we achieve verifiable transitions between architectural plan and code implementation.`,
-        category: "AI & Machine Learning",
+        category: "Artificial Intelligence",
         tags: ["Agents", "LLMs", "DevTools", "AI"],
         published: true,
         featured: false,
@@ -113,10 +113,10 @@ async function seed() {
     }
 
     await db.collection("config").doc("site").set({
-        siteTitle: "Keerthi Raajan | Engineering Journal",
+        siteTitle: "Keerthi Raajan | Personal Blog",
         author: "Keerthi Raajan K M",
-        tagline: "Systems Architecture, AI & High-Availability Engineering",
-        bio: "Software engineer and systems architect specializing in high-concurrency backends and practical AI workflows.",
+        tagline: "Technology, Software & Everyday Insights",
+        bio: "Writing about modern tech, how software works behind the scenes, and practical lessons from building digital products.",
         github: "https://github.com/kmkrofficial",
         linkedin: "https://linkedin.com/in/keerthiraajan",
         updatedAt: admin.firestore.Timestamp.now(),

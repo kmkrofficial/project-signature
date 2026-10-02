@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 
 export async function generateMetadata(): Promise<Metadata> {
   let config = {
-    siteTitle: "Keerthi Raajan | Engineering Journal & Architecture",
-    siteDescription: "Technical essays on distributed systems, full-stack AI integration, and high-availability software craft.",
+    siteTitle: "Keerthi Raajan | Thoughts & Tech Writings",
+    siteDescription: "Articles on technology, building software, and practical ideas from real-world projects.",
     ogImageUrl: "",
   };
 

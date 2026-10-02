@@ -12,10 +12,10 @@ import {
 export const PORTFOLIO_CONFIG = {
     personal: {
         name: "Keerthi Raajan K M",
-        title: "Full-Stack AI Engineer",
+        title: "Software Developer & Builder",
         location: "Coimbatore",
-        email: "contact@keerthiraajan.dev", // Placeholder email as none was provided
-        summary: "Architecting high-availability systems for 10M+ users. Specializing in the intersection of scalable backend logic (Cache, Kafka, WebSockets) and AI integration (LLMs).",
+        email: "contact@keerthiraajan.dev",
+        summary: "Building fast, reliable web applications and practical AI tools. Passionate about clean design, solid software, and helpful digital experiences.",
         ctaPrimary: "INITIATE_PROTOCOL",
         ctaSecondary: "ESTABLISH_UPLINK",
         casual: {
