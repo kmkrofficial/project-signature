@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { Sparkles, AlertCircle, ArrowLeft } from "lucide-react";
+import { Sparkles, AlertCircle, ArrowLeft, Terminal, ShieldCheck, KeyRound } from "lucide-react";
 import { motion } from "framer-motion";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import Link from "next/link";
@@ -22,44 +22,62 @@ export default function LoginPage() {
             router.push("/admin");
         } catch (err: any) {
             console.error("Login error:", err);
-            setError(err.message || "Access Denied: Google Auth Failed");
+            setError(err.message || "Google Authentication failed. Try Developer Mode below if running locally.");
         } finally {
             setLoading(false);
         }
     };
 
+    const handleDevModeBypass = () => {
+        if (typeof window !== "undefined") {
+            localStorage.setItem("admin_dev_mode", "true");
+            localStorage.setItem("admin_last_accessed", Date.now().toString());
+            router.push("/admin");
+        }
+    };
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
             <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="w-full max-w-md bg-card border border-border/80 p-8 rounded-2xl shadow-2xl relative overflow-hidden"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-full max-w-md bg-card border border-border/80 p-8 rounded-2xl shadow-xl relative"
             >
-                <div className="flex items-center gap-2 mb-6 text-primary text-xs font-mono">
-                    <Sparkles size={14} />
-                    <span>Content Studio</span>
+                {/* Header Badge */}
+                <div className="flex items-center justify-between mb-6">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-mono">
+                        <Sparkles size={13} />
+                        <span>Content Studio</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">
+                        v2.0
+                    </span>
                 </div>
 
-                <h1 className="text-2xl font-bold text-foreground mb-2">Admin Authentication</h1>
-                <p className="text-sm text-muted-foreground mb-6">
-                    Sign in with your authorized Google account to manage essays and site content.
+                <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
+                    Studio Authentication
+                </h1>
+                <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                    Sign in to manage technical essays, publish architecture breakdowns, and administer the publication.
                 </p>
 
                 {error && (
-                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 text-red-500 flex items-center gap-2 rounded-xl text-xs">
-                        <AlertCircle size={16} className="shrink-0" />
+                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 text-red-400 flex items-start gap-2.5 rounded-xl text-xs leading-relaxed">
+                        <AlertCircle size={15} className="shrink-0 mt-0.5" />
                         <span>{error}</span>
                     </div>
                 )}
 
                 <div className="space-y-4">
+                    {/* Google Login Button */}
                     <button
                         type="button"
                         onClick={handleGoogleLogin}
                         disabled={loading}
-                        className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-3 text-sm shadow-md hover:shadow-primary/20 disabled:opacity-50"
+                        className="w-full bg-primary text-primary-foreground font-semibold py-3 px-4 rounded-xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-3 text-sm shadow-md hover:shadow-primary/20 disabled:opacity-50 cursor-pointer"
                     >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
                             <path
                                 fill="currentColor"
                                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -80,13 +98,45 @@ export default function LoginPage() {
                         <span>{loading ? "Authenticating..." : "Continue with Google"}</span>
                     </button>
 
-                    <div className="pt-4 text-center">
+                    {/* Divider */}
+                    <div className="relative py-2">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-border/80" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-card px-2 text-muted-foreground font-mono text-[10px]">
+                                Local Development
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Local Dev Mode Bypass */}
+                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
+                        <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary mb-1">
+                            <KeyRound size={14} />
+                            <span>Developer Mode (Bypass Auth)</span>
+                        </div>
+                        <p className="text-[12px] text-muted-foreground mb-3 leading-relaxed">
+                            Bypass Firebase authentication for local testing and editing. Articles will sync with local storage if Firebase is offline.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleDevModeBypass}
+                            className="w-full py-2.5 px-4 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-foreground font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                        >
+                            <Terminal size={14} className="text-primary" />
+                            <span>Enter Local Developer Studio</span>
+                        </button>
+                    </div>
+
+                    {/* Return Link */}
+                    <div className="pt-2 text-center">
                         <Link
                             href="/"
                             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <ArrowLeft size={13} />
-                            <span>Return to Public Site</span>
+                            <span>Return to Publication Homepage</span>
                         </Link>
                     </div>
                 </div>
