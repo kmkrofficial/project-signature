@@ -2,9 +2,14 @@ import sharp from "sharp";
 import fs from "fs";
 import path from "path";
 
+// Exact Cinzel Decorative Bold letter 'S' vector glyph
+// Extracted directly from CinzelDecorative-Bold.ttf (the font used for "Signature")
+// Scaled and optically centered on a 64x64 canvas.
+const CINZEL_DECORATIVE_S_PATH = "M20.36 32.83L20.83 33.19Q18.77 36.49 18.77 39.95L18.77 39.95Q18.77 43.71 21.50 46.81L21.50 46.81Q23 48.56 25.29 49.54Q27.59 50.52 30.32 50.52Q33.06 50.52 35.22 49.49L35.22 49.49Q39.56 47.38 39.56 42.58L39.56 42.58Q39.56 40.77 38.35 38.76Q37.13 36.75 34.71 35.15L34.71 35.15L25.94 29.27Q20.83 26.07 20.83 21.01L20.83 21.01Q20.83 20.49 20.88 19.98L20.88 19.98Q21.19 16 24.05 13.50Q26.92 11 31.72 11L31.72 11Q34.66 11 38.84 11.52L38.84 11.52L42.04 11.52L41.36 19.10L40.90 19.10Q40.85 16.42 38.84 14.79Q36.82 13.17 33.52 13.17L33.52 13.17Q29.50 13.17 27.69 15.59L27.69 15.59Q26.81 16.83 26.81 18.28Q26.81 19.72 27.69 20.73Q28.57 21.73 30.48 22.92L30.48 22.92L40.13 29.21Q43.07 31.12 44.72 33.70L44.72 33.70Q46.68 36.75 46.68 39.95L46.68 39.95Q46.68 42.01 45.83 44.31Q44.98 46.60 43.04 48.56Q41.11 50.52 38.06 51.76Q35.02 53 31.33 53Q27.64 53 24.65 51.71L24.65 51.71Q19.13 49.39 17.63 43.61L17.63 43.61Q17.32 42.37 17.32 41.03L17.32 41.03Q17.32 36.70 20.36 32.83L20.36 32.83Z";
+
 const SVG_FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <!-- Background Gradient -->
+    <!-- Background Slate/Navy Gradient -->
     <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#070c18"/>
       <stop offset="100%" stop-color="#0f172a"/>
@@ -17,40 +22,27 @@ const SVG_FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
       <stop offset="100%" stop-color="#0284c7" stop-opacity="0.7"/>
     </linearGradient>
 
-    <!-- Monogram K Gradient -->
-    <linearGradient id="kGrad" x1="16" y1="14" x2="48" y2="44" gradientUnits="userSpaceOnUse">
+    <!-- Monogram S Gradient (Signature Brand Cyan) -->
+    <linearGradient id="sGrad" x1="16" y1="11" x2="48" y2="53" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#38bdf8"/>
       <stop offset="50%" stop-color="#06b6d4"/>
       <stop offset="100%" stop-color="#14b8a6"/>
     </linearGradient>
 
-    <!-- Signature Flourish Gradient -->
-    <linearGradient id="flourishGrad" x1="12" y1="46" x2="52" y2="50" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.4"/>
-      <stop offset="50%" stop-color="#38bdf8"/>
-      <stop offset="100%" stop-color="#22d3ee"/>
-    </linearGradient>
-
-    <!-- Radial Core Glow -->
-    <radialGradient id="coreAura" cx="32" cy="32" r="28" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.15"/>
+    <!-- Radial Core Aura Glow -->
+    <radialGradient id="coreAura" cx="32" cy="32" r="26" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.2"/>
       <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
-  <!-- Background Base with Glow -->
+  <!-- Background Squircle with Ambient Glow -->
   <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#bgGrad)"/>
   <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#coreAura)"/>
   <rect x="2" y="2" width="60" height="60" rx="14" stroke="url(#borderGrad)" stroke-width="2"/>
 
-  <!-- Classical Editorial 'S' Monogram (Signature) -->
-  <path d="M 42.5 19 C 40.5 15.2 36.5 13 31.5 13 C 24 13 18.5 17.5 18.5 23.5 C 18.5 32 37 30 37 38 C 37 42.5 33 45.5 27.5 45.5 C 22 45.5 17.5 42 16 37.5 L 22.2 34.8 C 23.2 37.5 25.2 39.2 27.8 39.2 C 30.5 39.2 31.5 37.8 31.5 36 C 31.5 28.5 13 30 13 21.5 C 13 13.5 20.5 8 31.5 8 C 38.5 8 44.5 11 47.5 16.5 Z" fill="url(#kGrad)"/>
-
-  <!-- Signature Flourish Underline -->
-  <path d="M 14 51 C 23 54.5 35 54 46.5 49.5 C 48.5 48.8 50 50.8 48.8 52.1 C 42.5 56.5 25 57 13.5 53 C 12.5 52.6 12.8 50.5 14 51 Z" fill="url(#flourishGrad)"/>
-
-  <!-- Signature Accent Dot -->
-  <circle cx="50" cy="47.5" r="2.2" fill="#38bdf8"/>
+  <!-- Cinzel Decorative 'S' Monogram (The exact "Signature" font) -->
+  <path d="${CINZEL_DECORATIVE_S_PATH}" fill="url(#sGrad)"/>
 </svg>
 `;
 
@@ -84,7 +76,7 @@ function buildIco(pngBuffers) {
 }
 
 async function run() {
-  console.log("🎨 Generating bespoke personal favicon and touch icons for Keerthi's Signature...");
+  console.log("🎨 Generating Cinzel Decorative 'S' favicon and touch icons for Keerthi's Signature...");
 
   const baseSvgBuffer = Buffer.from(SVG_FAVICON.trim());
 
@@ -122,7 +114,7 @@ async function run() {
   fs.writeFileSync(path.join("public", "favicon.ico"), icoBuffer);
   console.log("  ✓ Generated multi-resolution favicon.ico (16px, 32px, 48px) for legacy browsers");
 
-  console.log("✨ All personal favicon assets successfully created!");
+  console.log("✨ All Cinzel Decorative 'S' favicon assets successfully created!");
 }
 
 run().catch((err) => {
