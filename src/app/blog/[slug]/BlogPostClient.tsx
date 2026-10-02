@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Calendar, Clock, Tag, Loader2, Eye, Heart, Share2, Bookmark, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag, Loader2, Eye, Heart, Share2, Bookmark, Check } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -222,32 +222,27 @@ export function BlogPostClient() {
                                 </p>
                             )}
 
-                            {/* Byline Row (Inspired Editorial Ergonomics) */}
+                            {/* Metadata & Actions Row */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-border/50">
-                                <div className="flex items-center gap-3">
-                                    {/* Author Avatar */}
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-emerald-500/30 border border-primary/40 flex items-center justify-center font-bold text-sm text-primary">
-                                        KR
-                                    </div>
-                                    <div>
-                                        <Link href="/about" className="font-semibold text-sm text-foreground hover:underline">
-                                            Keerthi Raajan
-                                        </Link>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono mt-0.5">
-                                            <span>{post.date}</span>
+                                <div className="flex items-center gap-2.5 text-xs text-muted-foreground font-mono">
+                                    <span className="flex items-center gap-1.5">
+                                        <Calendar size={13} className="text-primary" />
+                                        {post.date}
+                                    </span>
+                                    <span>•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <Clock size={13} />
+                                        {post.readTime}
+                                    </span>
+                                    {post.views !== undefined && post.views > 0 && (
+                                        <>
                                             <span>•</span>
-                                            <span>{post.readTime}</span>
-                                            {post.views !== undefined && post.views > 0 && (
-                                                <>
-                                                    <span>•</span>
-                                                    <span className="flex items-center gap-1">
-                                                        <Eye size={12} />
-                                                        {post.views}
-                                                    </span>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
+                                            <span className="flex items-center gap-1">
+                                                <Eye size={13} />
+                                                {post.views} views
+                                            </span>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Article Actions (Bookmark, Like, Share) */}
@@ -255,7 +250,7 @@ export function BlogPostClient() {
                                     <button
                                         onClick={handleLike}
                                         className={clsx(
-                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all active:scale-95",
+                                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all active:scale-95 cursor-pointer",
                                             hasLiked
                                                 ? "border-rose-500/40 bg-rose-500/10 text-rose-500"
                                                 : "border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground"
@@ -269,7 +264,7 @@ export function BlogPostClient() {
                                     <button
                                         onClick={handleToggleBookmark}
                                         className={clsx(
-                                            "p-2 rounded-full border text-xs transition-colors",
+                                            "p-2 rounded-full border text-xs transition-colors cursor-pointer",
                                             isBookmarked
                                                 ? "border-primary/40 bg-primary/10 text-primary"
                                                 : "border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground"
@@ -281,7 +276,7 @@ export function BlogPostClient() {
 
                                     <button
                                         onClick={handleCopyLink}
-                                        className="p-2 rounded-full border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                                        className="p-2 rounded-full border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                                         title="Copy article link"
                                     >
                                         {copiedLink ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
@@ -289,9 +284,6 @@ export function BlogPostClient() {
                                 </div>
                             </div>
                         </header>
-
-                        {/* Mobile Table of Contents Accordion */}
-                        <TableOfContents content={post.content} />
 
                         {/* Editorial Reading Canvas (Constrained to 680px for reading comfort) */}
                         <article className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-[1.8] font-sans prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:underline-offset-4 hover:prose-a:underline prose-img:rounded-xl prose-img:shadow-md prose-blockquote:border-l-primary prose-blockquote:bg-secondary/20 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-pre:p-0 prose-pre:bg-transparent">
@@ -356,28 +348,41 @@ export function BlogPostClient() {
                             ))}
                         </div>
 
-                        {/* Author Sign-Off Card (Quiet, Inspired by Top Publications) */}
-                        <div className="p-6 sm:p-8 rounded-2xl bg-card border border-border/80 mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-emerald-500/30 border border-primary/40 flex items-center justify-center font-bold text-xl text-primary shrink-0">
-                                KR
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-lg text-foreground mb-1">
-                                    Written by Keerthi Raajan
-                                </h3>
-                                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                                    Full-Stack AI Engineer specializing in high-concurrency systems, distributed logic, and machine learning infrastructure.
-                                </p>
-                                <div className="flex items-center gap-4 text-xs font-medium">
-                                    <Link href="/about" className="text-primary hover:underline">
-                                        View Portfolio & Work History →
-                                    </Link>
-                                </div>
+                        {/* Article Footer Navigation & Actions */}
+                        <div className="mt-12 pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <Link
+                                href="/"
+                                className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
+                            >
+                                <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform text-primary" />
+                                <span>Back to all essays</span>
+                            </Link>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleLike}
+                                    className={clsx(
+                                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all active:scale-95 cursor-pointer",
+                                        hasLiked
+                                            ? "border-rose-500/40 bg-rose-500/10 text-rose-500"
+                                            : "border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    <Heart size={14} className={clsx(hasLiked && "fill-current")} />
+                                    <span>{likes}</span>
+                                </button>
+                                <button
+                                    onClick={handleCopyLink}
+                                    className="p-2 rounded-full border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                    title="Copy link"
+                                >
+                                    {copiedLink ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Desktop Sticky Table of Contents Sidebar */}
+                    {/* Right-Side Table of Contents (Exclusively on the right) */}
                     <aside className="hidden lg:block">
                         <TableOfContents content={post.content} />
                     </aside>
