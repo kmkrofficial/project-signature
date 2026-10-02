@@ -18,8 +18,8 @@ import {
 import { PORTFOLIO_CONFIG } from "@/lib/portfolio-config";
 
 export const metadata: Metadata = {
-    title: "About & Work | Keerthi Raajan",
-    description: "Background, engineering philosophy, selected projects, and career timeline of Keerthi Raajan K M.",
+    title: "About the Author | Keerthi's Signature",
+    description: "Background, engineering philosophy, selected projects, and career timeline of Keerthi Raajan.",
 };
 
 const PROJECT_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {

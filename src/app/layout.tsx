@@ -48,8 +48,20 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   return {
-    title: config.siteTitle,
+    title: {
+      default: config.siteTitle || "Keerthi's Signature | Thoughts & Tech Writings",
+      template: "%s | Keerthi's Signature",
+    },
     description: config.siteDescription,
+    icons: {
+      icon: [
+        { url: "/icon.svg", type: "image/svg+xml" },
+        { url: "/favicon.ico", sizes: "any" },
+      ],
+      apple: [
+        { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+      ],
+    },
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://keerthiraajan.dev"),
     alternates: {
       types: {
