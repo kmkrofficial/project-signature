@@ -75,22 +75,30 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             applyThemeChange(nextTheme);
         });
 
-        transition.ready.then(() => {
-            const clipPath = [
-                `circle(0px at ${x}px ${y}px)`,
-                `circle(${endRadius}px at ${x}px ${y}px)`,
-            ];
-            document.documentElement.animate(
-                {
-                    clipPath,
-                },
-                {
-                    duration: 500,
-                    easing: "cubic-bezier(0.2, 0, 0, 1)",
-                    pseudoElement: "::view-transition-new(root)",
+        transition.ready
+            .then(() => {
+                const clipPath = [
+                    `circle(0px at ${x}px ${y}px)`,
+                    `circle(${endRadius}px at ${x}px ${y}px)`,
+                ];
+                try {
+                    document.documentElement.animate(
+                        {
+                            clipPath,
+                        },
+                        {
+                            duration: 500,
+                            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+                            pseudoElement: "::view-transition-new(root)",
+                        }
+                    );
+                } catch {
+                    // Fallback gracefully if pseudoElement animation is unsupported
                 }
-            );
-        });
+            })
+            .catch(() => {
+                // Prevent unhandled rejections if view transition is cancelled or skipped
+            });
     };
 
     const selectTheme = (newTheme: "dark" | "light") => {
