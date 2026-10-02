@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
 
 export const dynamic = "force-dynamic";
+
+interface FeedItem {
+    id: string;
+    title: string;
+    slug: string;
+    excerpt: string;
+    pubDate: string;
+    category: string;
+}
 
 export async function GET() {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://keerthiraajan.dev";
 
-    let posts: any[] = [];
+    let posts: FeedItem[] = [];
     try {
         const q = query(
             collection(db, "blog"),

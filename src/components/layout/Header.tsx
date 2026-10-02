@@ -21,14 +21,19 @@ export function Header({ onOpenSearch }: HeaderProps) {
     useEffect(() => {
         if (typeof window !== "undefined" && typeof navigator !== "undefined") {
             const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent || navigator.platform);
-            setShortcutLabel(isMac ? "Cmd + K" : "Ctrl + K");
+            if (isMac) {
+                requestAnimationFrame(() => setShortcutLabel("Cmd + K"));
+            }
         }
     }, []);
 
-    // Close mobile drawer on route change
-    useEffect(() => {
-        setMobileOpen(false);
-    }, [pathname]);
+    const [prevPathname, setPrevPathname] = useState(pathname);
+    if (prevPathname !== pathname) {
+        setPrevPathname(pathname);
+        if (mobileOpen) {
+            setMobileOpen(false);
+        }
+    }
 
     // Prevent body scroll when mobile menu is open
     useEffect(() => {

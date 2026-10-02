@@ -5,29 +5,13 @@ import { motion } from "framer-motion";
 import { Search, ArrowRight, BookOpen, Loader2, Eye, Heart, ChevronLeft, ChevronRight, SlidersHorizontal, ChevronDown, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { clsx } from "clsx";
 import { SpotlightCoverFallback } from "@/components/blog/SpotlightCoverFallback";
 import { primePostCache } from "@/lib/blogCache";
+import type { BlogPost, SortOption } from "@/types/blog";
 
-export interface BlogPost {
-    id: string;
-    slug: string;
-    title: string;
-    excerpt: string;
-    coverImage?: string;
-    date?: string;
-    category?: string;
-    readTime?: string;
-    tags: string[];
-    createdAt?: { seconds: number; nanoseconds: number };
-    published: boolean;
-    views?: number;
-    likes?: number;
-    featured?: boolean;
-}
-
-type SortOption = "newest" | "oldest" | "views" | "likes";
+export type { BlogPost };
 
 const PREDEFINED_CATEGORIES = [
     "All",
@@ -101,7 +85,7 @@ export function BlogListClient() {
         .filter(post => {
             const matchesSearch =
                 post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (post.excerpt || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
                 post.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
 
             const matchesCategory =

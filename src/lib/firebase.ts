@@ -36,27 +36,27 @@ export const analytics = enableAnalytics
 const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
 if (useEmulator) {
-    const globalAny = globalThis as any;
+    const globalContext = globalThis as unknown as Record<string, boolean | undefined>;
     const EMULATOR_INITIALIZED_KEY = "__FIREBASE_EMULATORS_INITIALIZED__";
 
-    if (!globalAny[EMULATOR_INITIALIZED_KEY]) {
-        globalAny[EMULATOR_INITIALIZED_KEY] = true;
+    if (!globalContext[EMULATOR_INITIALIZED_KEY]) {
+        globalContext[EMULATOR_INITIALIZED_KEY] = true;
 
         try {
             connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
-        } catch (err) {
+        } catch {
             // Already connected or disabled
         }
 
         try {
             connectFirestoreEmulator(db, "127.0.0.1", 8080);
-        } catch (err) {
+        } catch {
             // Already connected or disabled
         }
 
         try {
             connectStorageEmulator(storage, "127.0.0.1", 9199);
-        } catch (err) {
+        } catch {
             // Already connected or disabled
         }
 

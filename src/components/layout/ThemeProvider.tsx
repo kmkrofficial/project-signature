@@ -21,16 +21,14 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<"dark" | "light">("dark");
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme === "light" || savedTheme === "technicalBlueprint") {
-            setTheme("light");
+            requestAnimationFrame(() => setTheme("light"));
             document.documentElement.classList.add("light-mode");
         } else {
-            setTheme("dark");
+            requestAnimationFrame(() => setTheme("dark"));
             document.documentElement.classList.remove("light-mode");
         }
     }, []);
@@ -73,7 +71,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             Math.max(y, window.innerHeight - y)
         );
 
-        const transition = (document as any).startViewTransition(() => {
+        const transition = document.startViewTransition(() => {
             applyThemeChange(nextTheme);
         });
 
@@ -88,7 +86,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 },
                 {
                     duration: 500,
-                    easing: "cubic-bezier(0.2, 0, 0, 1)",
+                    easing: "cubic-bezier(0.2, 0, 1)",
                     pseudoElement: "::view-transition-new(root)",
                 }
             );

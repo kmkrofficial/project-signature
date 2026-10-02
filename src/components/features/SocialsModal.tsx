@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Github, Linkedin, Twitter, Mail, Coffee, Send, Loader2, CheckCircle } from "lucide-react";
+import { X, Github, Linkedin, Twitter, Coffee, Send, Loader2, CheckCircle } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, addDoc, collection, Timestamp } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
 interface SocialsModalProps {
     isOpen: boolean;
@@ -12,8 +12,7 @@ interface SocialsModalProps {
 }
 
 export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
-    const [links, setLinks] = useState<any>({});
-    const [loading, setLoading] = useState(false);
+    const [links, setLinks] = useState<Record<string, string>>({});
     const [emailForm, setEmailForm] = useState({
         name: "",
         email: "",
@@ -21,6 +20,7 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
     });
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     useEffect(() => {
         if (isOpen) {
@@ -33,7 +33,7 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
             const docRef = doc(db, "config", "site");
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
-                setLinks(docSnap.data());
+                setLinks(docSnap.data() as Record<string, string>);
             }
         } catch (error) {
             console.error("Error fetching links:", error);
@@ -46,18 +46,8 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
 
         try {
             setSending(true);
+            setErrorMessage("");
 
-            // 1. Save to Firebase (Backup)
-            await addDoc(collection(db, "messages"), {
-                to: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "kmkrworks@gmail.com",
-                from: emailForm.email,
-                name: emailForm.name,
-                message: emailForm.message,
-                createdAt: Timestamp.now(),
-                read: false
-            });
-
-            // 2. Send actual email via API
             const response = await fetch('/api/contact', {
                 method: 'POST',
                 headers: {
@@ -70,15 +60,19 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
                 }),
             });
 
+            const data = await response.json().catch(() => ({}));
+
             if (!response.ok) {
-                console.warn("Email API failed, but saved to database.");
+                throw new Error(data.error || "Failed to send message. Please try again.");
             }
 
             setSent(true);
             setEmailForm({ name: "", email: "", message: "" });
-            setTimeout(() => setSent(false), 3000);
-        } catch (error) {
-            console.error("Error sending message:", error);
+            setTimeout(() => setSent(false), 4000);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : "Failed to send message";
+            console.error("Error sending message:", msg);
+            setErrorMessage(msg);
         } finally {
             setSending(false);
         }
@@ -184,6 +178,11 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
                                             className="w-full bg-secondary/20 border border-border rounded-xl p-2.5 text-sm focus:outline-none focus:border-primary h-28 resize-none transition-colors"
                                             required
                                         />
+                                        {errorMessage && (
+                                            <p className="text-xs text-rose-500 bg-rose-500/10 border border-rose-500/20 p-2 rounded-lg">
+                                                {errorMessage}
+                                            </p>
+                                        )}
                                         <button
                                             type="submit"
                                             disabled={sending}

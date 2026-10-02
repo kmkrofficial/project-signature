@@ -8,7 +8,7 @@ async function validateAuth(req: NextRequest) {
     const token = authHeader.split("Bearer ")[1];
     try {
         return await auth.verifyIdToken(token);
-    } catch (e) {
+    } catch {
         return null;
     }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
+import type { QueryDocumentSnapshot } from "firebase-admin/firestore";
 
 export const dynamic = 'force-dynamic';
 
@@ -12,9 +13,9 @@ export async function GET() {
             db.doc("config/personal").get(),
         ]);
 
-        const skills = skillsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        const experience = experienceSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        const projects = projectsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const skills = skillsSnap.docs.map((doc: QueryDocumentSnapshot) => ({ id: doc.id, ...doc.data() }));
+        const experience = experienceSnap.docs.map((doc: QueryDocumentSnapshot) => ({ id: doc.id, ...doc.data() }));
+        const projects = projectsSnap.docs.map((doc: QueryDocumentSnapshot) => ({ id: doc.id, ...doc.data() }));
         const personal = personalSnap.exists ? personalSnap.data() : {};
 
         return NextResponse.json({

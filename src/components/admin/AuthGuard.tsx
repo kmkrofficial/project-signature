@@ -11,15 +11,15 @@ const getAdminEmails = (): string[] => {
 };
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-    const [loading, setLoading] = useState(true);
-    const [isAuthorized, setIsAuthorized] = useState(false);
-    const router = useRouter();
     const pathname = usePathname();
+    const router = useRouter();
+    const isLoginPage = pathname === "/admin/login";
+    const [loading, setLoading] = useState(!isLoginPage);
+    const [isAuthorized, setIsAuthorized] = useState(isLoginPage);
 
     useEffect(() => {
         // Bypass auth check for login page
         if (pathname === "/admin/login") {
-            setLoading(false);
             return;
         }
 

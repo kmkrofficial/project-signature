@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, ArrowRight, Tag, BookOpen, Clock } from "lucide-react";
+import { Search, X, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -26,7 +26,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const [queryText, setQueryText] = useState("");
     const [posts, setPosts] = useState<PostSummary[]>([]);
     const [loading, setLoading] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Fetch published posts once when search is first opened
@@ -61,7 +60,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
         loadPosts();
         setTimeout(() => inputRef.current?.focus(), 50);
-    }, [isOpen]);
+    }, [isOpen, posts.length]);
 
     // Handle global Cmd+K or Ctrl+K shortcut
     useEffect(() => {
@@ -113,7 +112,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             value={queryText}
                             onChange={(e) => {
                                 setQueryText(e.target.value);
-                                setSelectedIndex(0);
                             }}
                             className="w-full bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                         />
@@ -132,7 +130,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                 {loading ? "Loading articles..." : `No articles found for "${queryText}".`}
                             </div>
                         ) : (
-                            filtered.map((post, idx) => (
+                            filtered.map((post) => (
                                 <Link
                                     key={post.id}
                                     href={`/blog/${post.slug}`}

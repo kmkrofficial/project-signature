@@ -1,20 +1,7 @@
+import type { BlogPost } from "@/types/blog";
+
 // Lightweight client-side cache for instantaneous article loading
-export interface CachedBlogPost {
-    id: string;
-    slug: string;
-    title: string;
-    excerpt?: string;
-    content?: string;
-    coverImage?: string;
-    date?: string;
-    readTime?: string;
-    category?: string;
-    tags: string[];
-    views?: number;
-    likes?: number;
-    featured?: boolean;
-    createdAt?: { seconds: number; nanoseconds: number };
-}
+export type CachedBlogPost = BlogPost;
 
 const memoryCache = new Map<string, CachedBlogPost>();
 

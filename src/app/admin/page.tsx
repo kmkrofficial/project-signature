@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { auth, db, storage } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -13,8 +13,7 @@ import {
     setDoc,
     deleteDoc,
     Timestamp,
-    orderBy,
-    getDoc
+    orderBy
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
 import Link from "next/link";
@@ -38,11 +37,7 @@ import {
     Sparkles,
     UploadCloud,
     BarChart3,
-    Clock,
-    Tag,
     Layers,
-    Sun,
-    Moon,
     CheckCircle2,
     Database
 } from "lucide-react";
@@ -50,25 +45,9 @@ import { useToast } from "@/context/ToastContext";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { clsx } from "clsx";
+import type { BlogPost } from "@/types/blog";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
-
-interface BlogPost {
-    id: string;
-    title: string;
-    slug: string;
-    excerpt: string;
-    coverImage?: string;
-    content: string;
-    category?: string;
-    tags: string[];
-    createdAt: any;
-    updatedAt?: any;
-    published?: boolean;
-    featured?: boolean;
-    views?: number;
-    likes?: number;
-}
 
 interface StoredImage {
     name: string;
@@ -87,7 +66,7 @@ const CATEGORIES = [
 export default function AdminStudio() {
     const router = useRouter();
     const { addToast } = useToast();
-    const { theme, toggleTheme } = useTheme();
+    const { theme } = useTheme();
 
     // Active Navigation Tab
     const [activeTab, setActiveTab] = useState<"articles" | "editor" | "media" | "settings">("articles");
@@ -134,34 +113,22 @@ export default function AdminStudio() {
     const wordCount = currentPost.content ? currentPost.content.trim().split(/\s+/).filter(Boolean).length : 0;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
-    // Load initial data from Firebase
-    useEffect(() => {
-        fetchPosts();
-    }, []);
-
-    // Load media when tab activated
-    useEffect(() => {
-        if (activeTab === "media") {
-            fetchImages();
-        }
-    }, [activeTab]);
-
-    const fetchPosts = async () => {
+    const fetchPosts = useCallback(async () => {
         setLoadingPosts(true);
         try {
             const q = query(collection(db, "blog"), orderBy("createdAt", "desc"));
             const snap = await getDocs(q);
             const fetched = snap.docs.map((d) => ({ id: d.id, ...d.data() } as BlogPost));
             setPosts(fetched);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Firestore query error:", error);
             addToast("Failed to load articles from Firestore", "error");
         } finally {
             setLoadingPosts(false);
         }
-    };
+    }, [addToast]);
 
-    const fetchImages = async () => {
+    const fetchImages = useCallback(async () => {
         setLoadingImages(true);
         try {
             const listRef = ref(storage, "media");
@@ -174,17 +141,29 @@ export default function AdminStudio() {
                 }))
             );
             setImages(urls);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.warn("Storage list notice:", err);
         } finally {
             setLoadingImages(false);
         }
-    };
+    }, []);
+
+    // Load initial data from Firebase
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
+
+    // Load media when tab activated
+    useEffect(() => {
+        if (activeTab === "media") {
+            fetchImages();
+        }
+    }, [activeTab, fetchImages]);
 
     const handleLogout = async () => {
         try {
             await signOut(auth);
-        } catch (e) {
+        } catch {
             // ignore
         }
         if (typeof window !== "undefined") {
@@ -258,9 +237,10 @@ export default function AdminStudio() {
             await deleteDoc(doc(db, "blog", id));
             setPosts((prev) => prev.filter((p) => p.id !== id));
             addToast("Article deleted successfully", "success");
-        } catch (err: any) {
-            console.error("Delete error:", err);
-            addToast("Failed to delete article: " + err.message, "error");
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            console.error("Delete error:", msg);
+            addToast("Failed to delete article: " + msg, "error");
         }
     };
 
@@ -302,9 +282,10 @@ export default function AdminStudio() {
 
             await fetchPosts();
             setActiveTab("articles");
-        } catch (err: any) {
-            console.error("Save error:", err);
-            addToast("Failed to save article: " + err.message, "error");
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            console.error("Save error:", msg);
+            addToast("Failed to save article: " + msg, "error");
         } finally {
             setSaving(false);
         }
@@ -362,9 +343,10 @@ export default function AdminStudio() {
 
             setImages((prev) => [newImg, ...prev]);
             addToast("Media uploaded to Firebase Storage!", "success");
-        } catch (err: any) {
-            console.error("Upload error:", err);
-            addToast("Failed to upload image: " + err.message, "error");
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            console.error("Upload error:", msg);
+            addToast("Failed to upload image: " + msg, "error");
         } finally {
             setUploadingImage(false);
         }
@@ -382,7 +364,7 @@ export default function AdminStudio() {
         const matchesCategory = categoryFilter === "All" || p.category === categoryFilter;
         const matchesSearch =
             p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.excerpt || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
             p.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesCategory && matchesSearch;
     });

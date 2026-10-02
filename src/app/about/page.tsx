@@ -1,11 +1,8 @@
 import React from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
-    Briefcase,
     GraduationCap,
     FileText,
-    ExternalLink,
     Github,
     Linkedin,
     Mail,
@@ -16,7 +13,6 @@ import {
     Code,
     Cpu,
     Sparkles,
-    Calendar,
     ArrowUpRight
 } from "lucide-react";
 import { PORTFOLIO_CONFIG } from "@/lib/portfolio-config";
@@ -26,7 +22,7 @@ export const metadata: Metadata = {
     description: "Background, engineering philosophy, selected projects, and career timeline of Keerthi Raajan K M.",
 };
 
-const PROJECT_ICONS: Record<string, any> = {
+const PROJECT_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
     "log-sentinel": Shield,
     "vision360": Globe,
     "seas": Server,

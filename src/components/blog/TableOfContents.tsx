@@ -38,7 +38,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
             };
         });
 
-        setHeadings(items);
+        requestAnimationFrame(() => setHeadings(items));
 
         // IntersectionObserver for scroll-spy
         const observer = new IntersectionObserver(

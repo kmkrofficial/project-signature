@@ -1,15 +1,15 @@
 "use client";
 
 import React from "react";
-import { Cpu, Layers, Cloud, BookOpen, Terminal, Sparkles } from "lucide-react";
+import { Layers, Cloud, BookOpen, Terminal, Sparkles } from "lucide-react";
 
 interface SpotlightCoverFallbackProps {
-    title: string;
+    title?: string;
     category?: string;
     tags?: string[];
 }
 
-export function SpotlightCoverFallback({ title, category, tags = [] }: SpotlightCoverFallbackProps) {
+export function SpotlightCoverFallback({ category, tags = [] }: SpotlightCoverFallbackProps) {
     const cat = (category || "").toLowerCase();
 
     // Determine theme colors and icon based on category

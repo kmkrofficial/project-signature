@@ -1,13 +1,5 @@
-import {
-    Cpu,
-    Globe,
-    Layers,
-    LayoutTemplate,
-    Server,
-    Shield,
-    Terminal,
-    Zap
-} from "lucide-react";
+
+import { Shield, Globe, Server, Terminal } from "lucide-react";
 
 export const PORTFOLIO_CONFIG = {
     personal: {

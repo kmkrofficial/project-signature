@@ -20,9 +20,10 @@ export default function LoginPage() {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
             router.push("/admin");
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Login error:", err);
-            setError(err.message || "Google Authentication failed.");
+            const msg = err instanceof Error ? err.message : "Google Authentication failed.";
+            setError(msg);
         } finally {
             setLoading(false);
         }

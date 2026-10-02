@@ -9,15 +9,18 @@ export function RouteProgressBar() {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        // Complete and fade out progress bar when pathname changes
-        if (visible) {
+        let timer: NodeJS.Timeout;
+        const frame = requestAnimationFrame(() => {
             setProgress(100);
-            const timer = setTimeout(() => {
+            timer = setTimeout(() => {
                 setVisible(false);
                 setProgress(0);
             }, 250);
-            return () => clearTimeout(timer);
-        }
+        });
+        return () => {
+            cancelAnimationFrame(frame);
+            clearTimeout(timer);
+        };
     }, [pathname]);
 
     useEffect(() => {

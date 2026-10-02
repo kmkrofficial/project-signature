@@ -130,7 +130,7 @@ async function seed() {
         try {
             await auth.getUserByEmail(testEmail);
             console.log(`  ✓ Test admin user already exists: ${testEmail}`);
-        } catch (e) {
+        } catch {
             await auth.createUser({
                 email: testEmail,
                 emailVerified: true,
@@ -140,7 +140,7 @@ async function seed() {
             console.log(`  ✓ Created test admin user: ${testEmail} (password: password123)`);
         }
     } catch (authErr) {
-        console.warn("  ℹ Auth emulator user note:", authErr.message);
+        console.warn("  ℹ Auth emulator user note:", authErr instanceof Error ? authErr.message : authErr);
     }
 
     console.log("\n✨ Seed completed successfully!");

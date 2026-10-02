@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Calendar, Clock, Tag, Eye, Heart, Share2, Check } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Eye, Heart, Share2, Check } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -18,21 +18,7 @@ import { toFriendlyCategory } from "@/app/blog/BlogListClient";
 import { clsx } from "clsx";
 import { getCachedPost, setCachedPost } from "@/lib/blogCache";
 import { ArticleSkeleton } from "@/components/blog/ArticleSkeleton";
-
-interface BlogPost {
-    id: string;
-    title: string;
-    slug: string;
-    excerpt?: string;
-    coverImage?: string;
-    content: string;
-    date: string;
-    readTime: string;
-    category?: string;
-    tags: string[];
-    views?: number;
-    likes?: number;
-}
+import type { BlogPost } from "@/types/blog";
 
 export function BlogPostClient() {
     const params = useParams();
@@ -41,7 +27,7 @@ export function BlogPostClient() {
 
     // Check synchronous client-side cache for instantaneous 0ms display
     const cached = typeof window !== "undefined" ? getCachedPost(slug) : null;
-    const [post, setPost] = useState<BlogPost | null>(cached as any);
+    const [post, setPost] = useState<BlogPost | null>(cached);
     const [likes, setLikes] = useState(cached?.likes || 0);
     const [hasLiked, setHasLiked] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
@@ -102,7 +88,10 @@ export function BlogPostClient() {
                 }
             } catch (error) {
                 console.error("Error fetching post:", error);
-                if (!post) setNotFound(true);
+                setPost((current) => {
+                    if (!current) setNotFound(true);
+                    return current;
+                });
             } finally {
                 setLoading(false);
             }
@@ -278,10 +267,10 @@ export function BlogPostClient() {
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeRaw]}
                                 components={{
-                                    code({ node, inline, className, children, ...props }: any) {
+                                    code({ className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & { inline?: boolean }) {
                                         const match = /language-(\w+)/.exec(className || "");
                                         const value = String(children).replace(/\n$/, "");
-                                        if (!inline && match) {
+                                        if (!props.inline && match) {
                                             return <CodeBlock language={match[1]} value={value} />;
                                         }
                                         return (
@@ -297,15 +286,15 @@ export function BlogPostClient() {
                                         return (
                                             <figure className="my-6">
                                                 <img
-                                                    src={src}
-                                                    alt={alt || ""}
-                                                    className="w-full h-auto rounded-xl border border-border/80 shadow-md"
-                                                    loading="lazy"
+                                                     src={src}
+                                                     alt={alt || ""}
+                                                     className="w-full h-auto rounded-xl border border-border/80 shadow-md"
+                                                     loading="lazy"
                                                 />
                                                 {alt && (
-                                                    <figcaption className="text-center text-xs text-muted-foreground mt-2 font-mono">
-                                                        // {alt}
-                                                    </figcaption>
+                                                     <figcaption className="text-center text-xs text-muted-foreground mt-2 font-mono">
+                                                         {`// ${alt}`}
+                                                     </figcaption>
                                                 )}
                                             </figure>
                                         );

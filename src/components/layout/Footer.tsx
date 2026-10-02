@@ -9,7 +9,7 @@ import { SocialsModal } from "@/components/features/SocialsModal";
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
-    const [links, setLinks] = useState<any>({
+    const [links, setLinks] = useState<Record<string, string>>({
         github: "https://github.com/keerthiraajan",
         linkedin: "https://linkedin.com/in/keerthiraajan",
     });
@@ -21,7 +21,7 @@ export function Footer() {
                 const docRef = doc(db, "config", "site");
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    setLinks((prev: any) => ({ ...prev, ...docSnap.data() }));
+                    setLinks((prev) => ({ ...prev, ...(docSnap.data() as Record<string, string>) }));
                 }
             } catch (error) {
                 console.error("Error fetching footer links:", error);
