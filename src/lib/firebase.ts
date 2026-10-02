@@ -10,10 +10,27 @@ export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const analytics = typeof window !== "undefined" ?
-    import("firebase/analytics").then(({ getAnalytics, isSupported }) =>
-        isSupported().then((yes) => yes ? getAnalytics(app) : null)
-    ) : null;
+
+// Only initialize Firebase Analytics in production when not using emulators and with a valid real API key
+const isRealConfig =
+    Boolean(firebaseConfig.apiKey) &&
+    !firebaseConfig.apiKey.includes("Dummy") &&
+    Boolean(firebaseConfig.measurementId) &&
+    !firebaseConfig.measurementId.includes("XXXX");
+
+const enableAnalytics =
+    typeof window !== "undefined" &&
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR !== "true" &&
+    isRealConfig;
+
+export const analytics = enableAnalytics
+    ? import("firebase/analytics")
+          .then(({ getAnalytics, isSupported }) =>
+              isSupported().then((yes) => (yes ? getAnalytics(app) : null))
+          )
+          .catch(() => null)
+    : null;
 
 // Firebase Local Emulator Suite integration
 const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
