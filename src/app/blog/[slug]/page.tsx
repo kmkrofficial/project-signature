@@ -20,8 +20,8 @@ export async function generateMetadata(
         if (!querySnapshot.empty) {
             const data = querySnapshot.docs[0].data();
             return {
-                title: `${data.title} | Keerthi Raajan K M`,
-                description: data.excerpt || "Read this blog post on Keerthi Raajan's portfolio.",
+                title: data.title,
+                description: data.excerpt || "Read this article on Keerthi's Signature.",
                 openGraph: {
                     title: data.title,
                     description: data.excerpt,
@@ -35,8 +35,8 @@ export async function generateMetadata(
     }
 
     return {
-        title: "Blog Post | Keerthi Raajan K M",
-        description: "Read this blog post on Keerthi Raajan's portfolio.",
+        title: "Article",
+        description: "Read this article on Keerthi's Signature.",
     };
 }
 

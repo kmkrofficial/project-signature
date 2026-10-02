@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: rgb(var(--background));
   --color-foreground: rgb(var(--foreground));
@@ -24,94 +26,63 @@
   --color-input: rgb(var(--input));
   --color-ring: rgb(var(--ring));
 
-  --font-mono: var(--font-geist-mono), monospace;
-  --font-sans: var(--font-geist-sans), sans-serif;
-
-  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-glitch: glitch 1s linear infinite;
-
-  @keyframes glitch {
-
-    2%,
-    64% {
-      transform: translate(2px, 0) skew(0deg);
-    }
-
-    4%,
-    60% {
-      transform: translate(-2px, 0) skew(0deg);
-    }
-
-    62% {
-      transform: translate(0, 0) skew(5deg);
-    }
-  }
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-cinzel: var(--font-cinzel), "Cinzel Decorative", Georgia, serif;
 }
 
-:root {
-  /* Deep System (Dark Mode - Default) */
-  --background: 10 10 10;
-  /* #0a0a0a */
-  --foreground: 240 240 240;
+:root,
+.dark {
+  /* Dark Mode by Default (Matte Graphite / Deep Slate) */
+  --background: 13 15 18;
+  --foreground: 243 244 246;
 
   --primary: 6 182 212;
-  /* Cyan-500 #06b6d4 */
-  --primary-foreground: 10 10 10;
+  --primary-foreground: 13 15 18;
 
-  --secondary: 30 41 59;
-  /* Slate-800 */
-  --secondary-foreground: 248 250 252;
+  --secondary: 25 28 35;
+  --secondary-foreground: 243 244 246;
 
-  --accent: 245 158 11;
-  /* Amber-500 */
-  --accent-foreground: 10 10 10;
+  --accent: 16 185 129;
+  --accent-foreground: 13 15 18;
 
-  --muted: 30 41 59;
-  --muted-foreground: 148 163 184;
+  --muted: 22 25 32;
+  --muted-foreground: 156 163 175;
 
-  --card: 15 23 42;
-  /* Slate-950 */
-  --card-foreground: 240 240 240;
+  --card: 19 21 26;
+  --card-foreground: 243 244 246;
 
-  --border: 51 65 85;
-  --input: 51 65 85;
+  --border: 34 38 48;
+  --input: 34 38 48;
   --ring: 6 182 212;
 
-  --radius: 0.25rem;
-
-  /* Grid Pattern for Technical Blueprint */
-  --grid-color: 30 41 59;
+  --radius: 0.5rem;
 }
 
-.light-mode {
-  /* Technical Blueprint (Light Mode) */
-  --background: 240 249 255;
-  /* Sky-50 */
-  --foreground: 15 23 42;
+.light-mode,
+:root:not(.dark) {
+  /* Architectural Editorial Light Mode */
+  --background: 248 250 252;          /* Clean, crisp off-white canvas (slate-50) */
+  --foreground: 15 23 42;             /* High-contrast deep slate-900 */
 
-  --primary: 3 105 161;
-  /* Sky-700 */
+  --primary: 8 145 178;               /* Rich Cyan 600 - vibrant, readable, WCAG AAA */
   --primary-foreground: 255 255 255;
 
-  --secondary: 226 232 240;
-  /* Slate-200 */
-  --secondary-foreground: 15 23 42;
+  --secondary: 241 245 249;           /* Slate 100 surface for chips, pills, inputs */
+  --secondary-foreground: 15 23 42;   /* Slate 900 */
 
-  --accent: 220 38 38;
-  /* Red-600 */
+  --accent: 13 148 136;               /* Teal 600 */
   --accent-foreground: 255 255 255;
 
-  --muted: 241 245 249;
-  --muted-foreground: 100 116 139;
+  --muted: 241 245 249;               /* Slate 100 */
+  --muted-foreground: 71 85 105;      /* Slate 600 - high contrast, crisp legibility */
 
-  --card: 255 255 255;
-  --card-foreground: 15 23 42;
+  --card: 255 255 255;                /* Pure white card elevation */
+  --card-foreground: 15 23 42;        /* Slate 900 */
 
-  --border: 203 213 225;
-  --input: 203 213 225;
-  --ring: 3 105 161;
-
-  --grid-color: 203 213 225;
+  --border: 226 232 240;              /* Slate 200 - structural definition */
+  --input: 226 232 240;               /* Slate 200 */
+  --ring: 8 145 178;
 }
 
 @layer base {
@@ -121,27 +92,126 @@
 
   html {
     scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-background text-foreground font-mono antialiased transition-colors duration-500;
-    background-image:
-      linear-gradient(to right, rgba(var(--grid-color), 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(var(--grid-color), 0.1) 1px, transparent 1px);
-    background-size: 40px 40px;
+    @apply bg-background text-foreground font-sans min-h-screen;
+  }
+
+  /* Custom Clean Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(var(--border), 0.8);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--muted-foreground), 0.5);
   }
 }
 
 @layer utilities {
-  .text-glow {
-    text-shadow: 0 0 10px rgba(var(--primary), 0.5);
+  /* Editorial Reading Measure (Medium style 680px) */
+  .reading-measure {
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .border-glow {
-    box-shadow: 0 0 10px rgba(var(--primary), 0.3);
+  /* Breakout canvas for diagrams and wide code blocks */
+  .breakout-measure {
+    max-width: 56rem; /* 896px / max-w-4xl */
   }
 
-  .glass-panel {
-    @apply bg-card/80 backdrop-blur-md border border-white/10;
+  /* Subtle card highlight */
+  .card-subtle {
+    @apply bg-card border border-border/80 rounded-xl transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5;
   }
+
+  /* Classical Cinzel Decorative Typography */
+  .font-cinzel {
+    font-family: var(--font-cinzel), "Cinzel Decorative", Georgia, serif;
+  }
+}
+
+/* View Transitions API: Hardware-Accelerated Circular Theme Reveal */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* ==========================================================================
+   Atmospheric Background Design (CSS-Only, Zero-Runtime, GPU-Accelerated)
+   ========================================================================== */
+.bg-ambient-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 520px;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    radial-gradient(ellipse 65% 340px at 50% -70px, rgba(6, 182, 212, 0.12), transparent),
+    radial-gradient(ellipse 40% 260px at 80% -50px, rgba(99, 102, 241, 0.07), transparent),
+    radial-gradient(ellipse 40% 260px at 20% -50px, rgba(16, 185, 129, 0.05), transparent);
+}
+
+.light-mode .bg-ambient-glow {
+  background: 
+    radial-gradient(ellipse 70% 360px at 50% -60px, rgba(8, 145, 178, 0.09), transparent),
+    radial-gradient(ellipse 45% 280px at 85% -40px, rgba(99, 102, 241, 0.06), transparent),
+    radial-gradient(ellipse 45% 280px at 15% -40px, rgba(13, 148, 136, 0.05), transparent);
+}
+
+.bg-grid-pattern {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 20%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 20%, transparent 85%);
+}
+
+.light-mode .bg-grid-pattern {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.075) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 25%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 25%, transparent 85%);
+}
+
+.top-hairline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 50;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 0%, rgba(6, 182, 212, 0.35) 50%, transparent 100%);
+}
+
+.light-mode .top-hairline {
+  background: linear-gradient(90deg, transparent 0%, rgba(8, 145, 178, 0.35) 50%, transparent 100%);
 }

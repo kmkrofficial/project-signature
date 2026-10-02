@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTheme } from "@/components/layout/ThemeProvider";
-import { Terminal, Sparkles, Github, Linkedin, Twitter, Coffee, Mail } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Github, Linkedin, Twitter, Mail, Rss } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import Link from "next/link";
 import { SocialsModal } from "@/components/features/SocialsModal";
 
 export function Footer() {
-    const { theme } = useTheme();
-    const isDark = theme === "deepSystem";
     const currentYear = new Date().getFullYear();
-    const [links, setLinks] = useState<any>({});
+    const [links, setLinks] = useState<Record<string, string>>({
+        github: "https://github.com/keerthiraajan",
+        linkedin: "https://linkedin.com/in/keerthiraajan",
+    });
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
@@ -20,81 +21,89 @@ export function Footer() {
                 const docRef = doc(db, "config", "site");
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    setLinks(docSnap.data());
+                    setLinks((prev) => ({ ...prev, ...(docSnap.data() as Record<string, string>) }));
                 }
             } catch (error) {
-                console.error("Error fetching links:", error);
+                console.error("Error fetching footer links:", error);
             }
         };
         fetchLinks();
     }, []);
 
     return (
-        <footer id="site-footer" className="py-8 border-t border-border bg-background transition-colors duration-300">
-            <div className="container mx-auto px-4">
-                <div className="flex flex-col items-center justify-center gap-5">
-
-                    {/* Connect With Me Section */}
-                    <div className="flex flex-col items-center gap-3 w-full">
-                        <div className="flex items-center gap-2 text-primary">
-                            <span className="font-mono text-xs tracking-wider uppercase">Connect With Me</span>
-                        </div>
-
-                        <div className="flex flex-wrap justify-center gap-4">
-                            {links.github && (
-                                <a href={links.github} target="_blank" rel="noopener noreferrer"
-                                    className="p-3 rounded-full bg-card border border-border hover:border-primary/50 hover:text-primary transition-all group" title="GitHub">
-                                    <Github size={20} />
-                                </a>
-                            )}
-
-                            {links.linkedin && (
-                                <a href={links.linkedin} target="_blank" rel="noopener noreferrer"
-                                    className="p-3 rounded-full bg-card border border-border hover:border-primary/50 hover:text-blue-500 transition-all group" title="LinkedIn">
-                                    <Linkedin size={20} />
-                                </a>
-                            )}
-
-                            {links.twitter && (
-                                <a href={links.twitter} target="_blank" rel="noopener noreferrer"
-                                    className="p-3 rounded-full bg-card border border-border hover:border-primary/50 hover:text-sky-500 transition-all group" title="Twitter">
-                                    <Twitter size={20} />
-                                </a>
-                            )}
-
-                            {links.buymeacoffee && (
-                                <a href={links.buymeacoffee} target="_blank" rel="noopener noreferrer"
-                                    className="p-3 rounded-full bg-card border border-yellow-500/20 hover:border-yellow-500/50 hover:text-yellow-500 hover:bg-yellow-500/5 transition-all group" title="Buy Me A Coffee">
-                                    <Coffee size={20} />
-                                </a>
-                            )}
-
-                            <button
-                                onClick={() => setIsModalOpen(true)}
-                                className="p-3 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-all shadow-lg hover:shadow-primary/20"
-                                title="Send Message"
-                            >
-                                <Mail size={20} />
-                            </button>
-                        </div>
+        <footer className="border-t border-border bg-background/40 mt-6 sm:mt-8 py-5 sm:py-6 transition-colors duration-200">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* Brand & Copyright */}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Link href="/" className="flex items-baseline gap-1.5 text-foreground hover:text-primary transition-colors">
+                            <span className="font-sans font-medium text-xs sm:text-sm text-foreground">Keerthi&apos;s</span>
+                            <span className="font-cinzel font-bold text-sm sm:text-base text-primary tracking-wide">Signature</span>
+                        </Link>
+                        <span className="text-muted-foreground/40">•</span>
+                        <span>© {currentYear}</span>
                     </div>
 
-                    {/* Divider */}
-                    <div className="h-px w-full max-w-2xl bg-border/50" />
+                    {/* Social & Contact Actions */}
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                        {links.github && (
+                            <a
+                                href={links.github}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
+                                title="GitHub"
+                                aria-label="GitHub"
+                            >
+                                <Github size={16} />
+                            </a>
+                        )}
 
-                    {/* Existing Footer Content */}
-                    <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground text-center">
-                        <div className="flex items-center gap-2 justify-center">
-                            {isDark ? <Terminal size={16} /> : <Sparkles size={16} />}
-                            <p className="font-mono tracking-wider">
-                                {isDark
-                                    ? "SYSTEM STATUS: ONLINE // ALL SYSTEMS NOMINAL"
-                                    : "Thanks for visiting! Have a great day!"}
-                            </p>
-                        </div>
-                        <p className="opacity-50">
-                            © {currentYear} Keerthi Raajan K M. {isDark ? "Architected with Next.js & React Three Fiber." : "Crafted with Next.js & React Three Fiber."}
-                        </p>
+                        {links.linkedin && (
+                            <a
+                                href={links.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
+                                title="LinkedIn"
+                                aria-label="LinkedIn"
+                            >
+                                <Linkedin size={16} />
+                            </a>
+                        )}
+
+                        {links.twitter && (
+                            <a
+                                href={links.twitter}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
+                                title="Twitter"
+                                aria-label="Twitter"
+                            >
+                                <Twitter size={16} />
+                            </a>
+                        )}
+
+                        <Link
+                            href="/feed.xml"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
+                            title="RSS Feed"
+                            aria-label="RSS Feed"
+                        >
+                            <Rss size={16} />
+                        </Link>
+
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
+                            title="Contact"
+                            aria-label="Contact"
+                        >
+                            <Mail size={16} />
+                        </button>
                     </div>
                 </div>
             </div>
