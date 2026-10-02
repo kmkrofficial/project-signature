@@ -73,13 +73,13 @@ export function TableOfContents({ content }: TableOfContentsProps) {
     return (
         <nav
             aria-label="Table of Contents"
-            className="max-h-[calc(100vh-8rem)] overflow-y-auto pl-4 border-l border-border/60 text-xs"
+            className="max-h-[calc(100vh-6rem)] overflow-y-auto pl-4 border-l border-border/60 text-xs"
         >
-            <p className="font-mono uppercase tracking-wider text-[11px] text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
+            <p className="font-mono uppercase tracking-wider text-[11px] text-muted-foreground font-semibold mb-2.5 flex items-center gap-1.5">
                 <List size={12} className="text-primary" />
                 <span>On This Page</span>
             </p>
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
                 {headings.map((item) => {
                     const active = activeId === item.id;
                     return (
@@ -100,7 +100,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
                 })}
             </ul>
 
-            <div className="pt-4 mt-4 border-t border-border/40">
+            <div className="pt-3 mt-3 border-t border-border/40">
                 <button
                     onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                     className="text-[11px] font-mono text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer"

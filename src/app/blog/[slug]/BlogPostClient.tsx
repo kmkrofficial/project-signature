@@ -185,46 +185,46 @@ export function BlogPostClient() {
     }
 
     return (
-        <div className="relative min-h-screen pb-20">
+        <div className="relative min-h-screen pb-12 sm:pb-16">
             <ReadingProgressBar />
 
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
                 {/* Back Link */}
                 <Link
                     href="/"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground mb-8 transition-colors group"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground mb-5 transition-colors group"
                 >
                     <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
                     <span>All Articles</span>
                 </Link>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-12 relative">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-8 lg:gap-10 relative">
                     {/* Main Article Column */}
-                    <div className="min-w-0">
+                    <div className="min-w-0 max-w-3xl">
                         {/* Article Header */}
-                        <header className="mb-10 pb-8 border-b border-border/60">
+                        <header className="mb-7 pb-5 sm:mb-8 sm:pb-6 border-b border-border/60">
                             {/* Category Pill */}
-                            <div className="flex items-center gap-2 text-xs font-mono mb-4">
-                                <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold font-sans">
+                            <div className="flex items-center gap-2 text-xs font-mono mb-3">
+                                <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold font-sans">
                                     {post.category}
                                 </span>
                             </div>
 
                             {/* Headline */}
-                            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15] mb-6">
+                            <h1 className="text-2xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight text-foreground leading-[1.2] mb-3 sm:mb-4">
                                 {post.title}
                             </h1>
 
                             {/* Excerpt Lede */}
                             {post.excerpt && (
-                                <p className="text-lg sm:text-xl text-muted-foreground font-normal leading-relaxed mb-6">
+                                <p className="text-base sm:text-lg text-muted-foreground font-normal leading-relaxed mb-4">
                                     {post.excerpt}
                                 </p>
                             )}
 
                             {/* Metadata & Actions Row */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-border/50">
-                                <div className="flex items-center gap-2.5 text-xs text-muted-foreground font-mono">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3.5 border-t border-border/50">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                                     <span className="flex items-center gap-1.5">
                                         <Calendar size={13} className="text-primary" />
                                         {post.date}
@@ -264,7 +264,7 @@ export function BlogPostClient() {
                                     <button
                                         onClick={handleToggleBookmark}
                                         className={clsx(
-                                            "p-2 rounded-full border text-xs transition-colors cursor-pointer",
+                                            "p-1.5 sm:p-2 rounded-full border text-xs transition-colors cursor-pointer",
                                             isBookmarked
                                                 ? "border-primary/40 bg-primary/10 text-primary"
                                                 : "border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground"
@@ -276,7 +276,7 @@ export function BlogPostClient() {
 
                                     <button
                                         onClick={handleCopyLink}
-                                        className="p-2 rounded-full border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                        className="p-1.5 sm:p-2 rounded-full border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                                         title="Copy article link"
                                     >
                                         {copiedLink ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
@@ -285,8 +285,8 @@ export function BlogPostClient() {
                             </div>
                         </header>
 
-                        {/* Editorial Reading Canvas (Constrained to 680px for reading comfort) */}
-                        <article className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-[1.8] font-sans prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:underline-offset-4 hover:prose-a:underline prose-img:rounded-xl prose-img:shadow-md prose-blockquote:border-l-primary prose-blockquote:bg-secondary/20 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-pre:p-0 prose-pre:bg-transparent">
+                        {/* Editorial Reading Canvas (Constrained for reading comfort) */}
+                        <article className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.7] font-sans prose-headings:font-bold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-5 prose-h3:mb-2 prose-p:my-3 prose-p:leading-[1.72] prose-ul:my-3 prose-ol:my-3 prose-li:my-1 prose-blockquote:my-4 prose-hr:my-6 prose-a:text-primary prose-a:underline-offset-4 hover:prose-a:underline prose-img:rounded-xl prose-img:shadow-md prose-blockquote:border-l-primary prose-blockquote:bg-secondary/20 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-pre:p-0 prose-pre:bg-transparent">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeRaw]}
@@ -308,7 +308,7 @@ export function BlogPostClient() {
                                     },
                                     img({ src, alt }) {
                                         return (
-                                            <figure className="my-8">
+                                            <figure className="my-6">
                                                 <img
                                                     src={src}
                                                     alt={alt || ""}
@@ -325,7 +325,7 @@ export function BlogPostClient() {
                                     },
                                     table({ children }) {
                                         return (
-                                            <div className="overflow-x-auto my-8 border border-border/80 rounded-xl">
+                                            <div className="overflow-x-auto my-6 border border-border/80 rounded-xl">
                                                 <table className="w-full text-left text-sm">{children}</table>
                                             </div>
                                         );
@@ -337,11 +337,11 @@ export function BlogPostClient() {
                         </article>
 
                         {/* Tags Cloud */}
-                        <div className="flex flex-wrap gap-2 my-10 pt-6 border-t border-border/60">
+                        <div className="flex flex-wrap gap-2 mt-7 mb-5 pt-4 border-t border-border/60">
                             {post.tags.map((tag) => (
                                 <span
                                     key={tag}
-                                    className="px-3 py-1 rounded-full bg-secondary/50 text-xs font-mono text-muted-foreground border border-border/50"
+                                    className="px-2.5 py-1 rounded-full bg-secondary/50 text-xs font-mono text-muted-foreground border border-border/50"
                                 >
                                     #{tag}
                                 </span>
@@ -349,7 +349,7 @@ export function BlogPostClient() {
                         </div>
 
                         {/* Article Footer Navigation & Actions */}
-                        <div className="mt-12 pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="mt-5 pt-4 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <Link
                                 href="/"
                                 className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
@@ -373,7 +373,7 @@ export function BlogPostClient() {
                                 </button>
                                 <button
                                     onClick={handleCopyLink}
-                                    className="p-2 rounded-full border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                    className="p-1.5 sm:p-2 rounded-full border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                                     title="Copy link"
                                 >
                                     {copiedLink ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
@@ -384,7 +384,7 @@ export function BlogPostClient() {
 
                     {/* Right-Side Table of Contents (Permanently sticky sidebar) */}
                     <aside className="hidden lg:block relative h-full">
-                        <div className="sticky top-24">
+                        <div className="sticky top-20">
                             <TableOfContents content={post.content} />
                         </div>
                     </aside>

@@ -128,25 +128,25 @@ export function BlogListClient() {
     const featuredPost = posts.find(p => p.featured) || (posts.length > 0 ? posts[0] : null);
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
             {/* Author Intro Header (Quiet, Classy Editorial) */}
-            <header className="mb-12 md:mb-16 border-b border-border/60 pb-12">
+            <header className="mb-7 sm:mb-8 border-b border-border/60 pb-5 sm:pb-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                     <div>
-                        <div className="flex items-center gap-2 text-primary text-xs font-mono tracking-wider uppercase mb-3">
+                        <div className="flex items-center gap-2 text-primary text-xs font-mono tracking-wider uppercase mb-2">
                             <Sparkles size={14} />
                             <span>Engineering Journal</span>
                         </div>
-                        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground mb-4">
+                        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2.5">
                             Writings on systems, AI & architecture.
                         </h1>
-                        <p className="text-muted-foreground text-base sm:text-lg max-w-2xl leading-relaxed">
+                        <p className="text-muted-foreground text-sm sm:text-base max-w-2xl leading-relaxed">
                             Hi, I’m Keerthi Raajan. I write deep dives on high-concurrency systems, full-stack AI integrations, and software engineering craft.
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 mt-6 text-sm">
+                <div className="flex items-center gap-4 mt-4 text-xs sm:text-sm">
                     <Link
                         href="/about"
                         className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline group"
@@ -158,7 +158,7 @@ export function BlogListClient() {
             </header>
 
             {/* Predefined Categories (Sliding Capsule Indicator) */}
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-8 no-scrollbar mask-gradient-right">
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-5 no-scrollbar mask-gradient-right">
                 {PREDEFINED_CATEGORIES.map(category => {
                     const active = selectedCategory === category;
                     return (
@@ -166,7 +166,7 @@ export function BlogListClient() {
                             key={category}
                             onClick={() => setSelectedCategory(category)}
                             className={clsx(
-                                "relative px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
+                                "relative px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
                                 active ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
                             )}
                         >
@@ -184,7 +184,7 @@ export function BlogListClient() {
             </div>
 
             {/* Filter & Sort Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-10">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
                 {/* Search Input */}
                 <div className="relative flex-1">
                     <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -236,19 +236,19 @@ export function BlogListClient() {
 
             {/* Articles Stream */}
             {loading ? (
-                <div className="flex justify-center py-20">
-                    <Loader2 className="animate-spin text-primary" size={36} />
+                <div className="flex justify-center py-16">
+                    <Loader2 className="animate-spin text-primary" size={32} />
                 </div>
             ) : currentPosts.length === 0 ? (
-                <div className="text-center py-16 border border-dashed border-border/80 rounded-2xl p-8">
-                    <BookOpen size={36} className="mx-auto mb-3 text-muted-foreground/60" />
-                    <h3 className="font-semibold text-lg text-foreground mb-1">No articles found</h3>
-                    <p className="text-sm text-muted-foreground">
+                <div className="text-center py-12 border border-dashed border-border/80 rounded-xl p-6">
+                    <BookOpen size={32} className="mx-auto mb-2.5 text-muted-foreground/60" />
+                    <h3 className="font-semibold text-base text-foreground mb-1">No articles found</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                         {searchQuery ? `No posts matched "${searchQuery}".` : "No articles published in this category yet."}
                     </p>
                 </div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {currentPosts.map((post, idx) => (
                         <motion.article
                             key={post.id}
@@ -258,9 +258,9 @@ export function BlogListClient() {
                         >
                             <Link
                                 href={`/blog/${post.slug}`}
-                                className="block p-6 sm:p-7 rounded-2xl bg-card border border-border/70 hover:border-primary/40 transition-all duration-200 group hover:shadow-lg hover:shadow-primary/5"
+                                className="block p-5 sm:p-6 rounded-xl sm:rounded-2xl bg-card border border-border/70 hover:border-primary/40 transition-all duration-200 group hover:shadow-lg hover:shadow-primary/5"
                             >
-                                <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-2.5">
                                     {/* Meta Row */}
                                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-mono">
                                         <span className="text-primary font-semibold font-sans">{post.category}</span>
@@ -297,19 +297,19 @@ export function BlogListClient() {
                                     </div>
 
                                     {/* Headline */}
-                                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                                         {post.title}
                                     </h2>
 
                                     {/* Excerpt */}
                                     {post.excerpt && (
-                                        <p className="text-sm sm:text-base text-muted-foreground line-clamp-2 leading-relaxed">
+                                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                                             {post.excerpt}
                                         </p>
                                     )}
 
                                     {/* Tags & Action */}
-                                    <div className="flex items-center justify-between pt-2">
+                                    <div className="flex items-center justify-between pt-1">
                                         <div className="flex flex-wrap gap-1.5">
                                             {post.tags.slice(0, 3).map(tag => (
                                                 <span
@@ -338,7 +338,7 @@ export function BlogListClient() {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex justify-center items-center gap-4 pt-8">
+                        <div className="flex justify-center items-center gap-4 pt-6">
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
