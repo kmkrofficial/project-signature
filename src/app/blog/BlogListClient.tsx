@@ -144,8 +144,14 @@ export function BlogListClient() {
             }
         });
 
-    const spotlightPost = posts.find(p => p.featured) || (posts.length > 0 ? posts[0] : null);
-    const showSpotlight = !searchQuery.trim() && selectedCategory === "All" && currentPage === 1 && Boolean(spotlightPost);
+    // Select category-specific featured post if one matches the active filter, otherwise keep the global featured post
+    const categoryFeatured = selectedCategory === "All"
+        ? null
+        : filteredAndSortedPosts.find(p => p.featured);
+    const spotlightPost = categoryFeatured || posts.find(p => p.featured) || (posts.length > 0 ? posts[0] : null);
+
+    // Keep the featured article hero visible when selecting category filters and sort options
+    const showSpotlight = !searchQuery.trim() && currentPage === 1 && Boolean(spotlightPost);
 
     // Exclude the spotlight post from the chronological stream below when spotlight hero is visible
     const displayPosts = showSpotlight && spotlightPost
@@ -272,7 +278,7 @@ export function BlogListClient() {
                             {active && (
                                 <motion.span
                                     layoutId="activeCategoryTab"
-                                    className="absolute inset-0 bg-secondary border border-border/80 rounded-full shadow-sm -z-10"
+                                    className="absolute inset-0 bg-secondary border border-slate-300 dark:border-zinc-700 rounded-full shadow-sm -z-10"
                                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                                 />
                             )}
@@ -292,7 +298,7 @@ export function BlogListClient() {
                         placeholder="Search articles, topics, or tags..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 text-sm bg-secondary/30 border border-border/80 rounded-xl focus:outline-none focus:border-primary/60 transition-colors"
+                        className="w-full pl-10 pr-4 py-2 text-sm bg-secondary/30 border border-slate-300 dark:border-zinc-700/80 rounded-xl focus:outline-none focus:border-primary/60 transition-colors"
                     />
                 </div>
 
@@ -300,7 +306,7 @@ export function BlogListClient() {
                 <div className="relative shrink-0">
                     <button
                         onClick={() => setIsSortOpen(!isSortOpen)}
-                        className="flex items-center justify-between gap-2 px-3.5 py-2 text-xs font-medium bg-secondary/30 border border-border/80 rounded-xl hover:bg-secondary/60 transition-colors"
+                        className="flex items-center justify-between gap-2 px-3.5 py-2 text-xs font-medium bg-secondary/30 border border-slate-300 dark:border-zinc-700/80 rounded-xl hover:bg-secondary/60 transition-colors"
                     >
                         <SlidersHorizontal size={14} className="text-muted-foreground" />
                         <span>{sortLabels[sortOption]}</span>
@@ -310,7 +316,7 @@ export function BlogListClient() {
                     {isSortOpen && (
                         <>
                             <div className="fixed inset-0 z-20" onClick={() => setIsSortOpen(false)} />
-                            <div className="absolute right-0 top-full mt-2 w-44 bg-card border border-border rounded-xl shadow-xl z-30 overflow-hidden py-1">
+                            <div className="absolute right-0 top-full mt-2 w-44 bg-card border border-slate-300 dark:border-zinc-700 rounded-xl shadow-xl z-30 overflow-hidden py-1">
                                 {(Object.keys(sortLabels) as SortOption[]).map(option => (
                                     <button
                                         key={option}
@@ -339,11 +345,19 @@ export function BlogListClient() {
                     <Loader2 className="animate-spin text-primary" size={32} />
                 </div>
             ) : currentPosts.length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-border/80 rounded-xl p-6">
+                <div className="text-center py-12 border border-dashed border-slate-300 dark:border-zinc-700/80 rounded-xl p-6">
                     <BookOpen size={32} className="mx-auto mb-2.5 text-muted-foreground/60" />
-                    <h3 className="font-semibold text-base text-foreground mb-1">No articles found</h3>
+                    <h3 className="font-semibold text-base text-foreground mb-1">
+                        {showSpotlight && spotlightPost && filteredAndSortedPosts.some(p => p.id === spotlightPost.id)
+                            ? "All articles in this category are featured above"
+                            : "No articles found"}
+                    </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                        {searchQuery ? `No posts matched "${searchQuery}".` : "No articles published in this category yet."}
+                        {searchQuery
+                            ? `No posts matched "${searchQuery}".`
+                            : showSpotlight && spotlightPost && filteredAndSortedPosts.some(p => p.id === spotlightPost.id)
+                            ? "Explore the featured article above or choose another topic."
+                            : "No articles published in this category yet."}
                     </p>
                 </div>
             ) : (

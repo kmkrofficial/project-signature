@@ -66,7 +66,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                 </Link>
 
                 {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center gap-1 bg-secondary/40 border border-border/50 rounded-full px-2 py-1">
+                <nav className="hidden md:flex items-center gap-2">
                     {navLinks.map((link) => {
                         const active = link.isActive;
                         return (
@@ -76,19 +76,27 @@ export function Header({ onOpenSearch }: HeaderProps) {
                                 target={link.isExternal ? "_blank" : undefined}
                                 rel={link.isExternal ? "noopener noreferrer" : undefined}
                                 className={clsx(
-                                    "relative px-4 py-1.5 text-sm font-medium transition-colors rounded-full flex items-center gap-1.5",
-                                    active ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground"
+                                    "relative px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 rounded-full flex items-center gap-1.5 border shadow-2xs group",
+                                    active
+                                        ? "bg-primary/10 border-primary/50 dark:border-primary/60 text-primary font-semibold shadow-primary/10"
+                                        : "bg-secondary/40 dark:bg-zinc-900/50 border-slate-300 dark:border-zinc-700/90 text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-primary/40 dark:hover:border-primary/50"
                                 )}
                             >
                                 {active && (
-                                    <motion.span
-                                        layoutId="activeNavTab"
-                                        className="absolute inset-0 bg-background border border-border/80 shadow-sm rounded-full -z-10"
-                                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                )}
+                                <span>{link.name}</span>
+                                {link.isExternal && (
+                                    <Rss
+                                        size={13}
+                                        className={clsx(
+                                            "transition-colors",
+                                            active
+                                                ? "text-primary"
+                                                : "text-amber-500 group-hover:text-amber-400"
+                                        )}
                                     />
                                 )}
-                                {link.name}
-                                {link.isExternal && <Rss size={13} className="text-muted-foreground/80" />}
                             </Link>
                         );
                     })}
@@ -100,12 +108,12 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     {onOpenSearch && (
                         <button
                             onClick={onOpenSearch}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/60 bg-secondary/40 hover:bg-secondary hover:border-primary/40 text-muted-foreground hover:text-foreground text-xs font-mono transition-all duration-150"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-zinc-700/80 bg-secondary/40 hover:bg-secondary hover:border-primary/40 text-muted-foreground hover:text-foreground text-xs font-mono transition-all duration-150"
                             title={`Search (${shortcutLabel})`}
                         >
                             <Search size={14} />
                             <span>Search</span>
-                            <kbd className="hidden lg:inline-block bg-background px-1.5 py-0.5 rounded text-[10px] border border-border text-muted-foreground font-mono">
+                            <kbd className="hidden lg:inline-block bg-background px-1.5 py-0.5 rounded text-[10px] border border-slate-300 dark:border-zinc-700 text-muted-foreground font-mono">
                                 {shortcutLabel}
                             </kbd>
                         </button>
@@ -158,7 +166,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         transition={{ duration: 0.2 }}
                         className="md:hidden border-b border-border bg-background/95 backdrop-blur-xl px-6 py-6"
                     >
-                        <nav className="flex flex-col gap-3">
+                        <nav className="flex flex-col gap-2.5">
                             {navLinks.map((link) => {
                                 const active = link.isActive;
                                 return (
@@ -168,21 +176,24 @@ export function Header({ onOpenSearch }: HeaderProps) {
                                         target={link.isExternal ? "_blank" : undefined}
                                         rel={link.isExternal ? "noopener noreferrer" : undefined}
                                         className={clsx(
-                                            "flex items-center justify-between py-2 text-base font-medium rounded-lg px-3 transition-colors",
+                                            "flex items-center justify-between py-2.5 text-sm font-medium rounded-xl px-3.5 transition-all border",
                                             active
-                                                ? "bg-primary/10 text-primary font-semibold"
-                                                : "text-foreground hover:bg-secondary/50"
+                                                ? "bg-primary/10 border-primary/50 dark:border-primary/60 text-primary font-semibold shadow-xs"
+                                                : "bg-secondary/30 dark:bg-zinc-900/50 border-slate-300 dark:border-zinc-700/80 text-foreground hover:bg-secondary/60 hover:border-primary/40"
                                         )}
                                     >
-                                        <span>{link.name}</span>
-                                        {link.isExternal && <Rss size={16} className="text-muted-foreground" />}
+                                        <span className="flex items-center gap-2">
+                                            {active && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+                                            <span>{link.name}</span>
+                                        </span>
+                                        {link.isExternal && <Rss size={15} className="text-amber-500" />}
                                     </Link>
                                 );
                             })}
-                            <div className="h-px bg-border/60 my-2" />
+                            <div className="h-px bg-slate-300/60 dark:bg-zinc-800 my-1.5" />
                             <Link
                                 href="/admin"
-                                className="flex items-center gap-2 py-2 px-3 text-sm text-muted-foreground hover:text-foreground rounded-lg"
+                                className="flex items-center gap-2 py-2.5 px-3.5 text-sm font-medium rounded-xl border border-slate-300 dark:border-zinc-700/80 bg-secondary/30 dark:bg-zinc-900/50 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
                             >
                                 <Terminal size={16} />
                                 <span>Admin Studio</span>
