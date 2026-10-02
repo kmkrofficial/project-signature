@@ -49,6 +49,7 @@ let mut server_config = ServerConfig::builder()
         tags: ["HTTP3", "QUIC", "Networking", "Architecture"],
         published: true,
         featured: true,
+        coverImage: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1600&q=80",
         views: 1420,
         likes: 84,
         createdAt: Timestamp.fromDate(new Date(Date.now() - 86400000 * 3)),

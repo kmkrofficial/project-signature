@@ -24,6 +24,11 @@ export async function PUT(
 
     try {
         const data = await req.json();
+
+        if (section === "blog" && data.featured && (!data.coverImage || typeof data.coverImage !== "string" || !data.coverImage.trim())) {
+            return NextResponse.json({ error: "Cover image is mandatory for spotlight articles." }, { status: 400 });
+        }
+
         await db.collection(section).doc(id).set(data, { merge: true });
         return NextResponse.json({ success: true, message: "Updated successfully" });
     } catch (error) {

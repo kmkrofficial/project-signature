@@ -251,6 +251,11 @@ export default function AdminStudio() {
             return;
         }
 
+        if (currentPost.featured && (!currentPost.coverImage || !currentPost.coverImage.trim())) {
+            addToast("A cover image is mandatory for Spotlight articles. Please upload or link a cover image.", "error");
+            return;
+        }
+
         setSaving(true);
         const postPayload = {
             title: currentPost.title.trim(),
@@ -725,9 +730,13 @@ export default function AdminStudio() {
                                 <input
                                     type="checkbox"
                                     checked={Boolean(currentPost.featured)}
-                                    onChange={(e) =>
-                                        setCurrentPost((prev) => ({ ...prev, featured: e.target.checked }))
-                                    }
+                                    onChange={(e) => {
+                                        const isFeatured = e.target.checked;
+                                        setCurrentPost((prev) => ({ ...prev, featured: isFeatured }));
+                                        if (isFeatured && (!currentPost.coverImage || !currentPost.coverImage.trim())) {
+                                            addToast("Spotlight enabled: Please ensure a cover image is uploaded for this article.", "info");
+                                        }
+                                    }}
                                     className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                                 />
                                 <span className={currentPost.featured ? "text-primary font-medium" : ""}>
@@ -879,13 +888,26 @@ export default function AdminStudio() {
                         </div>
 
                         {/* Cover Image */}
-                        <div className="space-y-1.5 md:col-span-2">
+                        <div className={`space-y-1.5 md:col-span-2 p-3.5 rounded-xl transition-all ${currentPost.featured ? (currentPost.coverImage ? "bg-primary/5 border border-primary/20" : "bg-amber-500/10 border border-amber-500/30") : ""}`}>
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Cover Image URL (Editorial Spotlight Hero)
+                                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                    <span>Cover Image URL (Editorial Spotlight Hero)</span>
+                                    {currentPost.featured && (
+                                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase tracking-wider border ${currentPost.coverImage ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/20 text-amber-500 dark:text-amber-400 border-amber-500/30 animate-pulse"}`}>
+                                            * Mandatory for Spotlight
+                                        </span>
+                                    )}
                                 </label>
-                                <span className="text-[11px] text-muted-foreground/70 font-mono">
-                                    Optional • Generates dynamic abstract gradient if empty
+                                <span className="text-[11px] font-mono">
+                                    {currentPost.featured ? (
+                                        currentPost.coverImage ? (
+                                            <span className="text-emerald-500 font-medium">✓ Cover image attached</span>
+                                        ) : (
+                                            <span className="text-amber-500 dark:text-amber-400 font-medium">Required before publishing</span>
+                                        )
+                                    ) : (
+                                        <span className="text-muted-foreground/70">Optional • Generates dynamic gradient if empty</span>
+                                    )}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -893,8 +915,8 @@ export default function AdminStudio() {
                                     type="url"
                                     value={currentPost.coverImage || ""}
                                     onChange={(e) => setCurrentPost((prev) => ({ ...prev, coverImage: e.target.value }))}
-                                    placeholder="https://images.unsplash.com/... or paste image URL"
-                                    className="flex-1 px-3.5 py-2 bg-secondary/40 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:border-primary transition-colors font-mono"
+                                    placeholder={currentPost.featured ? "https://images.unsplash.com/... (Cover image required for spotlight)" : "https://images.unsplash.com/... or paste image URL"}
+                                    className={`flex-1 px-3.5 py-2 bg-secondary/40 border rounded-xl text-xs text-foreground focus:outline-none transition-colors font-mono ${currentPost.featured && !currentPost.coverImage ? "border-amber-500/70 focus:border-amber-400" : "border-border focus:border-primary"}`}
                                 />
                                 {currentPost.coverImage && (
                                     <button
