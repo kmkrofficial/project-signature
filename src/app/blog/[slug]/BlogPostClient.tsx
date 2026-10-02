@@ -26,16 +26,21 @@ export function BlogPostClient() {
     const slug = params.slug as string;
     const { addToast } = useToast();
 
-    // Check synchronous client-side cache for instantaneous 0ms display
-    const cached = typeof window !== "undefined" ? getCachedPost(slug) : null;
-    const [post, setPost] = useState<BlogPost | null>(cached);
-    const [likes, setLikes] = useState(cached?.likes || 0);
+    const [post, setPost] = useState<BlogPost | null>(null);
+    const [likes, setLikes] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
-    const [loading, setLoading] = useState(!cached);
+    const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
 
     useEffect(() => {
+        const cached = getCachedPost(slug);
+        if (cached) {
+            setPost(cached);
+            setLikes(cached.likes || 0);
+            setLoading(false);
+        }
+
         const fetchPost = async () => {
             try {
                 const q = query(collection(db, "blog"), where("slug", "==", slug));
