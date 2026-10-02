@@ -160,7 +160,7 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
                                             placeholder="Your name"
                                             value={emailForm.name}
                                             onChange={e => setEmailForm({ ...emailForm, name: e.target.value })}
-                                            className="w-full bg-secondary/20 border border-border rounded-xl p-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                                            className="w-full bg-secondary/50 border border-border rounded-xl p-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
                                             required
                                         />
                                         <input
@@ -168,14 +168,14 @@ export function SocialsModal({ isOpen, onClose }: SocialsModalProps) {
                                             placeholder="Your email address"
                                             value={emailForm.email}
                                             onChange={e => setEmailForm({ ...emailForm, email: e.target.value })}
-                                            className="w-full bg-secondary/20 border border-border rounded-xl p-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                                            className="w-full bg-secondary/50 border border-border rounded-xl p-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
                                             required
                                         />
                                         <textarea
                                             placeholder="Your message..."
                                             value={emailForm.message}
                                             onChange={e => setEmailForm({ ...emailForm, message: e.target.value })}
-                                            className="w-full bg-secondary/20 border border-border rounded-xl p-2.5 text-sm focus:outline-none focus:border-primary h-28 resize-none transition-colors"
+                                            className="w-full bg-secondary/50 border border-border rounded-xl p-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 h-28 resize-none transition-colors"
                                             required
                                         />
                                         {errorMessage && (

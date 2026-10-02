@@ -27,8 +27,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (savedTheme === "light" || savedTheme === "technicalBlueprint") {
             requestAnimationFrame(() => setTheme("light"));
             document.documentElement.classList.add("light-mode");
+            document.documentElement.classList.remove("dark");
         } else {
             requestAnimationFrame(() => setTheme("dark"));
+            document.documentElement.classList.add("dark");
             document.documentElement.classList.remove("light-mode");
         }
     }, []);
@@ -38,7 +40,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("theme", newTheme);
         if (newTheme === "light") {
             document.documentElement.classList.add("light-mode");
+            document.documentElement.classList.remove("dark");
         } else {
+            document.documentElement.classList.add("dark");
             document.documentElement.classList.remove("light-mode");
         }
     };

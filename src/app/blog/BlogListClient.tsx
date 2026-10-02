@@ -231,7 +231,7 @@ export function BlogListClient() {
                                         {spotlightPost.tags.slice(0, 3).map(tag => (
                                             <span
                                                 key={tag}
-                                                className="px-2 py-0.5 rounded-md bg-secondary/60 text-[11px] font-mono text-muted-foreground"
+                                                className="px-2 py-0.5 rounded-md bg-secondary text-[11px] font-mono text-muted-foreground border border-border/50"
                                             >
                                                 #{tag}
                                             </span>
@@ -265,7 +265,7 @@ export function BlogListClient() {
                             {active && (
                                 <motion.span
                                     layoutId="activeCategoryTab"
-                                    className="absolute inset-0 bg-secondary border border-slate-300 dark:border-zinc-700 rounded-full shadow-sm -z-10"
+                                    className="absolute inset-0 bg-secondary border border-border rounded-full shadow-xs -z-10"
                                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                                 />
                             )}
@@ -285,7 +285,7 @@ export function BlogListClient() {
                         placeholder="Search articles, topics, or tags..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 text-sm bg-secondary/30 border border-slate-300 dark:border-zinc-700/80 rounded-xl focus:outline-none focus:border-primary/60 transition-colors"
+                        className="w-full pl-10 pr-4 py-2.5 text-sm bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 shadow-2xs transition-colors"
                     />
                 </div>
 
@@ -293,7 +293,7 @@ export function BlogListClient() {
                 <div className="relative shrink-0">
                     <button
                         onClick={() => setIsSortOpen(!isSortOpen)}
-                        className="flex items-center justify-between gap-2 px-3.5 py-2 text-xs font-medium bg-secondary/30 border border-slate-300 dark:border-zinc-700/80 rounded-xl hover:bg-secondary/60 transition-colors"
+                        className="flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs font-medium bg-card border border-border rounded-xl text-foreground hover:bg-secondary/50 shadow-2xs transition-colors cursor-pointer"
                     >
                         <SlidersHorizontal size={14} className="text-muted-foreground" />
                         <span>{sortLabels[sortOption]}</span>
@@ -303,7 +303,7 @@ export function BlogListClient() {
                     {isSortOpen && (
                         <>
                             <div className="fixed inset-0 z-20" onClick={() => setIsSortOpen(false)} />
-                            <div className="absolute right-0 top-full mt-2 w-44 bg-card border border-slate-300 dark:border-zinc-700 rounded-xl shadow-xl z-30 overflow-hidden py-1">
+                            <div className="absolute right-0 top-full mt-2 w-44 bg-card border border-border rounded-xl shadow-xl z-30 overflow-hidden py-1">
                                 {(Object.keys(sortLabels) as SortOption[]).map(option => (
                                     <button
                                         key={option}
@@ -312,7 +312,7 @@ export function BlogListClient() {
                                             setIsSortOpen(false);
                                         }}
                                         className={clsx(
-                                            "w-full text-left px-3.5 py-2 text-xs transition-colors flex items-center justify-between",
+                                            "w-full text-left px-3.5 py-2 text-xs transition-colors flex items-center justify-between cursor-pointer",
                                             sortOption === option ? "bg-primary/10 text-primary font-semibold" : "hover:bg-secondary text-muted-foreground hover:text-foreground"
                                         )}
                                     >
@@ -332,7 +332,7 @@ export function BlogListClient() {
                     <Loader2 className="animate-spin text-primary" size={32} />
                 </div>
             ) : currentPosts.length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-slate-300 dark:border-zinc-700/80 rounded-xl p-6">
+                <div className="text-center py-12 border border-dashed border-border rounded-xl p-6 bg-card/40">
                     <BookOpen size={32} className="mx-auto mb-2.5 text-muted-foreground/60" />
                     <h3 className="font-semibold text-base text-foreground mb-1">
                         {showSpotlight && spotlightPost && filteredAndSortedPosts.some(p => p.id === spotlightPost.id)
@@ -414,7 +414,7 @@ export function BlogListClient() {
                                             {post.tags.slice(0, 3).map(tag => (
                                                 <span
                                                     key={tag}
-                                                    className="px-2 py-0.5 rounded-md bg-secondary/50 text-[11px] font-mono text-muted-foreground"
+                                                    className="px-2 py-0.5 rounded-md bg-secondary text-[11px] font-mono text-muted-foreground border border-border/50"
                                                 >
                                                     #{tag}
                                                 </span>

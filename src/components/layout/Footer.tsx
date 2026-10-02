@@ -31,7 +31,7 @@ export function Footer() {
     }, []);
 
     return (
-        <footer className="border-t border-slate-300/80 dark:border-zinc-800 bg-background/40 mt-6 sm:mt-8 py-5 sm:py-6 transition-colors duration-200">
+        <footer className="border-t border-border bg-background/40 mt-6 sm:mt-8 py-5 sm:py-6 transition-colors duration-200">
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     {/* Brand & Copyright */}
@@ -40,7 +40,7 @@ export function Footer() {
                         <Link href="/" className="font-semibold text-sm text-foreground hover:text-primary transition-colors">
                             The Signature
                         </Link>
-                        <span className="text-border">|</span>
+                        <span className="text-muted-foreground/40">•</span>
                         <span>© {currentYear}</span>
                     </div>
 

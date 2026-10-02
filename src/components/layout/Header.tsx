@@ -83,8 +83,8 @@ export function Header({ onOpenSearch }: HeaderProps) {
                                 className={clsx(
                                     "relative px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 rounded-full flex items-center gap-1.5 border shadow-2xs group",
                                     active
-                                        ? "bg-primary/10 border-primary/50 dark:border-primary/60 text-primary font-semibold shadow-primary/10"
-                                        : "bg-secondary/40 dark:bg-zinc-900/50 border-slate-300 dark:border-zinc-700/90 text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-primary/40 dark:hover:border-primary/50"
+                                        ? "bg-primary/10 border-primary/50 text-primary font-semibold shadow-primary/10"
+                                        : "bg-secondary/60 border-border text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-primary/40"
                                 )}
                             >
                                 {active && (
@@ -113,12 +113,12 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     {onOpenSearch && (
                         <button
                             onClick={onOpenSearch}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-zinc-700/80 bg-secondary/40 hover:bg-secondary hover:border-primary/40 text-muted-foreground hover:text-foreground text-xs font-mono transition-all duration-150"
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-secondary/60 hover:bg-secondary hover:border-primary/40 text-muted-foreground hover:text-foreground text-xs font-mono transition-all duration-150 cursor-pointer"
                             title={`Search (${shortcutLabel})`}
                         >
                             <Search size={14} />
                             <span>Search</span>
-                            <kbd className="hidden lg:inline-block bg-background px-1.5 py-0.5 rounded text-[10px] border border-slate-300 dark:border-zinc-700 text-muted-foreground font-mono">
+                            <kbd className="hidden lg:inline-block bg-background px-1.5 py-0.5 rounded text-[10px] border border-border text-muted-foreground font-mono">
                                 {shortcutLabel}
                             </kbd>
                         </button>
@@ -183,8 +183,8 @@ export function Header({ onOpenSearch }: HeaderProps) {
                                         className={clsx(
                                             "flex items-center justify-between py-2.5 text-sm font-medium rounded-xl px-3.5 transition-all border",
                                             active
-                                                ? "bg-primary/10 border-primary/50 dark:border-primary/60 text-primary font-semibold shadow-xs"
-                                                : "bg-secondary/30 dark:bg-zinc-900/50 border-slate-300 dark:border-zinc-700/80 text-foreground hover:bg-secondary/60 hover:border-primary/40"
+                                                ? "bg-primary/10 border-primary/50 text-primary font-semibold shadow-xs"
+                                                : "bg-secondary/60 border-border text-foreground hover:bg-secondary hover:border-primary/40"
                                         )}
                                     >
                                         <span className="flex items-center gap-2">
@@ -195,10 +195,10 @@ export function Header({ onOpenSearch }: HeaderProps) {
                                     </Link>
                                 );
                             })}
-                            <div className="h-px bg-slate-300/60 dark:bg-zinc-800 my-1.5" />
+                            <div className="h-px bg-border my-1.5" />
                             <Link
                                 href="/admin"
-                                className="flex items-center gap-2 py-2.5 px-3.5 text-sm font-medium rounded-xl border border-slate-300 dark:border-zinc-700/80 bg-secondary/30 dark:bg-zinc-900/50 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
+                                className="flex items-center gap-2 py-2.5 px-3.5 text-sm font-medium rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
                             >
                                 <Terminal size={16} />
                                 <span>Admin Studio</span>

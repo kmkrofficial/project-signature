@@ -330,7 +330,7 @@ export function BlogPostClient() {
                             {post.tags.map((tag) => (
                                 <span
                                     key={tag}
-                                    className="px-2.5 py-1 rounded-full bg-secondary/50 text-xs font-mono text-muted-foreground border border-slate-300/60 dark:border-zinc-800"
+                                    className="px-2.5 py-1 rounded-full bg-secondary text-xs font-mono text-muted-foreground border border-border/60"
                                 >
                                     #{tag}
                                 </span>
@@ -342,7 +342,7 @@ export function BlogPostClient() {
                     <aside className="hidden lg:block relative h-full">
                         <div className="sticky top-20 space-y-4">
                             {/* Article Interactions Card */}
-                            <div className="p-3.5 rounded-2xl bg-card border border-slate-300/80 dark:border-zinc-800 shadow-2xs">
+                            <div className="p-3.5 rounded-2xl bg-card border border-border shadow-xs">
                                 <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground mb-2.5 px-0.5">
                                     <span className="uppercase tracking-wider font-semibold">Article Actions</span>
                                     {post.views !== undefined && post.views > 0 && (
@@ -361,7 +361,7 @@ export function BlogPostClient() {
                                             "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-2xs group",
                                             hasLiked
                                                 ? "border-rose-500/50 bg-rose-500/10 text-rose-500 shadow-rose-500/10"
-                                                : "border-slate-300 dark:border-zinc-700/80 bg-secondary/40 hover:bg-secondary hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                                                : "border-border bg-secondary/60 hover:bg-secondary hover:border-primary/50 text-muted-foreground hover:text-foreground"
                                         )}
                                         title={hasLiked ? "Unlike article" : "Like this article"}
                                     >
@@ -382,7 +382,7 @@ export function BlogPostClient() {
                                             "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-medium transition-all active:scale-95 cursor-pointer shadow-2xs group",
                                             copiedLink
                                                 ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500 font-semibold"
-                                                : "border-slate-300 dark:border-zinc-700/80 bg-secondary/40 hover:bg-secondary hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                                                : "border-border bg-secondary/60 hover:bg-secondary hover:border-primary/50 text-muted-foreground hover:text-foreground"
                                         )}
                                         title="Share or copy article link"
                                     >

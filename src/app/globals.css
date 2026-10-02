@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: rgb(var(--background));
   --color-foreground: rgb(var(--foreground));
@@ -28,7 +30,8 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-:root {
+:root,
+.dark {
   /* Dark Mode by Default (Matte Graphite / Deep Slate) */
   --background: 13 15 18;
   --foreground: 243 244 246;
@@ -55,29 +58,30 @@
   --radius: 0.5rem;
 }
 
-.light-mode {
-  /* Editorial Light Mode (Warm Architectural Drafting Paper) */
-  --background: 250 250 252;
-  --foreground: 17 24 39;
+.light-mode,
+:root:not(.dark) {
+  /* Architectural Editorial Light Mode */
+  --background: 248 250 252;          /* Clean, crisp off-white canvas (slate-50) */
+  --foreground: 15 23 42;             /* High-contrast deep slate-900 */
 
-  --primary: 14 116 144;
+  --primary: 8 145 178;               /* Rich Cyan 600 - vibrant, readable, WCAG AAA */
   --primary-foreground: 255 255 255;
 
-  --secondary: 241 245 249;
-  --secondary-foreground: 17 24 39;
+  --secondary: 241 245 249;           /* Slate 100 surface for chips, pills, inputs */
+  --secondary-foreground: 15 23 42;   /* Slate 900 */
 
-  --accent: 5 150 105;
+  --accent: 13 148 136;               /* Teal 600 */
   --accent-foreground: 255 255 255;
 
-  --muted: 243 244 246;
-  --muted-foreground: 107 114 128;
+  --muted: 241 245 249;               /* Slate 100 */
+  --muted-foreground: 71 85 105;      /* Slate 600 - high contrast, crisp legibility */
 
-  --card: 255 255 255;
-  --card-foreground: 17 24 39;
+  --card: 255 255 255;                /* Pure white card elevation */
+  --card-foreground: 15 23 42;        /* Slate 900 */
 
-  --border: 229 231 235;
-  --input: 229 231 235;
-  --ring: 14 116 144;
+  --border: 226 232 240;              /* Slate 200 - structural definition */
+  --input: 226 232 240;               /* Slate 200 */
+  --ring: 8 145 178;
 }
 
 @layer base {
@@ -169,9 +173,9 @@
 
 .light-mode .bg-ambient-glow {
   background: 
-    radial-gradient(ellipse 65% 340px at 50% -70px, rgba(14, 116, 144, 0.07), transparent),
-    radial-gradient(ellipse 40% 260px at 80% -50px, rgba(245, 158, 11, 0.05), transparent),
-    radial-gradient(ellipse 40% 260px at 20% -50px, rgba(5, 150, 105, 0.04), transparent);
+    radial-gradient(ellipse 70% 360px at 50% -60px, rgba(8, 145, 178, 0.09), transparent),
+    radial-gradient(ellipse 45% 280px at 85% -40px, rgba(99, 102, 241, 0.06), transparent),
+    radial-gradient(ellipse 45% 280px at 15% -40px, rgba(13, 148, 136, 0.05), transparent);
 }
 
 .bg-grid-pattern {
@@ -186,9 +190,9 @@
 }
 
 .light-mode .bg-grid-pattern {
-  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-  mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 15%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 15%, transparent 80%);
+  background-image: radial-gradient(rgba(15, 23, 42, 0.075) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 25%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 25%, transparent 85%);
 }
 
 .top-hairline {
@@ -203,5 +207,5 @@
 }
 
 .light-mode .top-hairline {
-  background: linear-gradient(90deg, transparent 0%, rgba(14, 116, 144, 0.25) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(8, 145, 178, 0.35) 50%, transparent 100%);
 }
