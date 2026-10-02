@@ -2,103 +2,66 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "deepSystem" | "technicalBlueprint";
+export type Theme = "dark" | "light" | "deepSystem" | "technicalBlueprint";
 
 interface ThemeContextType {
-    theme: Theme;
+    theme: "dark" | "light";
+    isDark: boolean;
     toggleTheme: () => void;
+    selectTheme: (theme: "dark" | "light") => void;
     hasSelectedTheme: boolean;
-    selectTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>("deepSystem");
-    const [hasSelectedTheme, setHasSelectedTheme] = useState(false);
+    const [theme, setTheme] = useState<"dark" | "light">("dark");
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        const savedTheme = localStorage.getItem("theme") as Theme;
-        if (savedTheme) {
-            setTheme(savedTheme);
-            setHasSelectedTheme(true);
+        setMounted(true);
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "light" || savedTheme === "technicalBlueprint") {
+            setTheme("light");
+            document.documentElement.classList.add("light-mode");
+        } else {
+            setTheme("dark");
+            document.documentElement.classList.remove("light-mode");
         }
     }, []);
 
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (theme === "technicalBlueprint") {
-            root.classList.add("light-mode");
-        } else {
-            root.classList.remove("light-mode");
-        }
-        if (hasSelectedTheme) {
-            localStorage.setItem("theme", theme);
-        }
-    }, [theme, hasSelectedTheme]);
-
     const toggleTheme = () => {
-        const newTheme = theme === "deepSystem" ? "technicalBlueprint" : "deepSystem";
+        const nextTheme = theme === "dark" ? "light" : "dark";
+        setTheme(nextTheme);
+        localStorage.setItem("theme", nextTheme);
 
-        // Create transition overlay
-        const overlay = document.createElement("div");
-        overlay.style.position = "fixed";
-        overlay.style.inset = "0";
-        overlay.style.zIndex = "9999";
-        // The overlay color should be the NEW theme's background to "wipe" it in
-        overlay.style.backgroundColor = newTheme === "deepSystem" ? "#0a0a0a" : "#f0f9ff";
-
-        // Start from right (off-screen)
-        overlay.style.transform = "translateX(100%)";
-        overlay.style.transition = "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
-
-        document.body.appendChild(overlay);
-
-        // Force reflow
-        overlay.getBoundingClientRect();
-
-        // Animate in (cover screen)
-        requestAnimationFrame(() => {
-            overlay.style.transform = "translateX(0%)";
-        });
-
-        // Wait for cover, then switch theme, then animate out?
-        // Actually, if we wipe IN the new color, we can just leave it there?
-        // No, because it's an overlay. We need to remove it.
-
-        // Better: Wipe IN, switch theme behind it, then fade out? 
-        // Or Wipe IN (cover), switch theme, Wipe OUT (reveal)?
-        // Let's do Wipe IN -> Switch -> Wipe OUT to the left.
-
-        setTimeout(() => {
-            setTheme(newTheme);
-            setHasSelectedTheme(true);
-
-            // Continue moving to the left (wipe away)
-            // But if we move to left, it reveals what's behind.
-            // Since we switched theme, what's behind is the NEW theme.
-            // So it will look like the overlay passes through.
-
-            // Wait a tiny bit for React to render the new theme
-            setTimeout(() => {
-                overlay.style.transform = "translateX(-100%)";
-
-                // Remove after animation
-                setTimeout(() => {
-                    document.body.removeChild(overlay);
-                }, 500);
-            }, 50);
-
-        }, 500); // Wait for first animation to finish
+        if (nextTheme === "light") {
+            document.documentElement.classList.add("light-mode");
+        } else {
+            document.documentElement.classList.remove("light-mode");
+        }
     };
 
-    const selectTheme = (newTheme: Theme) => {
+    const selectTheme = (newTheme: "dark" | "light") => {
         setTheme(newTheme);
-        setHasSelectedTheme(true);
+        localStorage.setItem("theme", newTheme);
+        if (newTheme === "light") {
+            document.documentElement.classList.add("light-mode");
+        } else {
+            document.documentElement.classList.remove("light-mode");
+        }
     };
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme, hasSelectedTheme, selectTheme }}>
+        <ThemeContext.Provider
+            value={{
+                theme,
+                isDark: theme === "dark",
+                toggleTheme,
+                selectTheme,
+                hasSelectedTheme: true,
+            }}
+        >
             {children}
         </ThemeContext.Provider>
     );

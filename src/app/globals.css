@@ -24,94 +24,60 @@
   --color-input: rgb(var(--input));
   --color-ring: rgb(var(--ring));
 
-  --font-mono: var(--font-geist-mono), monospace;
-  --font-sans: var(--font-geist-sans), sans-serif;
-
-  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-glitch: glitch 1s linear infinite;
-
-  @keyframes glitch {
-
-    2%,
-    64% {
-      transform: translate(2px, 0) skew(0deg);
-    }
-
-    4%,
-    60% {
-      transform: translate(-2px, 0) skew(0deg);
-    }
-
-    62% {
-      transform: translate(0, 0) skew(5deg);
-    }
-  }
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 :root {
-  /* Deep System (Dark Mode - Default) */
-  --background: 10 10 10;
-  /* #0a0a0a */
-  --foreground: 240 240 240;
+  /* Dark Mode by Default (Matte Graphite / Deep Slate) */
+  --background: 13 15 18;
+  --foreground: 243 244 246;
 
   --primary: 6 182 212;
-  /* Cyan-500 #06b6d4 */
-  --primary-foreground: 10 10 10;
+  --primary-foreground: 13 15 18;
 
-  --secondary: 30 41 59;
-  /* Slate-800 */
-  --secondary-foreground: 248 250 252;
+  --secondary: 25 28 35;
+  --secondary-foreground: 243 244 246;
 
-  --accent: 245 158 11;
-  /* Amber-500 */
-  --accent-foreground: 10 10 10;
+  --accent: 16 185 129;
+  --accent-foreground: 13 15 18;
 
-  --muted: 30 41 59;
-  --muted-foreground: 148 163 184;
+  --muted: 22 25 32;
+  --muted-foreground: 156 163 175;
 
-  --card: 15 23 42;
-  /* Slate-950 */
-  --card-foreground: 240 240 240;
+  --card: 19 21 26;
+  --card-foreground: 243 244 246;
 
-  --border: 51 65 85;
-  --input: 51 65 85;
+  --border: 34 38 48;
+  --input: 34 38 48;
   --ring: 6 182 212;
 
-  --radius: 0.25rem;
-
-  /* Grid Pattern for Technical Blueprint */
-  --grid-color: 30 41 59;
+  --radius: 0.5rem;
 }
 
 .light-mode {
-  /* Technical Blueprint (Light Mode) */
-  --background: 240 249 255;
-  /* Sky-50 */
-  --foreground: 15 23 42;
+  /* Editorial Light Mode (Warm Architectural Drafting Paper) */
+  --background: 250 250 252;
+  --foreground: 17 24 39;
 
-  --primary: 3 105 161;
-  /* Sky-700 */
+  --primary: 14 116 144;
   --primary-foreground: 255 255 255;
 
-  --secondary: 226 232 240;
-  /* Slate-200 */
-  --secondary-foreground: 15 23 42;
+  --secondary: 241 245 249;
+  --secondary-foreground: 17 24 39;
 
-  --accent: 220 38 38;
-  /* Red-600 */
+  --accent: 5 150 105;
   --accent-foreground: 255 255 255;
 
-  --muted: 241 245 249;
-  --muted-foreground: 100 116 139;
+  --muted: 243 244 246;
+  --muted-foreground: 107 114 128;
 
   --card: 255 255 255;
-  --card-foreground: 15 23 42;
+  --card-foreground: 17 24 39;
 
-  --border: 203 213 225;
-  --input: 203 213 225;
-  --ring: 3 105 161;
-
-  --grid-color: 203 213 225;
+  --border: 229 231 235;
+  --input: 229 231 235;
+  --ring: 14 116 144;
 }
 
 @layer base {
@@ -121,27 +87,50 @@
 
   html {
     scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-background text-foreground font-mono antialiased transition-colors duration-500;
-    background-image:
-      linear-gradient(to right, rgba(var(--grid-color), 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(var(--grid-color), 0.1) 1px, transparent 1px);
-    background-size: 40px 40px;
+    @apply bg-background text-foreground font-sans min-h-screen transition-colors duration-200;
+  }
+
+  /* Custom Clean Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(var(--border), 0.8);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--muted-foreground), 0.5);
   }
 }
 
 @layer utilities {
-  .text-glow {
-    text-shadow: 0 0 10px rgba(var(--primary), 0.5);
+  /* Editorial Reading Measure (Medium style 680px) */
+  .reading-measure {
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .border-glow {
-    box-shadow: 0 0 10px rgba(var(--primary), 0.3);
+  /* Breakout canvas for diagrams and wide code blocks */
+  .breakout-measure {
+    max-width: 56rem; /* 896px / max-w-4xl */
   }
 
-  .glass-panel {
-    @apply bg-card/80 backdrop-blur-md border border-white/10;
+  /* Subtle card highlight */
+  .card-subtle {
+    @apply bg-card border border-border/80 rounded-xl transition-all duration-200 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5;
   }
 }

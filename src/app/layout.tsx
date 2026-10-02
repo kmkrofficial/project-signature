@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-geist-sans" });
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
-
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { ToastProvider } from "@/context/ToastContext";
 
+const geistSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   let config = {
-    siteTitle: "Keerthi Raajan K M | Full-Stack AI Engineer",
-    siteDescription: "Digital Nervous System of Keerthi Raajan K M - Architecting high-availability systems and AI integration.",
+    siteTitle: "Keerthi Raajan | Engineering Journal & Architecture",
+    siteDescription: "Technical essays on distributed systems, full-stack AI integration, and high-availability software craft.",
     ogImageUrl: "",
   };
 
@@ -30,12 +37,18 @@ export async function generateMetadata(): Promise<Metadata> {
       };
     }
   } catch (error) {
-    console.warn(`[Layout] Error fetching metadata from Firestore (config/site):`, error);
+    console.warn(`[Layout] Error fetching metadata from Firestore:`, error);
   }
 
   return {
     title: config.siteTitle,
     description: config.siteDescription,
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://keerthiraajan.dev"),
+    alternates: {
+      types: {
+        "application/rss+xml": "/feed.xml",
+      },
+    },
     openGraph: {
       title: config.siteTitle,
       description: config.siteDescription,
@@ -51,7 +64,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-mono`}>
+      <head>
+        <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
         <ToastProvider>
           <AppShell>
             {children}

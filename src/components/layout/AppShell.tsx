@@ -1,31 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Navigation } from "@/components/layout/Navigation";
-import { BlogNavigation } from "@/components/blog/BlogNavigation";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { SearchModal } from "@/components/blog/SearchModal";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { FirebaseAnalytics } from "@/components/providers/FirebaseAnalytics";
-import { Footer } from "@/components/layout/Footer";
-
 
 export function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const isCMS = pathname?.startsWith("/cms");
-    const isBlog = pathname?.startsWith("/blog");
+    const isAdmin = pathname?.startsWith("/admin");
+    const [searchOpen, setSearchOpen] = useState(false);
+
+    // Global Cmd+K / Ctrl+K shortcut listener
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+                e.preventDefault();
+                setSearchOpen((prev) => !prev);
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, []);
 
     return (
         <ThemeProvider>
-            {!isCMS && (isBlog ? <BlogNavigation /> : <Navigation />)}
+            {!isAdmin && <Header onOpenSearch={() => setSearchOpen(true)} />}
 
-            <main className={!isCMS && !isBlog ? "lg:pl-20 min-h-screen" : "min-h-screen"}>
+            <main className="min-h-screen">
                 {children}
             </main>
 
-            {!isCMS && <Footer />}
+            {!isAdmin && <Footer />}
 
+            <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
             <Analytics />
             <SpeedInsights />
