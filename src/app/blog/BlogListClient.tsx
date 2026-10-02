@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Tag, ArrowRight, BookOpen, Loader2, Eye, Heart, ChevronLeft, ChevronRight, SlidersHorizontal, ChevronDown, Clock, Calendar, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { Search, ArrowRight, BookOpen, Loader2, Eye, Heart, ChevronLeft, ChevronRight, SlidersHorizontal, ChevronDown, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
@@ -156,38 +156,8 @@ export function BlogListClient() {
         likes: "Most Liked",
     };
 
-    const featuredPost = posts.find(p => p.featured) || (posts.length > 0 ? posts[0] : null);
-
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-            {/* Author Intro Header (Quiet, Classy Editorial) */}
-            <header className="mb-7 sm:mb-8 border-b border-border/60 pb-5 sm:pb-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                    <div>
-                        <div className="flex items-center gap-2 text-primary text-xs font-mono tracking-wider uppercase mb-2">
-                            <Sparkles size={14} />
-                            <span>Personal Blog</span>
-                        </div>
-                        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-2.5">
-                            Thoughts on technology, software, and building projects.
-                        </h1>
-                        <p className="text-muted-foreground text-sm sm:text-base max-w-2xl leading-relaxed">
-                            Hi, I’m Keerthi Raajan. I write about modern tech, how software works behind the scenes, and practical lessons from building digital products.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-4 mt-4 text-xs sm:text-sm">
-                    <Link
-                        href="/about"
-                        className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline group"
-                    >
-                        <span>Learn more about me & my work</span>
-                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                </div>
-            </header>
-
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
             {/* Predefined Categories (Sliding Capsule Indicator) */}
             <div className="flex gap-2 overflow-x-auto pb-2 mb-5 no-scrollbar mask-gradient-right">
                 {PREDEFINED_CATEGORIES.map(category => {

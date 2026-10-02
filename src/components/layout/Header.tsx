@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/components/layout/ThemeProvider";
-import { Search, Sun, Moon, Rss, Menu, X, BookOpen, User, Terminal } from "lucide-react";
+import { Search, Sun, Moon, Rss, Menu, X, Terminal } from "lucide-react";
 import { clsx } from "clsx";
 
 interface HeaderProps {
@@ -16,6 +16,15 @@ export function Header({ onOpenSearch }: HeaderProps) {
     const { theme, toggleTheme } = useTheme();
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [shortcutLabel, setShortcutLabel] = useState("Ctrl + K");
+
+    // Detect operating system for shortcut label (Cmd + K on macOS, Ctrl + K on others)
+    useEffect(() => {
+        if (typeof window !== "undefined" && typeof navigator !== "undefined") {
+            const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent || navigator.platform);
+            setShortcutLabel(isMac ? "Cmd + K" : "Ctrl + K");
+        }
+    }, []);
 
     // Close mobile drawer on route change
     useEffect(() => {
@@ -50,10 +59,10 @@ export function Header({ onOpenSearch }: HeaderProps) {
                 >
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="font-bold tracking-tight text-lg text-foreground group-hover:text-primary transition-colors">
-                        Keerthi Raajan
+                        The Signature
                     </span>
                     <span className="hidden sm:inline-block text-xs font-mono text-muted-foreground border border-border/80 px-1.5 py-0.5 rounded bg-secondary/50">
-                        Engineer
+                        Blog
                     </span>
                 </Link>
 
@@ -93,12 +102,12 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         <button
                             onClick={onOpenSearch}
                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/60 bg-secondary/40 hover:bg-secondary hover:border-primary/40 text-muted-foreground hover:text-foreground text-xs font-mono transition-all duration-150"
-                            title="Quick Search"
+                            title={`Search (${shortcutLabel})`}
                         >
                             <Search size={14} />
                             <span>Search</span>
-                            <kbd className="hidden lg:inline-block bg-background px-1.5 py-0.5 rounded text-[10px] border border-border text-muted-foreground">
-                                ⌘K
+                            <kbd className="hidden lg:inline-block bg-background px-1.5 py-0.5 rounded text-[10px] border border-border text-muted-foreground font-mono">
+                                {shortcutLabel}
                             </kbd>
                         </button>
                     )}
