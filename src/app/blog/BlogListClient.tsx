@@ -234,6 +234,7 @@ export function BlogListClient() {
                                             src={currentSpotlightPost.coverImage}
                                             alt={currentSpotlightPost.title}
                                             fill
+                                            priority
                                             sizes="(max-width: 768px) 100vw, 42vw"
                                             className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                                         />
