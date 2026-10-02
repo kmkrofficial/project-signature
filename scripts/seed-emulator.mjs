@@ -6,17 +6,19 @@
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
 
-import admin from "firebase-admin";
+import { initializeApp, getApps } from "firebase-admin/app";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 
 const projectId = "project-signature-2d8f9";
 
-if (!admin.apps.length) {
-    admin.initializeApp({
+if (!getApps().length) {
+    initializeApp({
         projectId,
     });
 }
 
-const db = admin.firestore();
+const db = getFirestore();
 
 const SEED_POSTS = [
     {
@@ -49,8 +51,8 @@ let mut server_config = ServerConfig::builder()
         featured: true,
         views: 1420,
         likes: 84,
-        createdAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 86400000 * 3)),
-        updatedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 86400000 * 3)),
+        createdAt: Timestamp.fromDate(new Date(Date.now() - 86400000 * 3)),
+        updatedAt: Timestamp.fromDate(new Date(Date.now() - 86400000 * 3)),
     },
     {
         id: "post-in-memory-caches",
@@ -78,8 +80,8 @@ This guarantees zero latency spikes and steady backend resource utilization.`,
         featured: false,
         views: 950,
         likes: 62,
-        createdAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 86400000 * 7)),
-        updatedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 86400000 * 7)),
+        createdAt: Timestamp.fromDate(new Date(Date.now() - 86400000 * 7)),
+        updatedAt: Timestamp.fromDate(new Date(Date.now() - 86400000 * 7)),
     },
     {
         id: "post-agentic-workflows",
@@ -98,8 +100,8 @@ By constraining agent actions to strictly typed schemas and isolated workspaces,
         featured: false,
         views: 610,
         likes: 42,
-        createdAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 86400000 * 12)),
-        updatedAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() - 86400000 * 12)),
+        createdAt: Timestamp.fromDate(new Date(Date.now() - 86400000 * 12)),
+        updatedAt: Timestamp.fromDate(new Date(Date.now() - 86400000 * 12)),
     },
 ];
 
@@ -119,13 +121,13 @@ async function seed() {
         bio: "Writing about modern tech, how software works behind the scenes, and practical lessons from building digital products.",
         github: "https://github.com/kmkrofficial",
         linkedin: "https://linkedin.com/in/keerthiraajan",
-        updatedAt: admin.firestore.Timestamp.now(),
+        updatedAt: Timestamp.now(),
     });
     console.log("  ✓ Created site configuration document (config/site)");
 
     // Also seed a default admin user into the Auth emulator
     try {
-        const auth = admin.auth();
+        const auth = getAuth();
         const testEmail = "kmkrworks@gmail.com";
         try {
             await auth.getUserByEmail(testEmail);
