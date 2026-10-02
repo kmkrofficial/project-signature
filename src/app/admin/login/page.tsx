@@ -3,15 +3,19 @@
 import React, { useState } from "react";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { Terminal, AlertCircle } from "lucide-react";
+import { Sparkles, AlertCircle, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import Link from "next/link";
 
 export default function LoginPage() {
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleGoogleLogin = async () => {
+        setLoading(true);
+        setError("");
         try {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
@@ -19,40 +23,41 @@ export default function LoginPage() {
         } catch (err: any) {
             console.error("Login error:", err);
             setError(err.message || "Access Denied: Google Auth Failed");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-md bg-card border border-border p-8 rounded-lg shadow-2xl relative overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="w-full max-w-md bg-card border border-border/80 p-8 rounded-2xl shadow-2xl relative overflow-hidden"
             >
-                {/* Decorative header line */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
-
-                <div className="flex items-center gap-3 mb-8 text-primary">
-                    <Terminal size={24} />
-                    <h1 className="text-xl font-bold tracking-wider">SYSTEM ADMIN // LOGIN</h1>
+                <div className="flex items-center gap-2 mb-6 text-primary text-xs font-mono">
+                    <Sparkles size={14} />
+                    <span>Content Studio</span>
                 </div>
 
+                <h1 className="text-2xl font-bold text-foreground mb-2">Admin Authentication</h1>
+                <p className="text-sm text-muted-foreground mb-6">
+                    Sign in with your authorized Google account to manage essays and site content.
+                </p>
+
                 {error && (
-                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/50 text-red-500 flex items-center gap-2 rounded text-sm">
-                        <AlertCircle size={16} />
-                        {error}
+                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 text-red-500 flex items-center gap-2 rounded-xl text-xs">
+                        <AlertCircle size={16} className="shrink-0" />
+                        <span>{error}</span>
                     </div>
                 )}
 
                 <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground text-center mb-6">
-                        Authenticate with your authorized Google account to access the system.
-                    </p>
-
                     <button
                         type="button"
                         onClick={handleGoogleLogin}
-                        className="w-full bg-primary text-primary-foreground font-bold py-4 rounded hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-3 text-sm shadow-lg hover:shadow-primary/20"
+                        disabled={loading}
+                        className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-3 text-sm shadow-md hover:shadow-primary/20 disabled:opacity-50"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path
@@ -72,14 +77,18 @@ export default function LoginPage() {
                                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                             />
                         </svg>
-                        AUTHENTICATE WITH GOOGLE
+                        <span>{loading ? "Authenticating..." : "Continue with Google"}</span>
                     </button>
-                </div>
 
-                <div className="mt-8 pt-6 border-t border-border">
-                    <p className="text-xs text-muted-foreground text-center">
-                        Only authorized personnel may access this portal.
-                    </p>
+                    <div className="pt-4 text-center">
+                        <Link
+                            href="/"
+                            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <ArrowLeft size={13} />
+                            <span>Return to Public Site</span>
+                        </Link>
+                    </div>
                 </div>
             </motion.div>
         </div>
