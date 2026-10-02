@@ -18,7 +18,7 @@ import {
 import { PORTFOLIO_CONFIG } from "@/lib/portfolio-config";
 
 export const metadata: Metadata = {
-    title: "About the Author | Keerthi's Signature",
+    title: "About the Author",
     description: "Background, engineering philosophy, selected projects, and career timeline of Keerthi Raajan.",
 };
 
