@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Calendar, Clock, Tag, Loader2, Eye, Heart, Share2, Bookmark, Check } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag, Loader2, Eye, Heart, Share2, Check } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -37,7 +37,6 @@ export function BlogPostClient() {
     const [post, setPost] = useState<BlogPost | null>(null);
     const [likes, setLikes] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
-    const [isBookmarked, setIsBookmarked] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
@@ -90,8 +89,6 @@ export function BlogPostClient() {
                         if (sessionStorage.getItem(`liked_${docSnap.id}`)) {
                             setHasLiked(true);
                         }
-                        const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-                        setIsBookmarked(bookmarks.includes(postData.slug));
                     }
                 }
             } catch (error) {
@@ -127,24 +124,6 @@ export function BlogPostClient() {
                 likes: increment(1),
             }).catch(() => {});
         }
-    };
-
-    // Optimistic Bookmark Handler
-    const handleToggleBookmark = () => {
-        if (!post) return;
-        const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-        let updated: string[];
-
-        if (isBookmarked) {
-            updated = bookmarks.filter((s: string) => s !== post.slug);
-            setIsBookmarked(false);
-            addToast("Removed from saved articles", "info");
-        } else {
-            updated = [...bookmarks, post.slug];
-            setIsBookmarked(true);
-            addToast("Saved to reading list", "success");
-        }
-        localStorage.setItem("bookmarks", JSON.stringify(updated));
     };
 
     // Copy Link
@@ -245,7 +224,7 @@ export function BlogPostClient() {
                                     )}
                                 </div>
 
-                                {/* Article Actions (Bookmark, Like, Share) */}
+                                {/* Article Actions (Like, Share) */}
                                 <div className="flex items-center gap-2 self-start sm:self-auto">
                                     <button
                                         onClick={handleLike}
@@ -259,19 +238,6 @@ export function BlogPostClient() {
                                     >
                                         <Heart size={14} className={clsx(hasLiked && "fill-current")} />
                                         <span>{likes}</span>
-                                    </button>
-
-                                    <button
-                                        onClick={handleToggleBookmark}
-                                        className={clsx(
-                                            "p-1.5 sm:p-2 rounded-full border text-xs transition-colors cursor-pointer",
-                                            isBookmarked
-                                                ? "border-primary/40 bg-primary/10 text-primary"
-                                                : "border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground"
-                                        )}
-                                        title={isBookmarked ? "Remove bookmark" : "Save for later"}
-                                    >
-                                        <Bookmark size={14} className={clsx(isBookmarked && "fill-current")} />
                                     </button>
 
                                     <button
