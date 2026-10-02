@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { List } from "lucide-react";
+import { List, ArrowUp } from "lucide-react";
 import { clsx } from "clsx";
 
 interface TocItem {
@@ -60,7 +60,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
         return () => observer.disconnect();
     }, [content]);
 
-    if (headings.length < 2) return null;
+    if (headings.length === 0) return null;
 
     const handleScrollTo = (id: string) => {
         const el = document.getElementById(id);
@@ -73,7 +73,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
     return (
         <nav
             aria-label="Table of Contents"
-            className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pl-4 border-l border-border/60 text-xs"
+            className="max-h-[calc(100vh-8rem)] overflow-y-auto pl-4 border-l border-border/60 text-xs"
         >
             <p className="font-mono uppercase tracking-wider text-[11px] text-muted-foreground font-semibold mb-3 flex items-center gap-1.5">
                 <List size={12} className="text-primary" />
@@ -99,6 +99,16 @@ export function TableOfContents({ content }: TableOfContentsProps) {
                     );
                 })}
             </ul>
+
+            <div className="pt-4 mt-4 border-t border-border/40">
+                <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="text-[11px] font-mono text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                    <ArrowUp size={12} />
+                    <span>Back to top</span>
+                </button>
+            </div>
         </nav>
     );
 }

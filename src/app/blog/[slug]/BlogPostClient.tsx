@@ -198,7 +198,7 @@ export function BlogPostClient() {
                     <span>All Articles</span>
                 </Link>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-12 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-12 relative">
                     {/* Main Article Column */}
                     <div className="min-w-0">
                         {/* Article Header */}
@@ -382,9 +382,11 @@ export function BlogPostClient() {
                         </div>
                     </div>
 
-                    {/* Right-Side Table of Contents (Exclusively on the right) */}
-                    <aside className="hidden lg:block">
-                        <TableOfContents content={post.content} />
+                    {/* Right-Side Table of Contents (Permanently sticky sidebar) */}
+                    <aside className="hidden lg:block relative h-full">
+                        <div className="sticky top-24">
+                            <TableOfContents content={post.content} />
+                        </div>
                     </aside>
                 </div>
             </div>
