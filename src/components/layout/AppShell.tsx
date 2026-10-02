@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { FirebaseAnalytics } from "@/components/providers/FirebaseAnalytics";
+import { RouteProgressBar } from "@/components/layout/RouteProgressBar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -29,6 +30,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     return (
         <ThemeProvider>
+            {/* Instant Navigation Route Progress */}
+            <RouteProgressBar />
+
             {/* CSS-Only Ambient Horizon & Grid Background */}
             <div className="bg-ambient-glow" aria-hidden="true" />
             <div className="bg-grid-pattern" aria-hidden="true" />

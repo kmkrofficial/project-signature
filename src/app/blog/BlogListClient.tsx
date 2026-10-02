@@ -8,6 +8,7 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { clsx } from "clsx";
 import { SpotlightCoverFallback } from "@/components/blog/SpotlightCoverFallback";
+import { primePostCache } from "@/lib/blogCache";
 
 export interface BlogPost {
     id: string;
@@ -84,6 +85,7 @@ export function BlogListClient() {
                 }) as BlogPost[];
 
                 setPosts(postsData);
+                primePostCache(postsData);
             } catch (error) {
                 console.error("Error fetching posts:", error);
             } finally {

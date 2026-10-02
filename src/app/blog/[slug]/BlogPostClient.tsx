@@ -1,20 +1,23 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Calendar, Clock, Tag, Loader2, Eye, Heart, Share2, Check } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag, Eye, Heart, Share2, Check } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, updateDoc, increment, doc } from "firebase/firestore";
-import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
 import { ReadingProgressBar } from "@/components/blog/ReadingProgressBar";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { CodeBlock } from "@/components/blog/CodeBlock";
 import { useToast } from "@/context/ToastContext";
 import { toFriendlyCategory } from "@/app/blog/BlogListClient";
 import { clsx } from "clsx";
+import { getCachedPost, setCachedPost } from "@/lib/blogCache";
+import { ArticleSkeleton } from "@/components/blog/ArticleSkeleton";
 
 interface BlogPost {
     id: string;
@@ -36,11 +39,13 @@ export function BlogPostClient() {
     const slug = params.slug as string;
     const { addToast } = useToast();
 
-    const [post, setPost] = useState<BlogPost | null>(null);
-    const [likes, setLikes] = useState(0);
+    // Check synchronous client-side cache for instantaneous 0ms display
+    const cached = typeof window !== "undefined" ? getCachedPost(slug) : null;
+    const [post, setPost] = useState<BlogPost | null>(cached as any);
+    const [likes, setLikes] = useState(cached?.likes || 0);
     const [hasLiked, setHasLiked] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!cached);
     const [notFound, setNotFound] = useState(false);
 
     useEffect(() => {
@@ -86,6 +91,7 @@ export function BlogPostClient() {
                     };
 
                     setPost(postData);
+                    setCachedPost(slug, postData);
                     setLikes(data.likes || 0);
 
                     if (typeof window !== "undefined") {
@@ -96,7 +102,7 @@ export function BlogPostClient() {
                 }
             } catch (error) {
                 console.error("Error fetching post:", error);
-                setNotFound(true);
+                if (!post) setNotFound(true);
             } finally {
                 setLoading(false);
             }
@@ -139,13 +145,9 @@ export function BlogPostClient() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
-                <Loader2 className="animate-spin text-primary" size={36} />
-                <p className="text-xs font-mono text-muted-foreground">Loading article...</p>
-            </div>
-        );
+    // Seamless editorial skeleton instead of jarring centered spinner
+    if (loading && !post) {
+        return <ArticleSkeleton />;
     }
 
     if (notFound || !post) {
@@ -167,7 +169,12 @@ export function BlogPostClient() {
     }
 
     return (
-        <div className="relative min-h-screen pb-12 sm:pb-16">
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="relative min-h-screen pb-12 sm:pb-16"
+        >
             <ReadingProgressBar />
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
@@ -370,6 +377,6 @@ export function BlogPostClient() {
                     </aside>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
