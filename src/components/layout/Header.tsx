@@ -58,19 +58,13 @@ export function Header({ onOpenSearch }: HeaderProps) {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                 <Link
                     href="/"
-                    className="flex items-center gap-2.5 group transition-transform active:scale-[0.98] select-none"
+                    className="flex items-baseline gap-2 group transition-transform active:scale-[0.98] select-none py-1"
                 >
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="font-signature text-2xl sm:text-[26px] text-primary font-bold -rotate-2 group-hover:scale-105 transition-transform duration-200 origin-bottom-left leading-none tracking-wide">
-                            Keerthi&apos;s
-                        </span>
-                        <span className="font-extrabold tracking-tight text-base sm:text-lg text-foreground group-hover:text-primary transition-colors leading-none">
-                            Signature
-                        </span>
-                    </div>
-                    <span className="hidden sm:inline-block text-[11px] font-mono text-muted-foreground border border-border px-1.5 py-0.5 rounded bg-secondary/80">
-                        Blog
+                    <span className="font-signature text-3xl sm:text-[34px] text-primary -rotate-2 group-hover:scale-105 transition-transform duration-200 origin-bottom-left leading-none">
+                        Keerthi&apos;s
+                    </span>
+                    <span className="font-extrabold tracking-tight text-lg sm:text-xl text-foreground group-hover:text-primary transition-colors leading-none">
+                        Signature
                     </span>
                 </Link>
 

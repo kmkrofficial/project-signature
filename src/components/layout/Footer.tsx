@@ -36,10 +36,9 @@ export function Footer() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     {/* Brand & Copyright */}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                        <Link href="/" className="flex items-baseline gap-1 text-foreground hover:text-primary transition-colors">
-                            <span className="font-signature text-lg text-primary font-bold">Keerthi&apos;s</span>
-                            <span className="font-bold text-sm">Signature</span>
+                        <Link href="/" className="flex items-baseline gap-1.5 text-foreground hover:text-primary transition-colors">
+                            <span className="font-signature text-xl text-primary leading-none">Keerthi&apos;s</span>
+                            <span className="font-bold text-sm leading-none">Signature</span>
                         </Link>
                         <span className="text-muted-foreground/40">•</span>
                         <span>© {currentYear}</span>
