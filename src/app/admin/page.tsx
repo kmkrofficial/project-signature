@@ -58,6 +58,7 @@ interface BlogPost {
     title: string;
     slug: string;
     excerpt: string;
+    coverImage?: string;
     content: string;
     category?: string;
     tags: string[];
@@ -102,6 +103,7 @@ export default function AdminStudio() {
         title: "",
         slug: "",
         excerpt: "",
+        coverImage: "",
         content: "",
         category: CATEGORIES[0],
         tags: [],
@@ -230,6 +232,7 @@ export default function AdminStudio() {
             title: "",
             slug: "",
             excerpt: "",
+            coverImage: "",
             content: "",
             category: CATEGORIES[0],
             tags: [],
@@ -272,6 +275,7 @@ export default function AdminStudio() {
             title: currentPost.title.trim(),
             slug: currentPost.slug.trim(),
             excerpt: currentPost.excerpt || "",
+            coverImage: currentPost.coverImage || "",
             content: currentPost.content,
             category: currentPost.category || CATEGORIES[0],
             tags: currentPost.tags || [],
@@ -733,7 +737,21 @@ export default function AdminStudio() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 self-stretch sm:self-auto justify-end">
+                        <div className="flex items-center gap-4 self-stretch sm:self-auto justify-end">
+                            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={Boolean(currentPost.featured)}
+                                    onChange={(e) =>
+                                        setCurrentPost((prev) => ({ ...prev, featured: e.target.checked }))
+                                    }
+                                    className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                                />
+                                <span className={currentPost.featured ? "text-primary font-medium" : ""}>
+                                    Spotlight Story
+                                </span>
+                            </label>
+
                             <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                                 <input
                                     type="checkbox"
@@ -875,6 +893,52 @@ export default function AdminStudio() {
                                     className="flex-1 min-w-[140px] px-2 py-1 bg-transparent text-xs text-foreground focus:outline-none placeholder:text-muted-foreground"
                                 />
                             </div>
+                        </div>
+
+                        {/* Cover Image */}
+                        <div className="space-y-1.5 md:col-span-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Cover Image URL (Editorial Spotlight Hero)
+                                </label>
+                                <span className="text-[11px] text-muted-foreground/70 font-mono">
+                                    Optional • Generates dynamic abstract gradient if empty
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="url"
+                                    value={currentPost.coverImage || ""}
+                                    onChange={(e) => setCurrentPost((prev) => ({ ...prev, coverImage: e.target.value }))}
+                                    placeholder="https://images.unsplash.com/... or paste image URL"
+                                    className="flex-1 px-3.5 py-2 bg-secondary/40 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:border-primary transition-colors font-mono"
+                                />
+                                {currentPost.coverImage && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPost((prev) => ({ ...prev, coverImage: "" }))}
+                                        className="px-2.5 py-2 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-xs text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
+                                        title="Clear Image"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+                            {currentPost.coverImage && (
+                                <div className="mt-2 relative w-full max-w-sm h-32 rounded-xl overflow-hidden border border-border/80 bg-secondary/20">
+                                    <img
+                                        src={currentPost.coverImage}
+                                        alt="Cover preview"
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            (e.target as HTMLElement).style.display = "none";
+                                        }}
+                                    />
+                                    <span className="absolute bottom-2 right-2 text-[10px] bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded text-foreground font-mono">
+                                        Preview
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
 

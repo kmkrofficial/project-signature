@@ -21,6 +21,7 @@ interface BlogPost {
     title: string;
     slug: string;
     excerpt?: string;
+    coverImage?: string;
     content: string;
     date: string;
     readTime: string;
@@ -68,6 +69,7 @@ export function BlogPostClient() {
                         title: data.title,
                         slug: data.slug,
                         excerpt: data.excerpt,
+                        coverImage: data.coverImage || "",
                         content: data.content,
                         tags: data.tags || [],
                         category: toFriendlyCategory(data.category || (data.tags && data.tags[0]) || "Technology"),
@@ -251,6 +253,17 @@ export function BlogPostClient() {
                                 </div>
                             </div>
                         </header>
+
+                        {/* Article Cover Image Banner */}
+                        {post.coverImage && (
+                            <div className="relative w-full rounded-2xl overflow-hidden aspect-[16/9] mb-8 border border-border/70 shadow-lg">
+                                <img
+                                    src={post.coverImage}
+                                    alt={post.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        )}
 
                         {/* Editorial Reading Canvas (Constrained for reading comfort) */}
                         <article className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.7] font-sans prose-headings:font-bold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-5 prose-h3:mb-2 prose-p:my-3 prose-p:leading-[1.72] prose-ul:my-3 prose-ol:my-3 prose-li:my-1 prose-blockquote:my-4 prose-hr:my-6 prose-a:text-primary prose-a:underline-offset-4 hover:prose-a:underline prose-img:rounded-xl prose-img:shadow-md prose-blockquote:border-l-primary prose-blockquote:bg-secondary/20 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-pre:p-0 prose-pre:bg-transparent">

@@ -7,12 +7,14 @@ import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { clsx } from "clsx";
+import { SpotlightCoverFallback } from "@/components/blog/SpotlightCoverFallback";
 
 export interface BlogPost {
     id: string;
     slug: string;
     title: string;
     excerpt: string;
+    coverImage?: string;
     date?: string;
     category?: string;
     readTime?: string;
@@ -66,6 +68,7 @@ export function BlogListClient() {
                     return {
                         id: doc.id,
                         ...data,
+                        coverImage: data.coverImage || "",
                         date: data.createdAt
                             ? new Date(data.createdAt.seconds * 1000).toLocaleDateString("en-US", {
                                   month: "short",
@@ -139,11 +142,19 @@ export function BlogListClient() {
             }
         });
 
+    const spotlightPost = posts.find(p => p.featured) || (posts.length > 0 ? posts[0] : null);
+    const showSpotlight = !searchQuery.trim() && selectedCategory === "All" && currentPage === 1 && Boolean(spotlightPost);
+
+    // Exclude the spotlight post from the chronological stream below when spotlight hero is visible
+    const displayPosts = showSpotlight && spotlightPost
+        ? filteredAndSortedPosts.filter(p => p.id !== spotlightPost.id)
+        : filteredAndSortedPosts;
+
     // Pagination
-    const totalPages = Math.ceil(filteredAndSortedPosts.length / postsPerPage);
+    const totalPages = Math.ceil(displayPosts.length / postsPerPage);
     const indexOfLastPost = currentPage * postsPerPage;
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = filteredAndSortedPosts.slice(indexOfFirstPost, indexOfLastPost);
+    const currentPosts = displayPosts.slice(indexOfFirstPost, indexOfLastPost);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -158,6 +169,91 @@ export function BlogListClient() {
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
+            {/* Editorial Spotlight Hero Card (Option 1) */}
+            {showSpotlight && spotlightPost && (
+                <motion.div
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="mb-8 sm:mb-10"
+                >
+                    <Link
+                        href={`/blog/${spotlightPost.slug}`}
+                        className="group block relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5"
+                    >
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-0">
+                            {/* Cover Canvas / Image (Left 5 Cols on desktop) */}
+                            <div className="md:col-span-5 relative overflow-hidden aspect-[16/10] md:aspect-auto md:min-h-[290px] bg-secondary/40 border-b md:border-b-0 md:border-r border-border/60">
+                                {spotlightPost.coverImage ? (
+                                    <img
+                                        src={spotlightPost.coverImage}
+                                        alt={spotlightPost.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                    />
+                                ) : (
+                                    <SpotlightCoverFallback
+                                        title={spotlightPost.title}
+                                        category={spotlightPost.category}
+                                        tags={spotlightPost.tags}
+                                    />
+                                )}
+                            </div>
+
+                            {/* Content Side (Right 7 Cols on desktop) */}
+                            <div className="md:col-span-7 p-5 sm:p-7 flex flex-col justify-between">
+                                <div>
+                                    {/* Live Badge + Category + Read Time */}
+                                    <div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                            {spotlightPost.featured ? "Featured Story" : "Latest Story"}
+                                        </span>
+                                        <span className="text-muted-foreground/40">•</span>
+                                        <span className="font-semibold text-primary font-sans">{spotlightPost.category}</span>
+                                        <span className="text-muted-foreground/40">•</span>
+                                        <span className="flex items-center gap-1 text-muted-foreground font-mono">
+                                            <Clock size={12} />
+                                            {spotlightPost.readTime}
+                                        </span>
+                                    </div>
+
+                                    {/* Headline */}
+                                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200 leading-tight mb-2.5">
+                                        {spotlightPost.title}
+                                    </h2>
+
+                                    {/* Excerpt */}
+                                    {spotlightPost.excerpt && (
+                                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-4">
+                                            {spotlightPost.excerpt}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Footer Row: Tags + Read CTA */}
+                                <div className="flex items-center justify-between pt-3 border-t border-border/50 text-xs">
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {spotlightPost.tags.slice(0, 3).map(tag => (
+                                            <span
+                                                key={tag}
+                                                className="px-2 py-0.5 rounded-md bg-secondary/60 text-[11px] font-mono text-muted-foreground"
+                                            >
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <span className="inline-flex items-center gap-1.5 font-semibold text-primary group-hover:translate-x-1.5 transition-transform duration-200">
+                                        <span>Read article</span>
+                                        <ArrowRight size={14} />
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+                </motion.div>
+            )}
+
             {/* Predefined Categories (Sliding Capsule Indicator) */}
             <div className="flex gap-2 overflow-x-auto pb-2 mb-5 no-scrollbar mask-gradient-right">
                 {PREDEFINED_CATEGORIES.map(category => {
