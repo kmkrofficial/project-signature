@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, Calendar, Clock, Eye, Heart, Share2, Check } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -253,10 +254,13 @@ export function BlogPostClient() {
                         {/* Article Cover Image Banner */}
                         {post.coverImage && (
                             <div className="relative w-full rounded-2xl overflow-hidden aspect-[16/9] mb-8 border border-border/70 shadow-lg">
-                                <img
+                                <Image
                                     src={post.coverImage}
                                     alt={post.title}
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    priority
+                                    sizes="(max-width: 1024px) 100vw, 896px"
+                                    className="object-cover"
                                 />
                             </div>
                         )}
@@ -283,18 +287,22 @@ export function BlogPostClient() {
                                         );
                                     },
                                     img({ src, alt }) {
+                                        if (!src || typeof src !== "string") return null;
                                         return (
                                             <figure className="my-6">
-                                                <img
-                                                     src={src}
-                                                     alt={alt || ""}
-                                                     className="w-full h-auto rounded-xl border border-border/80 shadow-md"
-                                                     loading="lazy"
+                                                <Image
+                                                    src={src}
+                                                    alt={alt || ""}
+                                                    width={1200}
+                                                    height={675}
+                                                    unoptimized
+                                                    className="w-full h-auto rounded-xl border border-border/80 shadow-md"
+                                                    loading="lazy"
                                                 />
                                                 {alt && (
-                                                     <figcaption className="text-center text-xs text-muted-foreground mt-2 font-mono">
-                                                         {`// ${alt}`}
-                                                     </figcaption>
+                                                    <figcaption className="text-center text-xs text-muted-foreground mt-2 font-mono">
+                                                        {`// ${alt}`}
+                                                    </figcaption>
                                                 )}
                                             </figure>
                                         );

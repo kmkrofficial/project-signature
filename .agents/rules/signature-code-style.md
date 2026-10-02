@@ -22,3 +22,5 @@ description: Read and follow these rules for all coding, debugging, refactoring,
 - After completing changes, **always commit the changes and restart the development server** to verify the application starts and runs correctly.
 
 - Validate significant changes with appropriate **type checks, linting, builds, tests, and security/performance checks** before considering them complete.
+
+- Ensure that whenever designing a new feature or component in the UI, it is optimized for both light and dark themes. 

@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
 import Link from "next/link";
+import NextImage from "next/image";
 import {
     FileText,
     Plus,
@@ -300,7 +301,7 @@ export default function AdminStudio() {
         try {
             // Compress image on client canvas before upload (max 1600px, 82% quality)
             const compressedBlob: Blob = await new Promise((resolve) => {
-                const img = new Image();
+                const img = new window.Image();
                 img.src = URL.createObjectURL(file);
                 img.onload = () => {
                     const canvas = document.createElement("canvas");
@@ -908,13 +909,12 @@ export default function AdminStudio() {
                             </div>
                             {currentPost.coverImage && (
                                 <div className="mt-2 relative w-full max-w-sm h-32 rounded-xl overflow-hidden border border-border/80 bg-secondary/20">
-                                    <img
+                                    <NextImage
                                         src={currentPost.coverImage}
                                         alt="Cover preview"
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            (e.target as HTMLElement).style.display = "none";
-                                        }}
+                                        fill
+                                        unoptimized
+                                        className="object-cover"
                                     />
                                     <span className="absolute bottom-2 right-2 text-[10px] bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded text-foreground font-mono">
                                         Preview
@@ -1007,10 +1007,13 @@ export default function AdminStudio() {
                                     className="rounded-xl border border-border bg-card overflow-hidden group hover:border-primary/40 transition-all flex flex-col justify-between"
                                 >
                                     <div className="h-44 w-full bg-secondary/50 relative overflow-hidden flex items-center justify-center">
-                                        <img
+                                        <NextImage
                                             src={img.url}
                                             alt={img.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            fill
+                                            unoptimized
+                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                                         />
                                         {img.size && (
                                             <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] font-mono text-white backdrop-blur-sm">

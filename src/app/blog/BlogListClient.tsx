@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, ArrowRight, BookOpen, Loader2, Eye, Heart, ChevronLeft, ChevronRight, SlidersHorizontal, ChevronDown, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { clsx } from "clsx";
@@ -177,10 +178,12 @@ export function BlogListClient() {
                             {/* Cover Canvas / Image (Left 5 Cols on desktop) */}
                             <div className="md:col-span-5 relative overflow-hidden aspect-[16/10] md:aspect-auto md:min-h-[290px] bg-secondary/40 border-b md:border-b-0 md:border-r border-border/60">
                                 {spotlightPost.coverImage ? (
-                                    <img
+                                    <Image
                                         src={spotlightPost.coverImage}
                                         alt={spotlightPost.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 42vw"
+                                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                                     />
                                 ) : (
                                     <SpotlightCoverFallback
