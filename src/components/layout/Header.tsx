@@ -56,16 +56,20 @@ export function Header({ onOpenSearch }: HeaderProps) {
     return (
         <header className="sticky top-0 left-0 right-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-                {/* Brand / Logo */}
                 <Link
                     href="/"
-                    className="flex items-center gap-2 group transition-transform active:scale-[0.98]"
+                    className="flex items-center gap-2.5 group transition-transform active:scale-[0.98] select-none"
                 >
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-bold tracking-tight text-lg text-foreground group-hover:text-primary transition-colors">
-                        The Signature
-                    </span>
-                    <span className="hidden sm:inline-block text-xs font-mono text-muted-foreground border border-border/80 px-1.5 py-0.5 rounded bg-secondary/50">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    <div className="flex items-baseline gap-1.5">
+                        <span className="font-signature text-2xl sm:text-[26px] text-primary font-bold -rotate-2 group-hover:scale-105 transition-transform duration-200 origin-bottom-left leading-none tracking-wide">
+                            Keerthi&apos;s
+                        </span>
+                        <span className="font-extrabold tracking-tight text-base sm:text-lg text-foreground group-hover:text-primary transition-colors leading-none">
+                            Signature
+                        </span>
+                    </div>
+                    <span className="hidden sm:inline-block text-[11px] font-mono text-muted-foreground border border-border px-1.5 py-0.5 rounded bg-secondary/80">
                         Blog
                     </span>
                 </Link>

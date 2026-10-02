@@ -115,7 +115,7 @@ async function seed() {
     }
 
     await db.collection("config").doc("site").set({
-        siteTitle: "Keerthi Raajan | Personal Blog",
+        siteTitle: "Keerthi's Signature | Personal Blog",
         author: "Keerthi Raajan K M",
         tagline: "Technology, Software & Everyday Insights",
         bio: "Writing about modern tech, how software works behind the scenes, and practical lessons from building digital products.",

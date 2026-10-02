@@ -85,7 +85,7 @@ export function SpotlightCoverFallback({ category, tags = [] }: SpotlightCoverFa
 
             {/* Subtle Editorial Watermark */}
             <div className="absolute bottom-3 left-4 text-[10px] font-mono text-slate-400 dark:text-muted-foreground/40 tracking-wider">
-                THE SIGNATURE • EDITORIAL
+                KEERTHI&apos;S SIGNATURE • EDITORIAL
             </div>
         </div>
     );

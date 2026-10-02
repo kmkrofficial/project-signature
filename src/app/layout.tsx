@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Caveat } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { db } from "@/lib/firebase";
@@ -18,9 +18,15 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-caveat",
+  display: "swap",
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   let config = {
-    siteTitle: "Keerthi Raajan | Thoughts & Tech Writings",
+    siteTitle: "Keerthi's Signature | Thoughts & Tech Writings",
     siteDescription: "Articles on technology, building software, and practical ideas from real-world projects.",
     ogImageUrl: "",
   };
@@ -68,7 +74,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
         <ToastProvider>
           <AppShell>
             {children}
