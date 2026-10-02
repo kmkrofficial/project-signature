@@ -251,9 +251,17 @@ export default function AdminStudio() {
             return;
         }
 
-        if (currentPost.featured && (!currentPost.coverImage || !currentPost.coverImage.trim())) {
-            addToast("A cover image is mandatory for Spotlight articles. Please upload or link a cover image.", "error");
-            return;
+        if (currentPost.featured) {
+            if (!currentPost.coverImage || !currentPost.coverImage.trim()) {
+                addToast("A cover image is mandatory for Spotlight articles. Please upload or link a cover image.", "error");
+                return;
+            }
+
+            const otherFeaturedCount = posts.filter(p => p.featured && p.id !== currentPost.id).length;
+            if (otherFeaturedCount >= 3) {
+                addToast("A maximum of 3 articles can be marked as Spotlight. Please unfeature an existing Spotlight article first.", "error");
+                return;
+            }
         }
 
         setSaving(true);
@@ -726,23 +734,40 @@ export default function AdminStudio() {
                         </div>
 
                         <div className="flex items-center gap-4 self-stretch sm:self-auto justify-end">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-                                <input
-                                    type="checkbox"
-                                    checked={Boolean(currentPost.featured)}
-                                    onChange={(e) => {
-                                        const isFeatured = e.target.checked;
-                                        setCurrentPost((prev) => ({ ...prev, featured: isFeatured }));
-                                        if (isFeatured && (!currentPost.coverImage || !currentPost.coverImage.trim())) {
-                                            addToast("Spotlight enabled: Please ensure a cover image is uploaded for this article.", "info");
-                                        }
-                                    }}
-                                    className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
-                                />
-                                <span className={currentPost.featured ? "text-primary font-medium" : ""}>
-                                    Spotlight Story
-                                </span>
-                            </label>
+                            {(() => {
+                                const otherFeaturedCount = posts.filter((p) => p.featured && p.id !== currentPost.id).length;
+                                const isAtLimit = otherFeaturedCount >= 3 && !currentPost.featured;
+                                return (
+                                    <label
+                                        className={clsx(
+                                            "flex items-center gap-2 text-xs select-none",
+                                            isAtLimit ? "text-muted-foreground/50 cursor-not-allowed" : "text-muted-foreground cursor-pointer"
+                                        )}
+                                        title={isAtLimit ? "Maximum of 3 Spotlight articles reached. Unfeature an existing article first." : "Feature this story in the Spotlight Carousel (up to 3)"}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            disabled={isAtLimit}
+                                            checked={Boolean(currentPost.featured)}
+                                            onChange={(e) => {
+                                                const isFeatured = e.target.checked;
+                                                if (isFeatured && otherFeaturedCount >= 3) {
+                                                    addToast("Maximum of 3 articles can be marked as Spotlight. Unfeature an existing article first.", "error");
+                                                    return;
+                                                }
+                                                setCurrentPost((prev) => ({ ...prev, featured: isFeatured }));
+                                                if (isFeatured && (!currentPost.coverImage || !currentPost.coverImage.trim())) {
+                                                    addToast("Spotlight enabled: Please ensure a cover image is uploaded for this article.", "info");
+                                                }
+                                            }}
+                                            className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer disabled:cursor-not-allowed"
+                                        />
+                                        <span className={currentPost.featured ? "text-primary font-medium" : ""}>
+                                            Spotlight Story ({otherFeaturedCount + (currentPost.featured ? 1 : 0)}/3)
+                                        </span>
+                                    </label>
+                                );
+                            })()}
 
                             <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
                                 <input

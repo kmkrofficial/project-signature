@@ -25,8 +25,15 @@ export async function PUT(
     try {
         const data = await req.json();
 
-        if (section === "blog" && data.featured && (!data.coverImage || typeof data.coverImage !== "string" || !data.coverImage.trim())) {
-            return NextResponse.json({ error: "Cover image is mandatory for spotlight articles." }, { status: 400 });
+        if (section === "blog" && data.featured) {
+            if (!data.coverImage || typeof data.coverImage !== "string" || !data.coverImage.trim()) {
+                return NextResponse.json({ error: "Cover image is mandatory for spotlight articles." }, { status: 400 });
+            }
+            const featuredSnap = await db.collection("blog").where("featured", "==", true).get();
+            const otherFeatured = featuredSnap.docs.filter((d) => d.id !== id);
+            if (otherFeatured.length >= 3) {
+                return NextResponse.json({ error: "A maximum of 3 Spotlight articles are allowed." }, { status: 400 });
+            }
         }
 
         await db.collection(section).doc(id).set(data, { merge: true });
