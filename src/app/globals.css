@@ -149,3 +149,59 @@
 ::view-transition-new(root) {
   z-index: 9999;
 }
+
+/* ==========================================================================
+   Atmospheric Background Design (CSS-Only, Zero-Runtime, GPU-Accelerated)
+   ========================================================================== */
+.bg-ambient-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 520px;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    radial-gradient(ellipse 65% 340px at 50% -70px, rgba(6, 182, 212, 0.12), transparent),
+    radial-gradient(ellipse 40% 260px at 80% -50px, rgba(99, 102, 241, 0.07), transparent),
+    radial-gradient(ellipse 40% 260px at 20% -50px, rgba(16, 185, 129, 0.05), transparent);
+}
+
+.light-mode .bg-ambient-glow {
+  background: 
+    radial-gradient(ellipse 65% 340px at 50% -70px, rgba(14, 116, 144, 0.07), transparent),
+    radial-gradient(ellipse 40% 260px at 80% -50px, rgba(245, 158, 11, 0.05), transparent),
+    radial-gradient(ellipse 40% 260px at 20% -50px, rgba(5, 150, 105, 0.04), transparent);
+}
+
+.bg-grid-pattern {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 20%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 20%, transparent 85%);
+}
+
+.light-mode .bg-grid-pattern {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 15%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 15%, transparent 80%);
+}
+
+.top-hairline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 50;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 0%, rgba(6, 182, 212, 0.35) 50%, transparent 100%);
+}
+
+.light-mode .top-hairline {
+  background: linear-gradient(90deg, transparent 0%, rgba(14, 116, 144, 0.25) 50%, transparent 100%);
+}

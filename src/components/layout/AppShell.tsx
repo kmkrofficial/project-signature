@@ -29,13 +29,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     return (
         <ThemeProvider>
-            {!isAdmin && <Header onOpenSearch={() => setSearchOpen(true)} />}
+            {/* CSS-Only Ambient Horizon & Grid Background */}
+            <div className="bg-ambient-glow" aria-hidden="true" />
+            <div className="bg-grid-pattern" aria-hidden="true" />
+            <div className="top-hairline" aria-hidden="true" />
 
-            <main className="min-h-screen">
-                {children}
-            </main>
+            <div className="relative z-10 flex flex-col min-h-screen">
+                {!isAdmin && <Header onOpenSearch={() => setSearchOpen(true)} />}
 
-            {!isAdmin && <Footer />}
+                <main className="flex-1">
+                    {children}
+                </main>
+
+                {!isAdmin && <Footer />}
+            </div>
 
             <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
