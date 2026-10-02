@@ -1,21 +1,25 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // Helper function
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Blog Images: Readable by everyone, Writable by Admin
+    // Blog & Media Assets: Publicly readable, admin writable
+    match /media/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
     match /blog-images/{allPaths=**} {
       allow read: if true;
       allow write: if isAuthenticated();
     }
 
-    // Default deny
+    // Default read allowed for public assets
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
   }
 }

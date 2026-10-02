@@ -43,3 +43,10 @@ service-account.json
 *.tsbuildinfo
 next-env.d.ts
 data/
+
+# Firebase Emulators
+*-debug.log*
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+emulator-data/
