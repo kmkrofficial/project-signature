@@ -10,6 +10,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { clsx } from "clsx";
 import { SpotlightCoverFallback } from "@/components/blog/SpotlightCoverFallback";
 import { primePostCache } from "@/lib/blogCache";
+import { isOptimizableImage } from "@/lib/image-utils";
 import type { BlogPost, SortOption } from "@/types/blog";
 
 export type { BlogPost };
@@ -235,6 +236,7 @@ export function BlogListClient() {
                                             alt={currentSpotlightPost.title}
                                             fill
                                             priority
+                                            unoptimized={!isOptimizableImage(currentSpotlightPost.coverImage)}
                                             sizes="(max-width: 768px) 100vw, 42vw"
                                             className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                                         />

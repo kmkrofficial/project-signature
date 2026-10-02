@@ -18,6 +18,7 @@ import { useToast } from "@/context/ToastContext";
 import { toFriendlyCategory } from "@/app/blog/BlogListClient";
 import { clsx } from "clsx";
 import { getCachedPost, setCachedPost } from "@/lib/blogCache";
+import { isOptimizableImage } from "@/lib/image-utils";
 import { ArticleSkeleton } from "@/components/blog/ArticleSkeleton";
 import type { BlogPost } from "@/types/blog";
 
@@ -264,6 +265,7 @@ export function BlogPostClient() {
                                     alt={post.title}
                                     fill
                                     priority
+                                    unoptimized={!isOptimizableImage(post.coverImage)}
                                     sizes="(max-width: 1024px) 100vw, 896px"
                                     className="object-cover"
                                 />
