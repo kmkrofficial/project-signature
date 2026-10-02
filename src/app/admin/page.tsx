@@ -16,7 +16,7 @@ import {
     orderBy,
     getDoc
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
 import Link from "next/link";
 import {
     FileText,
@@ -37,8 +37,6 @@ import {
     Settings,
     Sparkles,
     UploadCloud,
-    FolderKanban,
-    Terminal,
     BarChart3,
     Clock,
     Tag,
@@ -46,9 +44,7 @@ import {
     Sun,
     Moon,
     CheckCircle2,
-    AlertTriangle,
-    Database,
-    RotateCcw
+    Database
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { useTheme } from "@/components/layout/ThemeProvider";
@@ -86,95 +82,10 @@ const CATEGORIES = [
     "Engineering Craft",
 ];
 
-const INITIAL_SAMPLE_POSTS: BlogPost[] = [
-    {
-        id: "sample-1",
-        title: "Zero-Downtime Migration to HTTP/3 and Edge Protocols",
-        slug: "zero-downtime-migration-http3",
-        excerpt: "A deep dive into migrating mission-critical APIs to QUIC and HTTP/3 without packet loss or protocol fallback penalty.",
-        content: `## The Protocol Shift
-
-Migrating an edge delivery network to HTTP/3 (QUIC) requires careful consideration of UDP packet handling, connection migration, and 0-RTT handshakes.
-
-### Why HTTP/3 Matters
-Traditional TCP-based HTTP/2 suffers from **Head-of-Line (HoL) blocking** when packets drop on lossy mobile connections. QUIC solves this at the transport layer by establishing independent UDP streams.
-
-\`\`\`rust
-// Zero-downtime QUIC transport configuration
-let mut server_config = ServerConfig::builder()
-    .with_safe_default_cipher_suites()
-    .with_safe_default_kx_groups()
-    .with_protocol_versions(&[&version::TLS13])?;
-\`\`\`
-
-### Migration Checklist
-- Enable UDP port 443 on edge load balancers
-- Configure \`Alt-Svc: h3=":443"; ma=86400\` headers
-- Monitor fallback rates and 0-RTT replay protection`,
-        category: "Systems & Architecture",
-        tags: ["HTTP3", "QUIC", "Networking", "Architecture"],
-        published: true,
-        featured: true,
-        views: 1420,
-        likes: 84,
-        createdAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 3 },
-    },
-    {
-        id: "sample-2",
-        title: "Designing High-Throughput In-Memory Caches",
-        slug: "designing-high-throughput-caches",
-        excerpt: "Cache stampede mitigation, TTL jittering, and two-tier Redis synchronization strategies in distributed systems.",
-        content: `## Mitigating Cache Stampedes
-
-When an essential cache key expires under thousands of concurrent requests, backends often collapse under the stampede. 
-
-### Probabilistic Early Expiration (XFetch)
-Instead of waiting for strict TTL expiration, compute probabilistic background recomputation:
-
-\`\`\`typescript
-function shouldRefreshEarly(ttl: number, delta: number, beta = 1.0): boolean {
-    const random = Math.random();
-    return -delta * beta * Math.log(random) >= ttl;
-}
-\`\`\`
-
-This guarantees zero latency spikes and steady backend resource utilization.`,
-        category: "Backend & Cloud",
-        tags: ["Redis", "Caching", "Distributed Systems", "Performance"],
-        published: true,
-        featured: false,
-        views: 950,
-        likes: 62,
-        createdAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 7 },
-    },
-    {
-        id: "sample-3",
-        title: "Deterministic Agentic Workflows in Engineering Pipelines",
-        slug: "deterministic-agentic-workflows",
-        excerpt: "Moving beyond naive prompt chaining: how reactive wakeups and typed tool schemas create reliable developer agent systems.",
-        content: `## The Architecture of Autonomous Coding Agents
-
-Agent systems that rely solely on free-form prompt cascades tend to accumulate hallucination errors over multi-step workflows.
-
-### Structured Tool Execution
-By constraining agent actions to strictly typed schemas and isolated workspaces, we achieve verifiable transitions between architectural plan and code implementation.`,
-        category: "AI & Machine Learning",
-        tags: ["Agents", "LLMs", "DevTools", "AI"],
-        published: false,
-        featured: false,
-        views: 310,
-        likes: 19,
-        createdAt: { seconds: Math.floor(Date.now() / 1000) - 86400 * 12 },
-    },
-];
-
 export default function AdminStudio() {
     const router = useRouter();
     const { addToast } = useToast();
     const { theme, toggleTheme } = useTheme();
-
-    // Dev Mode Detection
-    const [isDevMode, setIsDevMode] = useState(false);
 
     // Active Navigation Tab
     const [activeTab, setActiveTab] = useState<"articles" | "editor" | "media" | "settings">("articles");
@@ -206,6 +117,8 @@ export default function AdminStudio() {
     const [uploadingImage, setUploadingImage] = useState(false);
     const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
+    const isUsingEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
+
     // Stats
     const stats = {
         total: posts.length,
@@ -218,12 +131,8 @@ export default function AdminStudio() {
     const wordCount = currentPost.content ? currentPost.content.trim().split(/\s+/).filter(Boolean).length : 0;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
-    // Check dev mode & load initial data
+    // Load initial data from Firebase
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const dev = localStorage.getItem("admin_dev_mode") === "true";
-            setIsDevMode(dev);
-        }
         fetchPosts();
     }, []);
 
@@ -237,43 +146,16 @@ export default function AdminStudio() {
     const fetchPosts = async () => {
         setLoadingPosts(true);
         try {
-            // First attempt to query Firestore
             const q = query(collection(db, "blog"), orderBy("createdAt", "desc"));
             const snap = await getDocs(q);
-            if (!snap.empty) {
-                const fetched = snap.docs.map((d) => ({ id: d.id, ...d.data() } as BlogPost));
-                setPosts(fetched);
-                // Also cache to local storage
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("dev_articles", JSON.stringify(fetched));
-                }
-                setLoadingPosts(false);
-                return;
-            }
-        } catch (error) {
-            console.warn("Firestore query note (using local storage fallback):", error);
+            const fetched = snap.docs.map((d) => ({ id: d.id, ...d.data() } as BlogPost));
+            setPosts(fetched);
+        } catch (error: any) {
+            console.error("Firestore query error:", error);
+            addToast("Failed to load articles from Firestore", "error");
+        } finally {
+            setLoadingPosts(false);
         }
-
-        // Fallback to localStorage or sample data
-        if (typeof window !== "undefined") {
-            const cached = localStorage.getItem("dev_articles");
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        setPosts(parsed);
-                        setLoadingPosts(false);
-                        return;
-                    }
-                } catch (e) {
-                    console.error("Local storage parse error:", e);
-                }
-            }
-            // Seed initial sample articles if nothing in local storage
-            localStorage.setItem("dev_articles", JSON.stringify(INITIAL_SAMPLE_POSTS));
-            setPosts(INITIAL_SAMPLE_POSTS);
-        }
-        setLoadingPosts(false);
     };
 
     const fetchImages = async () => {
@@ -289,18 +171,8 @@ export default function AdminStudio() {
                 }))
             );
             setImages(urls);
-        } catch (err) {
-            // Load local dev media if Firestore Storage is unconfigured
-            if (typeof window !== "undefined") {
-                const localMedia = localStorage.getItem("dev_media");
-                if (localMedia) {
-                    try {
-                        setImages(JSON.parse(localMedia));
-                    } catch (e) {
-                        // ignore
-                    }
-                }
-            }
+        } catch (err: any) {
+            console.warn("Storage list notice:", err);
         } finally {
             setLoadingImages(false);
         }
@@ -313,7 +185,6 @@ export default function AdminStudio() {
             // ignore
         }
         if (typeof window !== "undefined") {
-            localStorage.removeItem("admin_dev_mode");
             localStorage.removeItem("admin_last_accessed");
         }
         router.push("/admin/login");
@@ -379,21 +250,14 @@ export default function AdminStudio() {
     const handleDeletePost = async (id: string) => {
         if (!confirm("Are you sure you want to delete this article?")) return;
 
-        // Update local state immediately
-        const updated = posts.filter((p) => p.id !== id);
-        setPosts(updated);
-        if (typeof window !== "undefined") {
-            localStorage.setItem("dev_articles", JSON.stringify(updated));
-        }
-
-        // Try deleting from Firestore
         try {
             await deleteDoc(doc(db, "blog", id));
+            setPosts((prev) => prev.filter((p) => p.id !== id));
+            addToast("Article deleted successfully", "success");
         } catch (err: any) {
-            console.warn("Firestore delete note:", err);
+            console.error("Delete error:", err);
+            addToast("Failed to delete article: " + err.message, "error");
         }
-
-        addToast("Article removed successfully", "success");
     };
 
     const handleSavePost = async () => {
@@ -403,8 +267,7 @@ export default function AdminStudio() {
         }
 
         setSaving(true);
-        const postPayload: BlogPost = {
-            id: currentPost.id || "post-" + Date.now(),
+        const postPayload = {
             title: currentPost.title.trim(),
             slug: currentPost.slug.trim(),
             excerpt: currentPost.excerpt || "",
@@ -415,49 +278,34 @@ export default function AdminStudio() {
             featured: Boolean(currentPost.featured),
             views: currentPost.views || 0,
             likes: currentPost.likes || 0,
-            createdAt: currentPost.createdAt || { seconds: Math.floor(Date.now() / 1000) },
-            updatedAt: { seconds: Math.floor(Date.now() / 1000) },
+            updatedAt: Timestamp.now(),
         };
 
-        // 1. Save to local storage for immediate persistence
-        if (typeof window !== "undefined") {
-            const existing = [...posts];
-            const idx = existing.findIndex((p) => p.id === postPayload.id);
-            if (idx >= 0) {
-                existing[idx] = postPayload;
-            } else {
-                existing.unshift(postPayload);
-            }
-            setPosts(existing);
-            localStorage.setItem("dev_articles", JSON.stringify(existing));
-        }
-
-        // 2. Try saving to Firestore if connected
         try {
-            if (currentPost.id && !currentPost.id.startsWith("sample-") && !currentPost.id.startsWith("post-")) {
-                await setDoc(doc(db, "blog", currentPost.id), {
-                    ...postPayload,
-                    updatedAt: Timestamp.now(),
-                }, { merge: true });
+            if (currentPost.id) {
+                await setDoc(doc(db, "blog", currentPost.id), postPayload, { merge: true });
+                addToast("Article updated successfully!", "success");
             } else {
                 const newDocRef = doc(collection(db, "blog"));
                 await setDoc(newDocRef, {
                     ...postPayload,
                     id: newDocRef.id,
                     createdAt: Timestamp.now(),
-                    updatedAt: Timestamp.now(),
                 });
+                addToast("New article published successfully!", "success");
             }
-            addToast("Article saved and published to Firebase!", "success");
+
+            await fetchPosts();
+            setActiveTab("articles");
         } catch (err: any) {
-            addToast("Saved to Local Developer Storage (Offline/Dev Mode)", "info");
+            console.error("Save error:", err);
+            addToast("Failed to save article: " + err.message, "error");
         } finally {
             setSaving(false);
-            setActiveTab("articles");
         }
     };
 
-    // Client-side canvas compression for media uploads
+    // Client-side canvas compression for media uploads to Firebase Storage
     const handleUploadMedia = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -497,14 +345,8 @@ export default function AdminStudio() {
             const storagePath = `media/${Date.now()}_${cleanName}`;
             const fileRef = ref(storage, storagePath);
 
-            let downloadUrl = "";
-            try {
-                await uploadBytes(fileRef, compressedBlob);
-                downloadUrl = await getDownloadURL(fileRef);
-            } catch (storageErr) {
-                // If Firebase Storage is offline/not configured, create a local object URL
-                downloadUrl = URL.createObjectURL(compressedBlob);
-            }
+            await uploadBytes(fileRef, compressedBlob);
+            const downloadUrl = await getDownloadURL(fileRef);
 
             const newImg: StoredImage = {
                 name: file.name,
@@ -513,13 +355,8 @@ export default function AdminStudio() {
                 size: (compressedBlob.size / 1024).toFixed(1) + " KB",
             };
 
-            const updatedList = [newImg, ...images];
-            setImages(updatedList);
-            if (typeof window !== "undefined") {
-                localStorage.setItem("dev_media", JSON.stringify(updatedList));
-            }
-
-            addToast("Media processed and uploaded successfully!", "success");
+            setImages((prev) => [newImg, ...prev]);
+            addToast("Media uploaded to Firebase Storage!", "success");
         } catch (err: any) {
             console.error("Upload error:", err);
             addToast("Failed to upload image: " + err.message, "error");
@@ -534,15 +371,6 @@ export default function AdminStudio() {
         setCopiedUrl(url);
         addToast("Markdown image code copied to clipboard!", "success");
         setTimeout(() => setCopiedUrl(null), 2500);
-    };
-
-    const handleResetSampleData = () => {
-        if (!confirm("Reset to initial sample articles? Any local edits will be replaced.")) return;
-        setPosts(INITIAL_SAMPLE_POSTS);
-        if (typeof window !== "undefined") {
-            localStorage.setItem("dev_articles", JSON.stringify(INITIAL_SAMPLE_POSTS));
-        }
-        addToast("Reset to sample articles", "info");
     };
 
     const filteredPosts = posts.filter((p) => {
@@ -567,15 +395,15 @@ export default function AdminStudio() {
                             <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
                                 Content Studio
                             </h1>
-                            {isDevMode ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-amber-500/10 border border-amber-500/30 text-amber-400">
-                                    <Terminal size={11} />
-                                    <span>Dev Mode</span>
+                            {isUsingEmulator ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-primary/10 border border-primary/30 text-primary">
+                                    <Database size={11} />
+                                    <span>Firebase Emulator</span>
                                 </span>
                             ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
                                     <CheckCircle2 size={11} />
-                                    <span>Live Studio</span>
+                                    <span>Firebase Live</span>
                                 </span>
                             )}
                         </div>
@@ -779,7 +607,7 @@ export default function AdminStudio() {
                     {loadingPosts ? (
                         <div className="py-16 text-center text-muted-foreground flex flex-col items-center gap-3">
                             <Loader2 size={24} className="animate-spin text-primary" />
-                            <p className="text-xs font-mono">Loading articles from studio...</p>
+                            <p className="text-xs font-mono">Loading articles from Firestore...</p>
                         </div>
                     ) : filteredPosts.length === 0 ? (
                         <div className="py-16 text-center border border-dashed border-border rounded-2xl bg-card/30 p-8">
@@ -933,7 +761,7 @@ export default function AdminStudio() {
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 active:scale-95 transition-all shadow-md disabled:opacity-50 cursor-pointer"
                             >
                                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                                <span>{saving ? "Saving..." : "Save & Publish"}</span>
+                                <span>{saving ? "Saving..." : "Save to Firebase"}</span>
                             </button>
                         </div>
                     </div>
@@ -1089,7 +917,7 @@ export default function AdminStudio() {
                             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 active:scale-95 transition-all shadow-md disabled:opacity-50 cursor-pointer"
                         >
                             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                            <span>{saving ? "Saving Changes..." : "Save & Publish Article"}</span>
+                            <span>{saving ? "Saving Changes..." : "Save to Firebase"}</span>
                         </button>
                     </div>
                 </div>
@@ -1125,7 +953,7 @@ export default function AdminStudio() {
                     {loadingImages ? (
                         <div className="py-12 text-center text-muted-foreground flex flex-col items-center gap-2">
                             <Loader2 size={24} className="animate-spin text-primary" />
-                            <p className="text-xs font-mono">Loading media assets...</p>
+                            <p className="text-xs font-mono">Loading media assets from Firebase Storage...</p>
                         </div>
                     ) : images.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground text-xs font-mono">
@@ -1185,51 +1013,43 @@ export default function AdminStudio() {
                     <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
                         <div className="flex items-center gap-2.5 text-foreground font-semibold text-sm">
                             <Database size={16} className="text-primary" />
-                            <span>Storage & Environment Diagnostics</span>
+                            <span>Backend & Environment Details</span>
                         </div>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                            Overview of current runtime environment, authentication bypass mode, and Firestore connectivity.
+                            Overview of current runtime environment, authentication, and Firestore connectivity.
                         </p>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
                             <div className="p-3 rounded-xl bg-secondary/40 border border-border flex items-center justify-between">
-                                <span className="text-muted-foreground">Mode:</span>
-                                <span className={isDevMode ? "text-amber-400 font-bold" : "text-emerald-400 font-bold"}>
-                                    {isDevMode ? "Local Developer Mode" : "Firebase Production"}
+                                <span className="text-muted-foreground">Backend:</span>
+                                <span className={isUsingEmulator ? "text-primary font-bold" : "text-emerald-400 font-bold"}>
+                                    {isUsingEmulator ? "Firebase Emulator Suite" : "Firebase Cloud"}
                                 </span>
                             </div>
                             <div className="p-3 rounded-xl bg-secondary/40 border border-border flex items-center justify-between">
-                                <span className="text-muted-foreground">Local Cache Storage:</span>
+                                <span className="text-muted-foreground">Admin Account:</span>
+                                <span className="text-foreground">{auth.currentUser?.email || "Authenticated"}</span>
+                            </div>
+                            <div className="p-3 rounded-xl bg-secondary/40 border border-border flex items-center justify-between">
+                                <span className="text-muted-foreground">Articles in Firestore:</span>
                                 <span className="text-foreground">{posts.length} articles</span>
                             </div>
-                        </div>
-
-                        <div className="pt-2 flex flex-wrap gap-2.5">
-                            <button
-                                type="button"
-                                onClick={handleResetSampleData}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-secondary/40 hover:bg-secondary text-xs text-foreground transition-colors cursor-pointer"
-                            >
-                                <RotateCcw size={13} className="text-primary" />
-                                <span>Re-seed Sample Articles</span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (typeof window !== "undefined") {
-                                        localStorage.removeItem("dev_articles");
-                                        localStorage.removeItem("dev_media");
-                                        setPosts([]);
-                                        setImages([]);
-                                        addToast("Local dev cache cleared", "info");
-                                    }
-                                }}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border hover:border-red-500/30 bg-secondary/40 hover:bg-red-500/10 text-xs text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
-                            >
-                                <Trash2 size={13} />
-                                <span>Clear Local Storage</span>
-                            </button>
+                            <div className="p-3 rounded-xl bg-secondary/40 border border-border flex items-center justify-between">
+                                <span className="text-muted-foreground">Emulator UI:</span>
+                                {isUsingEmulator ? (
+                                    <a
+                                        href="http://127.0.0.1:4000"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:underline inline-flex items-center gap-1"
+                                    >
+                                        <span>localhost:4000</span>
+                                        <ExternalLink size={11} />
+                                    </a>
+                                ) : (
+                                    <span className="text-muted-foreground">N/A</span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

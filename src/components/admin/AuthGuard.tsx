@@ -23,22 +23,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             return;
         }
 
-        // Check if Local Dev Mode is enabled in localStorage
-        const isDevMode = typeof window !== "undefined" && localStorage.getItem("admin_dev_mode") === "true";
-        if (isDevMode) {
-            setIsAuthorized(true);
-            setLoading(false);
-            return;
-        }
-
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
-            // Check once more if dev mode was enabled during auth check
-            if (typeof window !== "undefined" && localStorage.getItem("admin_dev_mode") === "true") {
-                setIsAuthorized(true);
-                setLoading(false);
-                return;
-            }
-
             if (!user) {
                 router.push("/admin/login");
                 setLoading(false);
@@ -48,7 +33,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             // Check if user's email is in the admin list
             const adminEmails = getAdminEmails();
             const userEmail = user.email?.toLowerCase() || "";
-            // If admin emails are not configured, allow authenticated user in development
+            // If admin emails are configured, enforce check; otherwise allow authenticated user in local development
             const hasAdminAccess = adminEmails.length === 0 || adminEmails.includes(userEmail);
 
             if (!hasAdminAccess) {

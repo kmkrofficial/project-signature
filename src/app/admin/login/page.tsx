@@ -3,12 +3,14 @@
 import React, { useState } from "react";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { Sparkles, AlertCircle, ArrowLeft, Terminal, ShieldCheck, KeyRound } from "lucide-react";
+import { Sparkles, AlertCircle, ArrowLeft, Mail, Lock, LogIn } from "lucide-react";
 import { motion } from "framer-motion";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
 import Link from "next/link";
 
 export default function LoginPage() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -22,17 +24,29 @@ export default function LoginPage() {
             router.push("/admin");
         } catch (err: any) {
             console.error("Login error:", err);
-            setError(err.message || "Google Authentication failed. Try Developer Mode below if running locally.");
+            setError(err.message || "Google Authentication failed.");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDevModeBypass = () => {
-        if (typeof window !== "undefined") {
-            localStorage.setItem("admin_dev_mode", "true");
-            localStorage.setItem("admin_last_accessed", Date.now().toString());
+    const handleEmailLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !password) {
+            setError("Email and password are required.");
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+            await signInWithEmailAndPassword(auth, email.trim(), password);
             router.push("/admin");
+        } catch (err: any) {
+            console.error("Email login error:", err);
+            setError(err.message || "Invalid email or password.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -51,7 +65,7 @@ export default function LoginPage() {
                         <span>Content Studio</span>
                     </div>
                     <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">
-                        v2.0
+                        Admin Login
                     </span>
                 </div>
 
@@ -59,7 +73,7 @@ export default function LoginPage() {
                     Studio Authentication
                 </h1>
                 <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                    Sign in to manage technical essays, publish architecture breakdowns, and administer the publication.
+                    Sign in with your authorized credentials to manage essays and site configuration.
                 </p>
 
                 {error && (
@@ -105,29 +119,48 @@ export default function LoginPage() {
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
                             <span className="bg-card px-2 text-muted-foreground font-mono text-[10px]">
-                                Local Development
+                                Or Sign In with Email
                             </span>
                         </div>
                     </div>
 
-                    {/* Local Dev Mode Bypass */}
-                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
-                        <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary mb-1">
-                            <KeyRound size={14} />
-                            <span>Developer Mode (Bypass Auth)</span>
+                    {/* Email / Password Form */}
+                    <form onSubmit={handleEmailLogin} className="space-y-3">
+                        <div className="space-y-1">
+                            <div className="relative">
+                                <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="admin@domain.com"
+                                    className="w-full pl-9 pr-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                                />
+                            </div>
                         </div>
-                        <p className="text-[12px] text-muted-foreground mb-3 leading-relaxed">
-                            Bypass Firebase authentication for local testing and editing. Articles will sync with local storage if Firebase is offline.
-                        </p>
+
+                        <div className="space-y-1">
+                            <div className="relative">
+                                <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Password"
+                                    className="w-full pl-9 pr-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                                />
+                            </div>
+                        </div>
+
                         <button
-                            type="button"
-                            onClick={handleDevModeBypass}
-                            className="w-full py-2.5 px-4 rounded-lg bg-secondary hover:bg-secondary/80 border border-border text-foreground font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-2.5 px-4 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-foreground font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                         >
-                            <Terminal size={14} className="text-primary" />
-                            <span>Enter Local Developer Studio</span>
+                            <LogIn size={14} className="text-primary" />
+                            <span>{loading ? "Signing in..." : "Sign In with Credentials"}</span>
                         </button>
-                    </div>
+                    </form>
 
                     {/* Return Link */}
                     <div className="pt-2 text-center">
