@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Great_Vibes, Alex_Brush } from "next/font/google";
+import { Geist, Geist_Mono, Cinzel_Decorative } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { db } from "@/lib/firebase";
@@ -18,17 +18,10 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const greatVibes = Great_Vibes({
-  weight: "400",
+const cinzelDecorative = Cinzel_Decorative({
+  weight: ["400", "700"],
   subsets: ["latin"],
-  variable: "--font-great-vibes",
-  display: "swap",
-});
-
-const alexBrush = Alex_Brush({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-alex-brush",
+  variable: "--font-cinzel",
   display: "swap",
 });
 
@@ -82,7 +75,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable} ${alexBrush.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${cinzelDecorative.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
         <ToastProvider>
           <AppShell>
             {children}

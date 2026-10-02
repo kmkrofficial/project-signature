@@ -37,8 +37,8 @@ export function Footer() {
                     {/* Brand & Copyright */}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Link href="/" className="flex items-baseline gap-1.5 text-foreground hover:text-primary transition-colors">
-                            <span className="font-signature text-xl text-primary leading-none">Keerthi&apos;s</span>
-                            <span className="font-bold text-sm leading-none">Signature</span>
+                            <span className="font-sans font-medium text-xs sm:text-sm text-foreground">Keerthi&apos;s</span>
+                            <span className="font-cinzel font-bold text-sm sm:text-base text-primary tracking-wide">Signature</span>
                         </Link>
                         <span className="text-muted-foreground/40">•</span>
                         <span>© {currentYear}</span>
