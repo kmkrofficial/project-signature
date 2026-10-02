@@ -125,10 +125,9 @@ The application will be live at:
 To log into the Admin Studio at `/admin`:
 
 1. Navigate to [http://localhost:3000/admin/login](http://localhost:3000/admin/login).
-2. Enter the seeded administrator credentials:
-   - **Email**: `kmkrworks@gmail.com`
-   - **Password**: `Password123!`
-3. Click **Sign In**. The system checks for the `{ admin: true }` custom claim and redirects to `/admin`.
+2. Click **Continue with Google**.
+3. In local emulator mode, select or enter your authorized administrator account (e.g., `kmkrworks@gmail.com`).
+4. The system validates the session and redirects to `/admin`. Use the "Back to Articles" button at any time to return to the public site.
 
 ### Granting Admin Claims to Any Email
 

@@ -3,14 +3,12 @@
 import React, { useState } from "react";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { Sparkles, AlertCircle, ArrowLeft, Mail, Lock, LogIn } from "lucide-react";
+import { Sparkles, AlertCircle, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import Link from "next/link";
 
 export default function LoginPage() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -30,28 +28,19 @@ export default function LoginPage() {
         }
     };
 
-    const handleEmailLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email || !password) {
-            setError("Email and password are required.");
-            return;
-        }
-
-        setLoading(true);
-        setError("");
-        try {
-            await signInWithEmailAndPassword(auth, email.trim(), password);
-            router.push("/admin");
-        } catch (err: any) {
-            console.error("Email login error:", err);
-            setError(err.message || "Invalid email or password.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12">
+            {/* Top Back Navigation Button */}
+            <div className="w-full max-w-md mb-3">
+                <Link
+                    href="/"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
+                >
+                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform text-primary" />
+                    <span>Back to Articles</span>
+                </Link>
+            </div>
+
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -62,18 +51,18 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between mb-6">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-mono">
                         <Sparkles size={13} />
-                        <span>Content Studio</span>
+                        <span>Admin Studio</span>
                     </div>
                     <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">
-                        Admin Login
+                        Authentication
                     </span>
                 </div>
 
                 <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
-                    Studio Authentication
+                    Studio Sign In
                 </h1>
                 <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-                    Sign in with your authorized credentials to manage essays and site configuration.
+                    Sign in with your authorized Google account to manage articles and site settings.
                 </p>
 
                 {error && (
@@ -111,67 +100,6 @@ export default function LoginPage() {
                         </svg>
                         <span>{loading ? "Authenticating..." : "Continue with Google"}</span>
                     </button>
-
-                    {/* Divider */}
-                    <div className="relative py-2">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-border/80" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-card px-2 text-muted-foreground font-mono text-[10px]">
-                                Or Sign In with Email
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Email / Password Form */}
-                    <form onSubmit={handleEmailLogin} className="space-y-3">
-                        <div className="space-y-1">
-                            <div className="relative">
-                                <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="admin@domain.com"
-                                    className="w-full pl-9 pr-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1">
-                            <div className="relative">
-                                <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Password"
-                                    className="w-full pl-9 pr-3.5 py-2.5 bg-secondary/40 border border-border rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-2.5 px-4 rounded-xl bg-secondary hover:bg-secondary/80 border border-border text-foreground font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-                        >
-                            <LogIn size={14} className="text-primary" />
-                            <span>{loading ? "Signing in..." : "Sign In with Credentials"}</span>
-                        </button>
-                    </form>
-
-                    {/* Return Link */}
-                    <div className="pt-2 text-center">
-                        <Link
-                            href="/"
-                            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            <ArrowLeft size={13} />
-                            <span>Return to Publication Homepage</span>
-                        </Link>
-                    </div>
                 </div>
             </motion.div>
         </div>
