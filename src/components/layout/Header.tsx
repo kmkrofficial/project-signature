@@ -60,7 +60,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     href="/"
                     className="flex items-baseline gap-2 group transition-transform active:scale-[0.98] select-none py-1"
                 >
-                    <span className="font-sans font-medium text-base sm:text-lg text-foreground group-hover:text-primary transition-colors tracking-tight">
+                    <span className="font-sans font-medium text-[13px] sm:text-[14.5px] text-foreground group-hover:text-primary transition-colors tracking-tight">
                         Keerthi&apos;s
                     </span>
                     <span className="font-cinzel font-bold text-xl sm:text-2xl text-primary tracking-wide group-hover:brightness-110 transition-all leading-none">
