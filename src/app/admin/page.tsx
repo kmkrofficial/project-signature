@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { useTheme } from "@/components/layout/ThemeProvider";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { clsx } from "clsx";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -424,14 +425,7 @@ export default function AdminStudio() {
                         <span className="hidden sm:inline">View Site</span>
                     </Link>
 
-                    <button
-                        type="button"
-                        onClick={toggleTheme}
-                        className="p-2 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                        title="Toggle Dark/Light Mode"
-                    >
-                        {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-                    </button>
+                    <ThemeToggle size="sm" />
 
                     <button
                         type="button"

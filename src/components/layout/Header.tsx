@@ -4,16 +4,15 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "@/components/layout/ThemeProvider";
-import { Search, Sun, Moon, Rss, Menu, X, Terminal } from "lucide-react";
+import { Search, Rss, Menu, X, Terminal } from "lucide-react";
 import { clsx } from "clsx";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface HeaderProps {
     onOpenSearch?: () => void;
 }
 
 export function Header({ onOpenSearch }: HeaderProps) {
-    const { theme, toggleTheme } = useTheme();
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [shortcutLabel, setShortcutLabel] = useState("Ctrl + K");
@@ -50,7 +49,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
     ];
 
     return (
-        <header className="sticky top-0 left-0 right-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60 transition-colors duration-200">
+        <header className="sticky top-0 left-0 right-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                 {/* Brand / Logo */}
                 <Link
@@ -121,19 +120,12 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         <Terminal size={18} />
                     </Link>
 
-                    {/* Theme Toggle */}
-                    <button
-                        onClick={toggleTheme}
-                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors active:scale-95"
-                        title="Toggle theme"
-                        aria-label="Toggle theme"
-                    >
-                        {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-                    </button>
+                    {/* Theme Switch Toggle */}
+                    <ThemeToggle />
                 </div>
 
                 {/* Mobile Right Controls */}
-                <div className="flex items-center gap-1 md:hidden">
+                <div className="flex items-center gap-1.5 md:hidden">
                     {onOpenSearch && (
                         <button
                             onClick={onOpenSearch}
@@ -144,13 +136,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         </button>
                     )}
 
-                    <button
-                        onClick={toggleTheme}
-                        className="p-2 text-muted-foreground hover:text-foreground rounded-lg"
-                        aria-label="Toggle theme"
-                    >
-                        {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-                    </button>
+                    <ThemeToggle size="sm" />
 
                     <button
                         onClick={() => setMobileOpen(!mobileOpen)}
