@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 export function ArticleSkeleton() {
     return (
-        <div className="relative min-h-screen pb-12 sm:pb-16 animate-in fade-in duration-300">
+        <div className="relative pb-2 sm:pb-4 animate-in fade-in duration-300">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
                 {/* Back Link Placeholder */}
                 <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 mb-5">
@@ -70,14 +70,26 @@ export function ArticleSkeleton() {
                         </div>
                     </div>
 
-                    {/* Right Column: Table of Contents Skeleton */}
+                    {/* Right Column: Sidebar Skeleton */}
                     <div className="hidden lg:block">
-                        <div className="sticky top-24 p-5 rounded-2xl bg-card border border-border/70 space-y-3">
-                            <div className="w-28 h-4 rounded bg-secondary/80 animate-pulse mb-4" />
-                            <div className="w-40 h-3 rounded bg-secondary/60 animate-pulse" />
-                            <div className="w-36 h-3 rounded bg-secondary/50 animate-pulse" />
-                            <div className="w-44 h-3 rounded bg-secondary/50 animate-pulse" />
-                            <div className="w-32 h-3 rounded bg-secondary/40 animate-pulse" />
+                        <div className="sticky top-20 space-y-4">
+                            {/* Action Card Placeholder */}
+                            <div className="p-3.5 rounded-2xl bg-card border border-border/70 space-y-2">
+                                <div className="w-20 h-2.5 rounded bg-secondary/80 animate-pulse" />
+                                <div className="flex gap-2">
+                                    <div className="flex-1 h-8 rounded-xl bg-secondary/60 animate-pulse" />
+                                    <div className="flex-1 h-8 rounded-xl bg-secondary/60 animate-pulse" />
+                                </div>
+                            </div>
+
+                            {/* Table of Contents Skeleton */}
+                            <div className="p-5 rounded-2xl bg-card border border-border/70 space-y-3">
+                                <div className="w-28 h-4 rounded bg-secondary/80 animate-pulse mb-4" />
+                                <div className="w-40 h-3 rounded bg-secondary/60 animate-pulse" />
+                                <div className="w-36 h-3 rounded bg-secondary/50 animate-pulse" />
+                                <div className="w-44 h-3 rounded bg-secondary/50 animate-pulse" />
+                                <div className="w-32 h-3 rounded bg-secondary/40 animate-pulse" />
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -176,7 +176,7 @@ export function BlogListClient() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-4 sm:pb-6">
             {/* Editorial Spotlight Hero Card (Option 1) */}
             {showSpotlight && spotlightPost && (
                 <motion.div

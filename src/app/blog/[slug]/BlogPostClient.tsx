@@ -173,7 +173,7 @@ export function BlogPostClient() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: "easeOut" }}
-            className="relative min-h-screen pb-12 sm:pb-16"
+            className="relative pb-2 sm:pb-4"
         >
             <ReadingProgressBar />
 
@@ -234,8 +234,8 @@ export function BlogPostClient() {
                                     )}
                                 </div>
 
-                                {/* Article Actions (Like, Share) */}
-                                <div className="flex items-center gap-2 self-start sm:self-auto">
+                                {/* Article Actions (Like, Share) for Mobile/Tablet */}
+                                <div className="flex items-center gap-2 self-start sm:self-auto lg:hidden">
                                     <button
                                         onClick={handleLike}
                                         className={clsx(
@@ -324,54 +324,82 @@ export function BlogPostClient() {
                         </article>
 
                         {/* Tags Cloud */}
-                        <div className="flex flex-wrap gap-2 mt-7 mb-5 pt-4 border-t border-border/60">
+                        <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-border/60">
                             {post.tags.map((tag) => (
                                 <span
                                     key={tag}
-                                    className="px-2.5 py-1 rounded-full bg-secondary/50 text-xs font-mono text-muted-foreground border border-border/50"
+                                    className="px-2.5 py-1 rounded-full bg-secondary/50 text-xs font-mono text-muted-foreground border border-slate-300/60 dark:border-zinc-800"
                                 >
                                     #{tag}
                                 </span>
                             ))}
                         </div>
-
-                        {/* Article Footer Navigation & Actions */}
-                        <div className="mt-5 pt-4 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <Link
-                                href="/"
-                                className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
-                            >
-                                <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform text-primary" />
-                                <span>Back to all articles</span>
-                            </Link>
-
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={handleLike}
-                                    className={clsx(
-                                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all active:scale-95 cursor-pointer",
-                                        hasLiked
-                                            ? "border-rose-500/40 bg-rose-500/10 text-rose-500"
-                                            : "border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground"
-                                    )}
-                                >
-                                    <Heart size={14} className={clsx(hasLiked && "fill-current")} />
-                                    <span>{likes}</span>
-                                </button>
-                                <button
-                                    onClick={handleCopyLink}
-                                    className="p-1.5 sm:p-2 rounded-full border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                                    title="Copy link"
-                                >
-                                    {copiedLink ? <Check size={14} className="text-emerald-400" /> : <Share2 size={14} />}
-                                </button>
-                            </div>
-                        </div>
                     </div>
 
-                    {/* Right-Side Table of Contents (Permanently sticky sidebar) */}
+                    {/* Right-Side Sticky Sidebar (Actions & Table of Contents) */}
                     <aside className="hidden lg:block relative h-full">
-                        <div className="sticky top-20">
+                        <div className="sticky top-20 space-y-4">
+                            {/* Article Interactions Card */}
+                            <div className="p-3.5 rounded-2xl bg-card border border-slate-300/80 dark:border-zinc-800 shadow-2xs">
+                                <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground mb-2.5 px-0.5">
+                                    <span className="uppercase tracking-wider font-semibold">Article Actions</span>
+                                    {post.views !== undefined && post.views > 0 && (
+                                        <span className="flex items-center gap-1 text-[11px]">
+                                            <Eye size={11} />
+                                            {post.views}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    {/* Like Button */}
+                                    <button
+                                        onClick={handleLike}
+                                        className={clsx(
+                                            "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-2xs group",
+                                            hasLiked
+                                                ? "border-rose-500/50 bg-rose-500/10 text-rose-500 shadow-rose-500/10"
+                                                : "border-slate-300 dark:border-zinc-700/80 bg-secondary/40 hover:bg-secondary hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                                        )}
+                                        title={hasLiked ? "Unlike article" : "Like this article"}
+                                    >
+                                        <Heart
+                                            size={14}
+                                            className={clsx(
+                                                "transition-transform group-hover:scale-110",
+                                                hasLiked ? "fill-current text-rose-500" : "text-muted-foreground group-hover:text-rose-500"
+                                            )}
+                                        />
+                                        <span>{likes}</span>
+                                    </button>
+
+                                    {/* Share Button */}
+                                    <button
+                                        onClick={handleCopyLink}
+                                        className={clsx(
+                                            "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-medium transition-all active:scale-95 cursor-pointer shadow-2xs group",
+                                            copiedLink
+                                                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500 font-semibold"
+                                                : "border-slate-300 dark:border-zinc-700/80 bg-secondary/40 hover:bg-secondary hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                                        )}
+                                        title="Share or copy article link"
+                                    >
+                                        {copiedLink ? (
+                                            <>
+                                                <Check size={14} className="text-emerald-500" />
+                                                <span>Copied</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Share2 size={14} className="group-hover:text-primary transition-colors" />
+                                                <span>Share</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Table of Contents */}
                             <TableOfContents content={post.content} />
                         </div>
                     </aside>
