@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Github, Linkedin, Twitter, Mail, Rss, Coffee } from "lucide-react";
+import { Github, Linkedin, Twitter, Mail, Rss } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
@@ -31,30 +31,31 @@ export function Footer() {
     }, []);
 
     return (
-        <footer className="border-t border-border/60 bg-card/30 mt-20 py-12 transition-colors duration-200">
+        <footer className="border-t border-border/50 bg-background/40 mt-14 sm:mt-16 py-5 sm:py-6 transition-colors duration-200">
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                    {/* Left: Author Brand & Philosophy */}
-                    <div className="text-center md:text-left">
-                        <Link href="/" className="font-bold text-foreground hover:text-primary transition-colors">
-                            Keerthi Raajan
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* Brand & Copyright */}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <Link href="/" className="font-semibold text-sm text-foreground hover:text-primary transition-colors">
+                            The Signature
                         </Link>
-                        <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                            Writing about technology, how software works, and lessons learned along the way.
-                        </p>
+                        <span className="text-border">|</span>
+                        <span>© {currentYear}</span>
                     </div>
 
-                    {/* Center: Social Connect */}
-                    <div className="flex items-center gap-3">
+                    {/* Social & Contact Actions */}
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
                         {links.github && (
                             <a
                                 href={links.github}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
                                 title="GitHub"
+                                aria-label="GitHub"
                             >
-                                <Github size={18} />
+                                <Github size={16} />
                             </a>
                         )}
 
@@ -63,10 +64,11 @@ export function Footer() {
                                 href={links.linkedin}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
                                 title="LinkedIn"
+                                aria-label="LinkedIn"
                             >
-                                <Linkedin size={18} />
+                                <Linkedin size={16} />
                             </a>
                         )}
 
@@ -75,10 +77,11 @@ export function Footer() {
                                 href={links.twitter}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
                                 title="Twitter"
+                                aria-label="Twitter"
                             >
-                                <Twitter size={18} />
+                                <Twitter size={16} />
                             </a>
                         )}
 
@@ -86,27 +89,21 @@ export function Footer() {
                             href="/feed.xml"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
                             title="RSS Feed"
+                            aria-label="RSS Feed"
                         >
-                            <Rss size={18} />
+                            <Rss size={16} />
                         </Link>
 
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
                             title="Contact"
+                            aria-label="Contact"
                         >
-                            <Mail size={18} />
+                            <Mail size={16} />
                         </button>
-                    </div>
-
-                    {/* Right: Copyright */}
-                    <div className="text-center md:text-right text-xs text-muted-foreground">
-                        <p>© {currentYear} Keerthi Raajan. All rights reserved.</p>
-                        <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                            Crafted with Next.js & Tailwind CSS. Hosted on Vercel.
-                        </p>
                     </div>
                 </div>
             </div>
