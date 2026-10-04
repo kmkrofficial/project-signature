@@ -21,7 +21,7 @@ export async function generateMetadata(
             const data = querySnapshot.docs[0].data();
             return {
                 title: data.title,
-                description: data.excerpt || "Read this article on Keerthi's Signature.",
+                description: data.excerpt || "Read this article on Signature.",
                 openGraph: {
                     title: data.title,
                     description: data.excerpt,
@@ -36,7 +36,7 @@ export async function generateMetadata(
 
     return {
         title: "Article",
-        description: "Read this article on Keerthi's Signature.",
+        description: "Read this article on Signature.",
     };
 }
 

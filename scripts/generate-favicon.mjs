@@ -76,7 +76,7 @@ function buildIco(pngBuffers) {
 }
 
 async function run() {
-  console.log("🎨 Generating Cinzel Decorative 'S' favicon and touch icons for Keerthi's Signature...");
+  console.log("🎨 Generating Cinzel Decorative 'S' favicon and touch icons for Signature...");
 
   const baseSvgBuffer = Buffer.from(SVG_FAVICON.trim());
 

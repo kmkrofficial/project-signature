@@ -4,11 +4,11 @@ export const PORTFOLIO_CONFIG = {
     personal: {
         name: "Keerthi Raajan K M",
         title: "Full Stack AI & Systems Engineer",
-        publicationName: "The Signature",
+        publicationName: "Signature",
         location: "India",
         email: "contact@keerthiraajan.dev",
         tagline: "Bridging the gap between high-availability backend infrastructure and efficient, edge-deployed Large Language Models for millions of users.",
-        summary: "I build robust, high-throughput distributed systems and deploy custom edge AI models. My publication, The Signature, is an unfiltered technical journal capturing system design overcomings, architecture breakdowns, and learnings from the frontier of engineering.",
+        summary: "I build robust, high-throughput distributed systems and deploy custom edge AI models. My publication, Signature, is an unfiltered technical journal capturing system design overcomings, architecture breakdowns, and learnings from the frontier of engineering.",
         status: "Available for high-impact systems & AI architecture",
         social: {
             github: "https://github.com/keerthiraajan",

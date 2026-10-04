@@ -17,7 +17,7 @@ import { PORTFOLIO_CONFIG } from "@/lib/portfolio-config";
 import { LiveGitHubSection } from "@/components/portfolio/LiveGitHubSection";
 
 export const metadata: Metadata = {
-    title: "About | The Signature",
+    title: "About | Signature",
     description: "Systems architecture, edge-deployed AI models, and technical dispatches from Keerthi Raajan.",
 };
 
@@ -68,7 +68,7 @@ export default function AboutPage() {
                         <div>
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-mono font-medium text-primary mb-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                <span>The Signature • Author</span>
+                                <span>Signature • Author</span>
                             </div>
 
                             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
@@ -414,11 +414,11 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* 8. Behind The Signature: Publication Ethos */}
+            {/* 8. Behind Signature: Publication Ethos */}
             <section className="p-6 sm:p-8 rounded-2xl bg-secondary/30 border border-border/60 space-y-3">
                 <div className="flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-wider">
                     <Sparkles size={14} />
-                    <span>Behind The Signature</span>
+                    <span>Behind Signature</span>
                 </div>
                 <h3 className="text-lg font-bold text-foreground">
                     A Pure Technical Canvas

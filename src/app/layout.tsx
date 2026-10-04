@@ -27,7 +27,7 @@ const cinzelDecorative = Cinzel_Decorative({
 
 export async function generateMetadata(): Promise<Metadata> {
   let config = {
-    siteTitle: "Keerthi's Signature | Thoughts & Tech Writings",
+    siteTitle: "Signature | Systems, AI & Software Architecture",
     siteDescription: "Articles on technology, building software, and practical ideas from real-world projects.",
     ogImageUrl: "",
   };
@@ -49,8 +49,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: {
-      default: config.siteTitle || "Keerthi's Signature | Thoughts & Tech Writings",
-      template: "%s | Keerthi's Signature",
+      default: config.siteTitle || "Signature | Systems, AI & Software Architecture",
+      template: "%s | Signature",
     },
     description: config.siteDescription,
     icons: {
