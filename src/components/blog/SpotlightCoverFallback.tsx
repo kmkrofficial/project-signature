@@ -13,10 +13,10 @@ export function SpotlightCoverFallback({ category, tags = [] }: SpotlightCoverFa
     const cat = (category || "").toLowerCase();
 
     // Determine theme colors and icon based on category (optimized for both light and dark themes)
-    let gradient = "from-cyan-100/90 via-sky-50 to-indigo-100/80 dark:from-cyan-950/70 dark:via-slate-900 dark:to-indigo-950/70";
-    let accentBorder = "border-cyan-500/30 dark:border-cyan-500/30";
-    let accentGlow = "bg-cyan-500/15 dark:bg-cyan-500/20";
-    let icon = <Terminal size={32} className="text-cyan-600 dark:text-cyan-400" />;
+    let gradient = "from-amber-100/90 via-amber-50 to-orange-100/80 dark:from-amber-950/70 dark:via-slate-900 dark:to-orange-950/70";
+    let accentBorder = "border-amber-500/30 dark:border-amber-500/30";
+    let accentGlow = "bg-amber-500/15 dark:bg-amber-500/20";
+    let icon = <Terminal size={32} className="text-amber-600 dark:text-amber-400" />;
     let label = category || "Editorial";
 
     if (cat.includes("artificial") || cat.includes("intelligence") || cat.includes("ai")) {

@@ -51,7 +51,7 @@ export function RouteProgressBar() {
     return (
         <div className="fixed top-0 left-0 right-0 z-[100] h-[2.5px] pointer-events-none bg-transparent">
             <div
-                className="h-full bg-gradient-to-r from-primary via-cyan-400 to-emerald-400 shadow-[0_0_10px_rgba(6,182,212,0.8)] transition-all duration-300 ease-out"
+                className="h-full bg-gradient-to-r from-primary via-amber-400 to-yellow-300 shadow-[0_0_10px_rgba(245,158,11,0.8)] transition-all duration-300 ease-out"
                 style={{
                     width: `${progress}%`,
                     opacity: progress === 100 ? 0 : 1,

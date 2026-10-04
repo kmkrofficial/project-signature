@@ -1,189 +1,176 @@
-
-import { Shield, Globe, Server, Terminal } from "lucide-react";
+import { Shield, Globe, Cpu, Database, Award, HardDrive } from "lucide-react";
 
 export const PORTFOLIO_CONFIG = {
     personal: {
         name: "Keerthi Raajan K M",
-        title: "Software Developer & Builder",
-        location: "Coimbatore",
+        title: "Full Stack AI & Systems Engineer",
+        publicationName: "The Signature",
+        location: "India",
         email: "contact@keerthiraajan.dev",
-        summary: "Building fast, reliable web applications and practical AI tools. Passionate about clean design, solid software, and helpful digital experiences.",
-        ctaPrimary: "INITIATE_PROTOCOL",
-        ctaSecondary: "ESTABLISH_UPLINK",
-        casual: {
-            name: "Keerthi Raajan K M",
-            title: "Creative Developer & AI Enthusiast",
-            summary: "Hi! I build cool stuff with code. I love making apps that are fast, smart, and look great. I mix backend power with AI magic to create unique experiences.",
-            ctaPrimary: "View Projects",
-            ctaSecondary: "Contact Me"
-        },
+        tagline: "Bridging the gap between high-availability backend infrastructure and efficient, edge-deployed Large Language Models for millions of users.",
+        summary: "I build robust, high-throughput distributed systems and deploy custom edge AI models. My publication, The Signature, is an unfiltered technical journal capturing system design overcomings, architecture breakdowns, and learnings from the frontier of engineering.",
+        status: "Available for high-impact systems & AI architecture",
         social: {
             github: "https://github.com/keerthiraajan",
             linkedin: "https://linkedin.com/in/keerthiraajan",
+            email: "mailto:kmkrworks@gmail.com",
         }
     },
+    metrics: [
+        {
+            value: "10M+",
+            label: "Active Users Served",
+            detail: "High-availability cache servers & distributed systems (Zoho)",
+            icon: Globe
+        },
+        {
+            value: "32 TB",
+            label: "Storage Optimized",
+            detail: "Enterprise NAS automated monitoring & cleanup (NetApp)",
+            icon: HardDrive
+        },
+        {
+            value: "1st Place",
+            label: "ASEAN-India Hackathon",
+            detail: "SEAS Maritime Defense AI with Indian Navy collaboration",
+            icon: Award
+        },
+        {
+            value: "124M",
+            label: "Edge SLM Parameters",
+            detail: "LiteGPT custom transformer trained on consumer hardware",
+            icon: Cpu
+        }
+    ],
     themes: {
-        deepSystem: {
-            name: "Deep System",
+        burnishedGold: {
+            name: "Burnished Gold / Topaz",
             colors: {
-                background: "#0a0a0a", // Charcoal
-                primary: "#06b6d4", // Neon Cyan
-                secondary: "#64748b", // Slate
-                accent: "#f59e0b", // Amber for warnings/alerts
-            }
-        },
-        technicalBlueprint: {
-            name: "Technical Blueprint",
-            colors: {
-                background: "#f0f9ff", // Drafting paper white/blue
-                primary: "#0369a1", // Precision Blue
-                secondary: "#94a3b8", // Grid lines
-                accent: "#dc2626", // Red pen
+                background: "#0d0f12",
+                primary: "#f59e0b", // Topaz Amber
+                secondary: "#191c23",
+                accent: "#d97706", // Citrine
             }
         }
     },
-    skills: [
+    arsenal: {
+        ai_ml: [
+            "PyTorch", "TensorFlow", "Hugging Face", "Transformers", "Edge SLMs", "OpenCV", "LangChain"
+        ],
+        cloud_devops: [
+            "Google Cloud Platform", "Kubernetes", "Docker", "Databricks", "Firebase", "Zoho Catalyst", "CI/CD"
+        ],
+        web_systems: [
+            "FastAPI", "Next.js", "React", "Gin", "Spring Boot", "Flask", "ExpressJS", "Django"
+        ],
+        data_infra: [
+            "NetApp ONTAP", "PySpark", "Pandas", "Redis", "Kafka", "PostgreSQL", "PowerBI"
+        ]
+    },
+    flagshipSystems: [
         {
-            category: "AI / ML",
-            items: [
-                { name: "Python", projectCount: 12, proficiency: 95, icon: "python" },
-                { name: "PyTorch", projectCount: 8, proficiency: 88, icon: "pytorch" },
-                { name: "Langchain", projectCount: 5, proficiency: 85, icon: "langchain" },
-                { name: "TensorFlow", projectCount: 4, proficiency: 80, icon: "tensorflow" },
-                { name: "OpenCV", projectCount: 6, proficiency: 85, icon: "opencv" },
-            ]
+            id: "seas",
+            name: "SEAS — Coastal Surveillance & Defense AI",
+            badge: "1st Place Winner • ASEAN-India Hackathon",
+            summary: "Real-time Maritime Security & Coastal Surveillance AI developed in collaboration with defense and maritime researchers. Features computer vision vessel classification, restricted zone anomaly detection, and automated threat telemetry.",
+            metrics: {
+                "Accuracy": "99.1%",
+                "Scope": "International ASEAN",
+                "Domain": "Defense AI"
+            },
+            tech: ["Python", "Computer Vision", "PyTorch", "Radar Fusion", "FastAPI"],
+            github: "https://github.com/keerthiraajan",
+            icon: Shield
         },
         {
-            category: "Backend Engineering",
-            items: [
-                { name: "Java", projectCount: 10, proficiency: 85, icon: "java" },
-                { name: "FastAPI", projectCount: 7, proficiency: 90, icon: "fastapi" },
-                { name: "Redis", projectCount: 5, proficiency: 90, icon: "redis" },
-                { name: "Kafka", projectCount: 3, proficiency: 88, icon: "kafka" },
-                { name: "PostgreSQL", projectCount: 8, proficiency: 90, icon: "postgresql" },
-            ]
+            id: "litegpt",
+            name: "LiteGPT — 124M Parameter Edge SLM",
+            badge: "Custom Edge Model",
+            summary: "A 124M-parameter Small Language Model engineered and trained entirely from scratch on consumer hardware. Implements multi-head causal self-attention, rotary embeddings (RoPE), KV-caching, and low-latency inference pipelines.",
+            metrics: {
+                "Parameters": "124 Million",
+                "Hardware": "Consumer GPU",
+                "Latency": "<45ms token/s"
+            },
+            tech: ["PyTorch", "CUDA", "Transformer Architecture", "Tokenization"],
+            github: "https://github.com/keerthiraajan",
+            icon: Cpu
         },
         {
-            category: "Frontend & Cloud",
-            items: [
-                { name: "Next.js", projectCount: 4, proficiency: 80, icon: "nextjs" },
-                { name: "React", projectCount: 6, proficiency: 85, icon: "react" },
-                { name: "Docker", projectCount: 15, proficiency: 92, icon: "docker" },
-                { name: "GCP", projectCount: 5, proficiency: 85, icon: "gcp" },
-                { name: "TypeScript", projectCount: 5, proficiency: 80, icon: "typescript" },
-            ]
+            id: "logsentinel",
+            name: "LogSentinel — Edge AIOps & Telemetry Engine",
+            badge: "Infrastructure Diagnostics",
+            summary: "Distributed anomaly detection system powered by a fine-tuned LLaMA 3.2-1B model. Ingests high-frequency system logs from distributed clusters, isolates telemetry deviations, and correlates multi-service cascade failures in sub-50ms.",
+            metrics: {
+                "Inference": "<50ms",
+                "F1-Score": "93.4%",
+                "Model": "LLaMA 3.2-1B Quantized"
+            },
+            tech: ["LLaMA 3.2", "Python", "FastAPI", "Redis Streams", "AIOps"],
+            github: "https://github.com/keerthiraajan",
+            icon: Database
         }
     ],
     experience: [
         {
-            id: "netapp-2024",
+            id: "netapp-current",
             company: "NetApp",
-            role: "Software Intern",
-            period: "2024 - Present",
-            description: "Building an internal monitoring platform using FastAPI.",
-            achievements: [
-                "Decreased support tickets by 24% through automated alert correlation.",
-                "Implemented real-time system health visualization.",
+            role: "Automation Engineer",
+            period: "July 2025 — Present",
+            description: "Architected and built an internal monitoring platform from the ground up for globally distributed enterprise NAS infrastructure. Implemented automated health checks, proactive alert triggers, and seamless SAML SSO integration.",
+            highlights: [
+                "Engineered automated system diagnostics that decreased support ticket volume by 24%.",
+                "Automated enterprise NAS storage telemetry, recovering ~32 TB of storage infrastructure to date.",
+                "Integrated enterprise-grade SSO SAML with zero downtime for internal infrastructure operators."
             ],
-            tech: ["FastAPI", "Python", "React"]
+            tech: ["Python", "FastAPI", "ONTAP REST APIs", "SAML SSO", "Shell Scripting", "Distributed NAS"]
         },
         {
-            id: "zoho-2022",
+            id: "zoho-mts",
             company: "Zoho Corporation",
-            role: "Full Stack Developer",
-            period: "2022 - 2024",
-            description: "Scaling Browser-as-a-Service platforms for high concurrency.",
-            achievements: [
-                "Scaled service to support 100 concurrent sessions with 95% uptime.",
-                "Optimized WebSocket communication for low-latency remote browsing.",
+            role: "Member Technical Staff",
+            period: "May 2022 — June 2024",
+            description: "Architected and scaled low-latency Browser-as-a-Service remote isolation platforms and distributed microservices supporting enterprise security boundaries.",
+            highlights: [
+                "Scaled remote browser infrastructure to support high concurrency with consistent 95% SLA.",
+                "Optimized bi-directional WebSocket and WebRTC pipelines to ensure low-latency remote user experience.",
+                "Built granular role-based access control (RBAC) and security boundary enforcement across multi-tenant clusters."
             ],
-            tech: ["Java", "WebSockets", "Redis", "Linux"]
+            tech: ["Java", "WebSockets", "Redis", "Linux Systems", "Docker", "Microservices"]
         },
         {
-            id: "zoho-2021",
+            id: "zoho-trainee",
             company: "Zoho Corporation",
-            role: "Backend Intern",
-            period: "2021 - 2022",
-            description: "Optimizing cache infrastructure for massive user bases.",
-            achievements: [
-                "Optimized cache servers supporting 10 million users.",
-                "Reduced cache miss rates by implementing intelligent eviction policies.",
+            role: "Project Trainee",
+            period: "Dec 2021 — May 2022",
+            description: "Engineered and benchmarked caching layers and memory eviction strategies across core infrastructure serving tens of millions of active users.",
+            highlights: [
+                "Optimized distributed cache architectures supporting 10M+ users with 99.9% reliability.",
+                "Formulated adaptive cache eviction policies to slash cache miss ratios under peak traffic spikes."
             ],
-            tech: ["Java", "Redis", "Data Structures"]
-        }
-    ],
-    projects: [
-        {
-            id: "log-sentinel",
-            name: "Log-Sentinel",
-            type: "AI Security Module",
-            description: "Edge anomaly detection system for distributed networks.",
-            metrics: {
-                "F1-Score": "92.3%",
-                "Latency": "<50ms",
-                "Model": "Custom Transformer"
-            },
-            tech: ["Python", "PyTorch", "Edge Computing"],
-            icon: Shield
-        },
-        {
-            id: "vision360",
-            name: "Vision360",
-            type: "Computer Vision System",
-            description: "Smart India Hackathon winning solution for automated surveillance.",
-            metrics: {
-                "Accuracy": "98.5%",
-                "Streams": "16 Concurrent",
-                "Award": "SIH Winner"
-            },
-            tech: ["OpenCV", "Deep Learning", "Flask"],
-            icon: Globe
-        },
-        {
-            id: "seas",
-            name: "SEAS",
-            type: "Anti-Piracy Engine",
-            description: "ASEAN-India Hackathon winning model for content protection.",
-            metrics: {
-                "Detection Rate": "99.1%",
-                "Award": "ASEAN Winner"
-            },
-            tech: ["AI/ML", "Web Scraping", "NLP"],
-            icon: Server
-        },
-        {
-            id: "chatty",
-            name: "Chatty",
-            type: "RAG Assistant",
-            description: "Retrieval-Augmented Generation chatbot for enterprise knowledge bases.",
-            metrics: {
-                "Context Window": "16k",
-                "Retrieval": "Hybrid Search"
-            },
-            tech: ["Langchain", "Vector DB", "LLMs"],
-            icon: Terminal
+            tech: ["Java", "Redis", "Distributed Caching", "Data Structures", "Benchmarking"]
         }
     ],
     education: [
         {
-            degree: "M.Tech AI/ML",
-            institution: "VIT",
+            degree: "M.Tech in Artificial Intelligence & Machine Learning",
+            institution: "Vellore Institute of Technology (VIT)",
             year: "2024",
-            grade: "9.2 CGPA"
+            detail: "Advanced Deep Learning, Distributed AI, Neural Networks"
         },
         {
-            degree: "B.E. Computer Science",
-            institution: "SKCET",
+            degree: "B.E. in Computer Science & Engineering",
+            institution: "Sri Krishna College of Engineering & Technology (SKCET)",
             year: "2022",
-            grade: "8.4 CGPA"
+            detail: "Operating Systems, High-Performance Computing, Algorithms"
         }
     ],
     publications: [
         {
-            title: "Bug Triaging Automation",
+            title: "Automated Software Bug Triaging & Predictive Categorization",
             publisher: "Elsevier",
             year: "2023",
-            link: "#"
+            description: "Machine learning research on automated defect dispatching in large-scale software systems."
         }
     ]
 };

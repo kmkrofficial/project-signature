@@ -75,7 +75,7 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
                     size={isSmall ? 10 : 12}
                     className={clsx(
                         "transition-all duration-200",
-                        isDark ? "text-cyan-400 opacity-100" : "text-muted-foreground/30 opacity-40"
+                        isDark ? "text-amber-400 opacity-100" : "text-muted-foreground/30 opacity-40"
                     )}
                 />
             </span>
@@ -93,7 +93,7 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
                             ? "translate-x-7 w-6 h-6"
                             : "translate-x-0.5 w-6 h-6",
                     isDark
-                        ? "bg-slate-900 border border-slate-700/80 text-cyan-300 shadow-md shadow-black/60"
+                        ? "bg-slate-900 border border-slate-700/80 text-amber-300 shadow-md shadow-black/60"
                         : "bg-white border border-amber-200 text-amber-500 shadow-md shadow-amber-500/20"
                 )}
             >

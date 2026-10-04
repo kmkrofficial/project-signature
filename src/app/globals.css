@@ -33,17 +33,17 @@
 
 :root,
 .dark {
-  /* Dark Mode by Default (Matte Graphite / Deep Slate) */
+  /* Dark Mode by Default (Matte Graphite / Deep Slate with Burnished Gold Accent) */
   --background: 13 15 18;
   --foreground: 243 244 246;
 
-  --primary: 6 182 212;
+  --primary: 245 158 11;               /* Radiant Topaz / Burnished Gold (#f59e0b) */
   --primary-foreground: 13 15 18;
 
   --secondary: 25 28 35;
   --secondary-foreground: 243 244 246;
 
-  --accent: 16 185 129;
+  --accent: 217 119 6;                 /* Warm Amber Citrine (#d97706) */
   --accent-foreground: 13 15 18;
 
   --muted: 22 25 32;
@@ -54,7 +54,7 @@
 
   --border: 34 38 48;
   --input: 34 38 48;
-  --ring: 6 182 212;
+  --ring: 245 158 11;
 
   --radius: 0.5rem;
 }
@@ -65,13 +65,13 @@
   --background: 248 250 252;          /* Clean, crisp off-white canvas (slate-50) */
   --foreground: 15 23 42;             /* High-contrast deep slate-900 */
 
-  --primary: 8 145 178;               /* Rich Cyan 600 - vibrant, readable, WCAG AAA */
+  --primary: 180 83 9;                /* Deep Burnished Gold / Amber 700 (#b45309) - High Contrast WCAG AAA */
   --primary-foreground: 255 255 255;
 
   --secondary: 241 245 249;           /* Slate 100 surface for chips, pills, inputs */
   --secondary-foreground: 15 23 42;   /* Slate 900 */
 
-  --accent: 13 148 136;               /* Teal 600 */
+  --accent: 180 83 9;                 /* Amber 700 */
   --accent-foreground: 255 255 255;
 
   --muted: 241 245 249;               /* Slate 100 */
@@ -82,7 +82,7 @@
 
   --border: 226 232 240;              /* Slate 200 - structural definition */
   --input: 226 232 240;               /* Slate 200 */
-  --ring: 8 145 178;
+  --ring: 180 83 9;
 }
 
 @layer base {
@@ -172,16 +172,16 @@
   pointer-events: none;
   z-index: 0;
   background: 
-    radial-gradient(ellipse 65% 340px at 50% -70px, rgba(6, 182, 212, 0.12), transparent),
-    radial-gradient(ellipse 40% 260px at 80% -50px, rgba(99, 102, 241, 0.07), transparent),
-    radial-gradient(ellipse 40% 260px at 20% -50px, rgba(16, 185, 129, 0.05), transparent);
+    radial-gradient(ellipse 65% 340px at 50% -70px, rgba(245, 158, 11, 0.10), transparent),
+    radial-gradient(ellipse 40% 260px at 80% -50px, rgba(217, 119, 6, 0.06), transparent),
+    radial-gradient(ellipse 40% 260px at 20% -50px, rgba(180, 83, 9, 0.05), transparent);
 }
 
 .light-mode .bg-ambient-glow {
   background: 
-    radial-gradient(ellipse 70% 360px at 50% -60px, rgba(8, 145, 178, 0.09), transparent),
-    radial-gradient(ellipse 45% 280px at 85% -40px, rgba(99, 102, 241, 0.06), transparent),
-    radial-gradient(ellipse 45% 280px at 15% -40px, rgba(13, 148, 136, 0.05), transparent);
+    radial-gradient(ellipse 70% 360px at 50% -60px, rgba(180, 83, 9, 0.07), transparent),
+    radial-gradient(ellipse 45% 280px at 85% -40px, rgba(217, 119, 6, 0.05), transparent),
+    radial-gradient(ellipse 45% 280px at 15% -40px, rgba(245, 158, 11, 0.04), transparent);
 }
 
 .bg-grid-pattern {
@@ -209,9 +209,9 @@
   height: 1px;
   z-index: 50;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent 0%, rgba(6, 182, 212, 0.35) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(245, 158, 11, 0.40) 50%, transparent 100%);
 }
 
 .light-mode .top-hairline {
-  background: linear-gradient(90deg, transparent 0%, rgba(8, 145, 178, 0.35) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(180, 83, 9, 0.35) 50%, transparent 100%);
 }

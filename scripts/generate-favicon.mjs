@@ -11,28 +11,28 @@ const SVG_FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
   <defs>
     <!-- Background Slate/Navy Gradient -->
     <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#070c18"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="100%" stop-color="#121829"/>
     </linearGradient>
 
-    <!-- Border Ring Gradient -->
+    <!-- Border Ring Gradient (Burnished Gold / Topaz) -->
     <linearGradient id="borderGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
-      <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.7"/>
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#f59e0b" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#d97706" stop-opacity="0.75"/>
     </linearGradient>
 
-    <!-- Monogram S Gradient (Signature Brand Cyan) -->
+    <!-- Monogram S Gradient (Signature Brand Topaz & Gold) -->
     <linearGradient id="sGrad" x1="16" y1="11" x2="48" y2="53" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#38bdf8"/>
-      <stop offset="50%" stop-color="#06b6d4"/>
-      <stop offset="100%" stop-color="#14b8a6"/>
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="45%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
     </linearGradient>
 
     <!-- Radial Core Aura Glow -->
     <radialGradient id="coreAura" cx="32" cy="32" r="26" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.2"/>
-      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
