@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Calendar, Clock, Eye, Heart, Share2, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Clock, Eye, Heart, Share2, Check, X, ZoomIn } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -10,31 +10,91 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, updateDoc, increment, doc } from "firebase/firestore";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ReadingProgressBar } from "@/components/blog/ReadingProgressBar";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { CodeBlock } from "@/components/blog/CodeBlock";
 import { useToast } from "@/context/ToastContext";
-import { toFriendlyCategory } from "@/app/blog/BlogListClient";
+import { toFriendlyCategory, getCategoryBadgeClasses } from "@/lib/categoryUtils";
 import { clsx } from "clsx";
 import { getCachedPost, setCachedPost } from "@/lib/blogCache";
 import { isOptimizableImage } from "@/lib/image-utils";
 import { ArticleSkeleton } from "@/components/blog/ArticleSkeleton";
 import type { BlogPost } from "@/types/blog";
 
-export function BlogPostClient() {
+export interface AdjacentPostSummary {
+    slug: string;
+    title: string;
+    category: string;
+    readTime: string;
+}
+
+interface BlogPostClientProps {
+    initialPost?: BlogPost | null;
+    prevPost?: AdjacentPostSummary | null;
+    nextPost?: AdjacentPostSummary | null;
+}
+
+export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClientProps) {
     const params = useParams();
-    const slug = params.slug as string;
+    const slug = (params.slug as string) || initialPost?.slug || "";
     const { addToast } = useToast();
 
-    const [post, setPost] = useState<BlogPost | null>(null);
-    const [likes, setLikes] = useState(0);
+    const [post, setPost] = useState<BlogPost | null>(initialPost || null);
+    const [likes, setLikes] = useState(initialPost?.likes || 0);
     const [hasLiked, setHasLiked] = useState(false);
     const [copiedLink, setCopiedLink] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!initialPost);
     const [notFound, setNotFound] = useState(false);
+    const [zoomImage, setZoomImage] = useState<{ src: string; alt?: string } | null>(null);
+
+    // Synchronize initialPost when provided or changed
+    useEffect(() => {
+        if (initialPost) {
+            setPost(initialPost);
+            setLikes(initialPost.likes || 0);
+            setLoading(false);
+            setCachedPost(initialPost.slug, initialPost);
+        }
+    }, [initialPost]);
+
+    // Handle Escape key and body lock for Lightbox
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setZoomImage(null);
+            }
+        };
+
+        if (zoomImage) {
+            window.addEventListener("keydown", handleKeyDown);
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "unset";
+        }
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+            document.body.style.overflow = "unset";
+        };
+    }, [zoomImage]);
 
     useEffect(() => {
+        if (initialPost) {
+            // Register view count once per session
+            const viewedKey = `viewed_${initialPost.id}`;
+            if (typeof window !== "undefined" && !sessionStorage.getItem(viewedKey)) {
+                updateDoc(doc(db, "blog", initialPost.id), {
+                    views: increment(1),
+                }).catch(() => {});
+                sessionStorage.setItem(viewedKey, "true");
+            }
+            if (typeof window !== "undefined" && sessionStorage.getItem(`liked_${initialPost.id}`)) {
+                setHasLiked(true);
+            }
+            return;
+        }
+
         const cached = getCachedPost(slug);
         if (cached) {
             setPost(cached);
@@ -107,7 +167,7 @@ export function BlogPostClient() {
         if (slug) {
             fetchPost();
         }
-    }, [slug]);
+    }, [slug, initialPost]);
 
     // Optimistic Like Handler (0ms visual feedback)
     const handleLike = async () => {
@@ -169,7 +229,7 @@ export function BlogPostClient() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: "easeOut" }}
-            className="relative pb-2 sm:pb-4"
+            className="relative pb-6 sm:pb-12"
         >
             <ReadingProgressBar />
 
@@ -190,7 +250,7 @@ export function BlogPostClient() {
                         <header className="mb-7 pb-5 sm:mb-8 sm:pb-6 border-b border-border/60">
                             {/* Category Pill */}
                             <div className="flex items-center gap-2 text-xs font-mono mb-3">
-                                <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold font-sans">
+                                <span className={clsx("px-2.5 py-0.5 rounded-full border font-semibold font-sans text-xs transition-colors", getCategoryBadgeClasses(post.category))}>
                                     {post.category}
                                 </span>
                             </div>
@@ -221,7 +281,7 @@ export function BlogPostClient() {
                                     </span>
                                     {post.views !== undefined && post.views > 0 && (
                                         <>
-                                            <span>•</span>
+                                             <span>•</span>
                                             <span className="flex items-center gap-1">
                                                 <Eye size={13} />
                                                 {post.views} views
@@ -272,8 +332,8 @@ export function BlogPostClient() {
                             </div>
                         )}
 
-                        {/* Editorial Reading Canvas (Constrained for reading comfort) */}
-                        <article className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.7] font-sans prose-headings:font-bold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-5 prose-h3:mb-2 prose-p:my-3 prose-p:leading-[1.72] prose-ul:my-3 prose-ol:my-3 prose-li:my-1 prose-blockquote:my-4 prose-hr:my-6 prose-a:text-primary prose-a:underline-offset-4 hover:prose-a:underline prose-img:rounded-xl prose-img:shadow-md prose-blockquote:border-l-primary prose-blockquote:bg-secondary/20 prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-pre:p-0 prose-pre:bg-transparent">
+                        {/* Editorial Reading Canvas */}
+                        <article className="prose prose-neutral dark:prose-invert max-w-none text-foreground/90 leading-[1.7] font-sans prose-headings:font-bold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-7 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-5 prose-h3:mb-2 prose-p:my-3 prose-p:leading-[1.72] prose-ul:my-3 prose-ol:my-3 prose-li:my-1 prose-hr:my-6 prose-a:text-primary prose-a:underline-offset-4 hover:prose-a:underline prose-img:rounded-xl prose-img:shadow-md prose-blockquote:my-5 prose-blockquote:border-l-4 prose-blockquote:border-l-primary prose-blockquote:bg-secondary/40 dark:prose-blockquote:bg-secondary/20 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-foreground/95 prose-blockquote:shadow-xs prose-pre:p-0 prose-pre:bg-transparent">
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeRaw]}
@@ -297,15 +357,27 @@ export function BlogPostClient() {
                                         if (!src || typeof src !== "string") return null;
                                         return (
                                             <figure className="my-6">
-                                                <Image
-                                                    src={src}
-                                                    alt={alt || ""}
-                                                    width={1200}
-                                                    height={675}
-                                                    unoptimized
-                                                    className="w-full h-auto rounded-xl border border-border/80 shadow-md"
-                                                    loading="lazy"
-                                                />
+                                                <div
+                                                    className="relative overflow-hidden rounded-xl border border-border/80 shadow-md group cursor-zoom-in bg-secondary/20"
+                                                    onClick={() => setZoomImage({ src, alt: alt || "" })}
+                                                    title="Click to expand diagram"
+                                                >
+                                                    <Image
+                                                        src={src}
+                                                        alt={alt || ""}
+                                                        width={1200}
+                                                        height={675}
+                                                        unoptimized
+                                                        className="w-full h-auto transition-transform duration-300 group-hover:scale-[1.01]"
+                                                        loading="lazy"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/90 text-foreground text-xs font-mono backdrop-blur-md shadow-md border border-border/60 font-medium">
+                                                            <ZoomIn size={14} className="text-primary" />
+                                                            Click to enlarge
+                                                        </span>
+                                                    </div>
+                                                </div>
                                                 {alt && (
                                                     <figcaption className="text-center text-xs text-muted-foreground mt-2 font-mono">
                                                         {`// ${alt}`}
@@ -338,6 +410,62 @@ export function BlogPostClient() {
                                 </span>
                             ))}
                         </div>
+
+                        {/* Adjacent Post Navigation (Next / Previous Article) */}
+                        {(prevPost || nextPost) && (
+                            <nav className="mt-10 pt-8 border-t border-border/70" aria-label="Adjacent articles">
+                                <h3 className="text-xs uppercase tracking-wider font-mono text-muted-foreground font-semibold mb-4">
+                                    Continue Reading
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {prevPost ? (
+                                        <Link
+                                            href={`/blog/${prevPost.slug}`}
+                                            className="group p-4 rounded-2xl border border-border/80 bg-card hover:border-primary/50 hover:bg-secondary/30 transition-all flex flex-col justify-between"
+                                        >
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono mb-2 group-hover:text-primary transition-colors">
+                                                <ArrowLeft size={13} className="group-hover:-translate-x-1 transition-transform" />
+                                                <span>Previous Article</span>
+                                            </div>
+                                            <span className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base mb-3 leading-snug">
+                                                {prevPost.title}
+                                            </span>
+                                            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                                                <span className={clsx("px-2 py-0.5 rounded-full border text-[10px] font-sans font-medium", getCategoryBadgeClasses(prevPost.category))}>
+                                                    {prevPost.category}
+                                                </span>
+                                                <span>•</span>
+                                                <span>{prevPost.readTime}</span>
+                                            </div>
+                                        </Link>
+                                    ) : (
+                                        <div className="hidden sm:block" />
+                                    )}
+
+                                    {nextPost ? (
+                                        <Link
+                                            href={`/blog/${nextPost.slug}`}
+                                            className="group p-4 rounded-2xl border border-border/80 bg-card hover:border-primary/50 hover:bg-secondary/30 transition-all flex flex-col justify-between text-left sm:text-right"
+                                        >
+                                            <div className="flex items-center sm:justify-end gap-1.5 text-xs text-muted-foreground font-mono mb-2 group-hover:text-primary transition-colors">
+                                                <span>Next Article</span>
+                                                <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                                            </div>
+                                            <span className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base mb-3 leading-snug">
+                                                {nextPost.title}
+                                            </span>
+                                            <div className="flex items-center sm:justify-end gap-2 text-xs font-mono text-muted-foreground">
+                                                <span className={clsx("px-2 py-0.5 rounded-full border text-[10px] font-sans font-medium", getCategoryBadgeClasses(nextPost.category))}>
+                                                    {nextPost.category}
+                                                </span>
+                                                <span>•</span>
+                                                <span>{nextPost.readTime}</span>
+                                            </div>
+                                        </Link>
+                                    ) : null}
+                                </div>
+                            </nav>
+                        )}
                     </div>
 
                     {/* Right-Side Sticky Sidebar (Actions & Table of Contents) */}
@@ -409,6 +537,48 @@ export function BlogPostClient() {
                     </aside>
                 </div>
             </div>
+
+            {/* Click-to-Zoom Lightbox Modal */}
+            <AnimatePresence>
+                {zoomImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-black/85 backdrop-blur-md cursor-zoom-out"
+                        onClick={() => setZoomImage(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            className="relative max-w-5xl max-h-[90vh] flex flex-col items-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+                                <img
+                                    src={zoomImage.src}
+                                    alt={zoomImage.alt || ""}
+                                    className="max-h-[80vh] w-auto object-contain select-none"
+                                />
+                            </div>
+                            {zoomImage.alt && (
+                                <div className="mt-3 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-xs font-mono border border-white/10 max-w-lg text-center truncate">
+                                    {zoomImage.alt}
+                                </div>
+                            )}
+                            <button
+                                onClick={() => setZoomImage(null)}
+                                className="absolute -top-3 -right-3 p-2 rounded-full bg-white text-black hover:bg-white/90 transition-colors shadow-lg cursor-pointer"
+                                title="Close (Esc)"
+                            >
+                                <X size={16} />
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

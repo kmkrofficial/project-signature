@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { clsx } from "clsx";
+import { toFriendlyCategory, getCategoryBadgeClasses } from "@/lib/categoryUtils";
 
 interface PostSummary {
     id: string;
@@ -23,10 +26,14 @@ interface SearchModalProps {
 }
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
+    const router = useRouter();
     const [queryText, setQueryText] = useState("");
     const [posts, setPosts] = useState<PostSummary[]>([]);
     const [loading, setLoading] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(0);
+
     const inputRef = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
 
     // Fetch published posts once when search is first opened
     useEffect(() => {
@@ -42,10 +49,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     const d = doc.data();
                     return {
                         id: doc.id,
-                        slug: d.slug,
+                        slug: d.slug || doc.id,
                         title: d.title || "",
                         excerpt: d.excerpt || "",
-                        category: d.category || (d.tags && d.tags[0]) || "General",
+                        category: toFriendlyCategory(d.category || (d.tags && d.tags[0]) || "Technology"),
                         tags: d.tags || [],
                         readTime: `${Math.max(1, Math.ceil((d.content?.split(/\s+/).length || 0) / 200))} min read`,
                     };
@@ -62,22 +69,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         setTimeout(() => inputRef.current?.focus(), 50);
     }, [isOpen, posts.length]);
 
-    // Handle global Cmd+K or Ctrl+K shortcut
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-                e.preventDefault();
-                if (isOpen) {
-                    onClose();
-                }
-            } else if (e.key === "Escape" && isOpen) {
-                onClose();
-            }
-        };
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [isOpen, onClose]);
-
     const filtered = posts.filter((post) => {
         if (!queryText.trim()) return true;
         const q = queryText.toLowerCase();
@@ -89,11 +80,60 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         );
     });
 
+    // Reset selection index when query changes
+    useEffect(() => {
+        setSelectedIndex(0);
+    }, [queryText]);
+
+    // Keep active item scrolled into view
+    useEffect(() => {
+        if (!listRef.current) return;
+        const activeElement = listRef.current.querySelector<HTMLElement>(`[data-index="${selectedIndex}"]`);
+        if (activeElement) {
+            activeElement.scrollIntoView({ block: "nearest" });
+        }
+    }, [selectedIndex]);
+
+    // Keyboard navigation (Arrow keys, Enter, Esc, Cmd+K)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+                e.preventDefault();
+                if (isOpen) {
+                    onClose();
+                }
+            } else if (e.key === "Escape" && isOpen) {
+                onClose();
+            } else if (isOpen && filtered.length > 0) {
+                if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setSelectedIndex((prev) => (prev + 1) % filtered.length);
+                } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    setSelectedIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
+                } else if (e.key === "Enter") {
+                    e.preventDefault();
+                    const target = filtered[selectedIndex];
+                    if (target) {
+                        onClose();
+                        router.push(`/blog/${target.slug}`);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, onClose, filtered, selectedIndex, router]);
+
     if (!isOpen) return null;
 
     return (
         <AnimatePresence>
-            <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-background/80 backdrop-blur-md">
+            <div
+                className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-background/80 backdrop-blur-md"
+                onClick={onClose}
+            >
                 <motion.div
                     initial={{ opacity: 0, scale: 0.96, y: -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -110,66 +150,91 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             type="text"
                             placeholder="Search articles, tags, topics..."
                             value={queryText}
-                            onChange={(e) => {
-                                setQueryText(e.target.value);
-                            }}
+                            onChange={(e) => setQueryText(e.target.value)}
                             className="w-full bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                         />
                         <button
                             onClick={onClose}
-                            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
                         >
                             <X size={18} />
                         </button>
                     </div>
 
                     {/* Results Stream */}
-                    <div className="overflow-y-auto p-2 divide-y divide-border/30">
+                    <div ref={listRef} className="overflow-y-auto p-2 space-y-1">
                         {filtered.length === 0 ? (
                             <div className="py-12 text-center text-muted-foreground text-sm">
                                 {loading ? "Loading articles..." : `No articles found for "${queryText}".`}
                             </div>
                         ) : (
-                            filtered.map((post) => (
-                                <Link
-                                    key={post.id}
-                                    href={`/blog/${post.slug}`}
-                                    onClick={onClose}
-                                    className="block p-3 rounded-xl hover:bg-secondary/60 transition-colors group"
-                                >
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                                                <span className="text-primary font-medium">{post.category}</span>
-                                                <span>•</span>
-                                                <span className="flex items-center gap-1">
-                                                    <Clock size={11} />
-                                                    {post.readTime}
-                                                </span>
+                            filtered.map((post, idx) => {
+                                const isSelected = idx === selectedIndex;
+                                return (
+                                    <Link
+                                        key={post.id}
+                                        data-index={idx}
+                                        href={`/blog/${post.slug}`}
+                                        onClick={onClose}
+                                        onMouseEnter={() => setSelectedIndex(idx)}
+                                        className={clsx(
+                                            "block p-3 rounded-xl border transition-all duration-150 group",
+                                            isSelected
+                                                ? "bg-secondary/90 border-primary/40 shadow-xs"
+                                                : "border-transparent hover:bg-secondary/40 text-foreground"
+                                        )}
+                                    >
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                                                    <span className={clsx("px-2 py-0.2 rounded-full border text-[10px] font-sans font-semibold", getCategoryBadgeClasses(post.category))}>
+                                                        {post.category}
+                                                    </span>
+                                                    <span>•</span>
+                                                    <span className="flex items-center gap-1 font-mono">
+                                                        <Clock size={11} />
+                                                        {post.readTime}
+                                                    </span>
+                                                </div>
+                                                <h4 className={clsx("font-semibold text-base truncate transition-colors", isSelected ? "text-primary" : "text-foreground group-hover:text-primary")}>
+                                                    {post.title}
+                                                </h4>
+                                                {post.excerpt && (
+                                                    <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                                                        {post.excerpt}
+                                                    </p>
+                                                )}
                                             </div>
-                                            <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors text-base truncate">
-                                                {post.title}
-                                            </h4>
-                                            {post.excerpt && (
-                                                <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                                                    {post.excerpt}
-                                                </p>
-                                            )}
+                                            <ArrowRight
+                                                size={16}
+                                                className={clsx(
+                                                    "transition-all shrink-0 mt-2",
+                                                    isSelected ? "text-primary translate-x-1" : "text-muted-foreground group-hover:text-primary"
+                                                )}
+                                            />
                                         </div>
-                                        <ArrowRight
-                                            size={16}
-                                            className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mt-2"
-                                        />
-                                    </div>
-                                </Link>
-                            ))
+                                    </Link>
+                                );
+                            })
                         )}
                     </div>
 
-                    {/* Footer Tip */}
-                    <div className="px-4 py-2 border-t border-border/60 bg-secondary/20 flex items-center justify-between text-[11px] text-muted-foreground">
-                        <span>Navigate with keyboard or click</span>
-                        <span>ESC to close</span>
+                    {/* Footer Tip with Command Palette Keyboard Badges */}
+                    <div className="px-4 py-2.5 border-t border-border/60 bg-secondary/30 flex items-center justify-between text-[11px] text-muted-foreground font-mono">
+                        <div className="flex items-center gap-3">
+                            <span className="flex items-center gap-1">
+                                <kbd className="px-1.5 py-0.5 rounded bg-background border border-border text-[10px]">↑↓</kbd>
+                                <span>Navigate</span>
+                            </span>
+                            <span className="flex items-center gap-1">
+                                <kbd className="px-1.5 py-0.5 rounded bg-background border border-border text-[10px]">↵</kbd>
+                                <span>Open</span>
+                            </span>
+                        </div>
+                        <span className="flex items-center gap-1">
+                            <kbd className="px-1.5 py-0.5 rounded bg-background border border-border text-[10px]">ESC</kbd>
+                            <span>Close</span>
+                        </span>
                     </div>
                 </motion.div>
             </div>

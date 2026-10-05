@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ArrowRight, BookOpen, Loader2, Eye, Heart, ChevronLeft, ChevronRight, SlidersHorizontal, ChevronDown, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
@@ -11,38 +12,55 @@ import { clsx } from "clsx";
 import { SpotlightCoverFallback } from "@/components/blog/SpotlightCoverFallback";
 import { primePostCache } from "@/lib/blogCache";
 import { isOptimizableImage } from "@/lib/image-utils";
+import { PREDEFINED_CATEGORIES, toFriendlyCategory, getCategoryBadgeClasses } from "@/lib/categoryUtils";
 import type { BlogPost, SortOption } from "@/types/blog";
 
 export type { BlogPost };
-
-const PREDEFINED_CATEGORIES = [
-    "All",
-    "Artificial Intelligence",
-    "Web & Software",
-    "Cloud & Data",
-    "Guides & Tips",
-];
-
-// Map overly technical categories to friendly, accessible names
-export function toFriendlyCategory(cat?: string): string {
-    if (!cat) return "Technology";
-    const lower = cat.toLowerCase();
-    if (lower.includes("systems") || lower.includes("architecture")) return "Web & Software";
-    if (lower.includes("backend") || lower.includes("cloud")) return "Cloud & Data";
-    if (lower.includes("craft") || lower.includes("engineering craft")) return "Guides & Tips";
-    if (lower.includes("machine learning")) return "Artificial Intelligence";
-    return cat;
-}
+export { toFriendlyCategory };
 
 export function BlogListClient() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const categoryParam = searchParams.get("category");
+    const initialCategory = categoryParam && (PREDEFINED_CATEGORIES as readonly string[]).includes(categoryParam)
+        ? categoryParam
+        : "All";
+
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [selectedCategory, setSelectedCategory] = useState(initialCategory);
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortOption, setSortOption] = useState<SortOption>("newest");
     const [isSortOpen, setIsSortOpen] = useState(false);
     const postsPerPage = 8;
+
+    // Synchronize category state when URL changes (back / forward navigation or link share)
+    useEffect(() => {
+        const cat = searchParams.get("category");
+        if (cat && (PREDEFINED_CATEGORIES as readonly string[]).includes(cat)) {
+            setSelectedCategory(cat);
+        } else if (!cat) {
+            setSelectedCategory("All");
+        }
+    }, [searchParams]);
+
+    // Handle user clicking category capsule
+    const handleCategorySelect = (category: string) => {
+        setSelectedCategory(category);
+        setCurrentPage(1);
+
+        const params = new URLSearchParams(searchParams.toString());
+        if (category === "All") {
+            params.delete("category");
+        } else {
+            params.set("category", category);
+        }
+        const queryString = params.toString();
+        router.replace(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
+    };
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -270,7 +288,9 @@ export function BlogListClient() {
                                                         : "Latest Story"}
                                                 </span>
                                                 <span className="text-muted-foreground/40">•</span>
-                                                <span className="font-semibold text-primary font-sans">{currentSpotlightPost.category}</span>
+                                                <span className={clsx("px-2 py-0.5 rounded-full border text-[10px] font-sans font-semibold transition-colors", getCategoryBadgeClasses(currentSpotlightPost.category))}>
+                                                    {currentSpotlightPost.category}
+                                                </span>
                                                 <span className="text-muted-foreground/40">•</span>
                                                 <span className="flex items-center gap-1 text-muted-foreground font-mono">
                                                     <Clock size={12} />
@@ -357,9 +377,9 @@ export function BlogListClient() {
                     return (
                         <button
                             key={category}
-                            onClick={() => setSelectedCategory(category)}
+                            onClick={() => handleCategorySelect(category)}
                             className={clsx(
-                                "relative px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
+                                "relative px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap cursor-pointer",
                                 active ? "text-foreground font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
                             )}
                         >
@@ -380,32 +400,43 @@ export function BlogListClient() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
                 {/* Search Input */}
                 <div className="relative flex-1">
-                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                     <input
                         type="text"
-                        placeholder="Search articles, topics, or tags..."
+                        placeholder="Filter articles by keyword or topic..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 text-sm bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 shadow-2xs transition-colors"
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-card border border-border/80 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary/60 focus:border-primary/60 transition-all placeholder:text-muted-foreground/50 shadow-2xs"
                     />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground font-mono bg-secondary px-1.5 py-0.5 rounded cursor-pointer"
+                        >
+                            Clear
+                        </button>
+                    )}
                 </div>
 
                 {/* Sort Dropdown */}
-                <div className="relative shrink-0">
+                <div className="relative">
                     <button
                         onClick={() => setIsSortOpen(!isSortOpen)}
-                        className="flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs font-medium bg-card border border-border rounded-xl text-foreground hover:bg-secondary/50 shadow-2xs transition-colors cursor-pointer"
+                        className="w-full sm:w-auto flex items-center justify-between gap-2 px-3.5 py-2 bg-card border border-border/80 rounded-xl text-xs font-medium hover:border-primary/40 hover:bg-secondary/40 transition-colors shadow-2xs cursor-pointer"
                     >
-                        <SlidersHorizontal size={14} className="text-muted-foreground" />
-                        <span>{sortLabels[sortOption]}</span>
-                        <ChevronDown size={14} className={clsx("transition-transform duration-200", isSortOpen && "rotate-180")} />
+                        <div className="flex items-center gap-2">
+                            <SlidersHorizontal size={14} className="text-muted-foreground" />
+                            <span className="text-muted-foreground font-mono text-[11px]">Sort:</span>
+                            <span className="text-foreground font-semibold">{sortLabels[sortOption]}</span>
+                        </div>
+                        <ChevronDown size={14} className={clsx("text-muted-foreground transition-transform duration-200", isSortOpen && "rotate-180")} />
                     </button>
 
                     {isSortOpen && (
                         <>
                             <div className="fixed inset-0 z-20" onClick={() => setIsSortOpen(false)} />
-                            <div className="absolute right-0 top-full mt-2 w-44 bg-card border border-border rounded-xl shadow-xl z-30 overflow-hidden py-1">
-                                {(Object.keys(sortLabels) as SortOption[]).map(option => (
+                            <div className="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border/80 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
+                                {(["newest", "oldest", "views", "likes"] as SortOption[]).map(option => (
                                     <button
                                         key={option}
                                         onClick={() => {
@@ -413,8 +444,10 @@ export function BlogListClient() {
                                             setIsSortOpen(false);
                                         }}
                                         className={clsx(
-                                            "w-full text-left px-3.5 py-2 text-xs transition-colors flex items-center justify-between cursor-pointer",
-                                            sortOption === option ? "bg-primary/10 text-primary font-semibold" : "hover:bg-secondary text-muted-foreground hover:text-foreground"
+                                            "w-full text-left px-3.5 py-2 text-xs flex items-center justify-between transition-colors cursor-pointer",
+                                            sortOption === option
+                                                ? "bg-primary/10 text-primary font-semibold"
+                                                : "text-foreground hover:bg-secondary/60"
                                         )}
                                     >
                                         <span>{sortLabels[option]}</span>
@@ -460,7 +493,9 @@ export function BlogListClient() {
                                 <div className="flex flex-col gap-2.5">
                                     {/* Meta Row */}
                                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-mono">
-                                        <span className="text-primary font-semibold font-sans">{post.category}</span>
+                                        <span className={clsx("px-2 py-0.5 rounded-full border text-[11px] font-sans font-semibold transition-colors", getCategoryBadgeClasses(post.category))}>
+                                            {post.category}
+                                        </span>
                                         <span>•</span>
                                         <span className="flex items-center gap-1">
                                             <Calendar size={12} />
@@ -539,7 +574,7 @@ export function BlogListClient() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="p-2 border border-border rounded-lg hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 border border-border rounded-lg hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                                 aria-label="Previous Page"
                             >
                                 <ChevronLeft size={18} />
@@ -550,7 +585,7 @@ export function BlogListClient() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="p-2 border border-border rounded-lg hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 border border-border rounded-lg hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                                 aria-label="Next Page"
                             >
                                 <ChevronRight size={18} />
