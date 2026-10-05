@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "emulators": "firebase emulators:start",
-    "emulators:export": "firebase emulators:start --export-on-exit=./emulator-data --import=./emulator-data",
+    "emulators": "npx --yes firebase-tools emulators:start",
+    "emulators:export": "npx --yes firebase-tools emulators:start --export-on-exit=./emulator-data --import=./emulator-data",
     "seed:emulator": "node scripts/seed-emulator.mjs"
   },
   "dependencies": {
