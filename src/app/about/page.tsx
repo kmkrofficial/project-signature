@@ -42,7 +42,7 @@ const TOPICS = [
 
 export default function AboutPage() {
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-10 sm:pb-16 space-y-10 sm:space-y-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-10 sm:pb-16 space-y-10 sm:space-y-12">
             {/* 1. Header Profile */}
             <section className="relative p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border border-border/80 overflow-hidden shadow-xs">
                 {/* Ambient Subtle Topaz Glow */}

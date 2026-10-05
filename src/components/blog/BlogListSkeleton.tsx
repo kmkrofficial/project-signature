@@ -2,7 +2,7 @@ import React from "react";
 
 export function BlogListSkeleton() {
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-4 sm:pb-6 animate-in fade-in duration-300">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-4 sm:pb-6 animate-in fade-in duration-300">
             {/* Spotlight Placeholder */}
             <div className="mb-8 sm:mb-10 w-full rounded-2xl sm:rounded-3xl border border-border/80 bg-card/60 p-6 md:h-[310px] grid grid-cols-1 md:grid-cols-12 gap-6 animate-pulse">
                 <div className="md:col-span-5 aspect-[16/10] md:aspect-auto rounded-xl bg-secondary/50" />
