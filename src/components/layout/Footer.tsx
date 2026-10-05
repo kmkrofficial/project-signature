@@ -10,7 +10,7 @@ import { SocialsModal } from "@/components/features/SocialsModal";
 export function Footer() {
     const currentYear = new Date().getFullYear();
     const [links, setLinks] = useState<Record<string, string>>({
-        github: "https://github.com/keerthiraajan",
+        github: "https://github.com/kmkrofficial",
         linkedin: "https://linkedin.com/in/keerthiraajan",
     });
     const [isModalOpen, setIsModalOpen] = useState(false);

@@ -16,46 +16,24 @@ export interface GitHubRepoItem {
 const FALLBACK_REPOS: GitHubRepoItem[] = [
     {
         id: 1,
-        name: "E-Commerce-Microservice",
-        description: "Event-driven microservices architecture built with modern backend standards and resilient fault tolerance.",
-        html_url: "https://github.com/keerthiraajan/E-Commerce-Microservice",
+        name: "project-signature",
+        description: "An editorial technical publication and systems architecture journal built with Next.js and Firebase.",
+        html_url: "https://github.com/kmkrofficial/project-signature",
         stargazers_count: 0,
         forks_count: 0,
-        language: "Java",
-        topics: ["microservices", "spring-boot", "docker", "event-driven"],
+        language: "TypeScript",
+        topics: ["nextjs", "typescript", "architecture", "firebase"],
         updated_at: new Date().toISOString(),
     },
     {
         id: 2,
-        name: "Pharma-Chain-Vault",
-        description: "Decentralized pharmaceutical supply chain verification system ensuring drug provenance and integrity.",
-        html_url: "https://github.com/keerthiraajan/Pharma-Chain-Vault",
-        stargazers_count: 0,
-        forks_count: 0,
-        language: "Solidity",
-        topics: ["blockchain", "supply-chain", "smart-contracts"],
-        updated_at: new Date().toISOString(),
-    },
-    {
-        id: 3,
-        name: "Battery-Failure-Prediction",
-        description: "Predictive maintenance framework utilizing machine learning models to forecast lithium-ion battery anomalies.",
-        html_url: "https://github.com/keerthiraajan/Battery-Failure-Prediction",
+        name: "project-nook",
+        description: "Personal computing and systems automation workspace utilities.",
+        html_url: "https://github.com/kmkrofficial/project-nook",
         stargazers_count: 0,
         forks_count: 0,
         language: "Python",
-        topics: ["machine-learning", "predictive-maintenance", "telemetry"],
-        updated_at: new Date().toISOString(),
-    },
-    {
-        id: 4,
-        name: "LiteGPT",
-        description: "124M parameter edge Large Language Model engineered from scratch in PyTorch with custom tokenization & KV caching.",
-        html_url: "https://github.com/keerthiraajan",
-        stargazers_count: 12,
-        forks_count: 3,
-        language: "Python",
-        topics: ["deep-learning", "transformers", "pytorch", "edge-ai"],
+        topics: ["python", "automation", "tools"],
         updated_at: new Date().toISOString(),
     }
 ];
@@ -63,7 +41,7 @@ const FALLBACK_REPOS: GitHubRepoItem[] = [
 export async function GET() {
     try {
         const response = await fetch(
-            "https://api.github.com/users/keerthiraajan/repos?sort=updated&per_page=8",
+            "https://api.github.com/users/kmkrofficial/repos?sort=updated&per_page=8",
             {
                 headers: {
                     Accept: "application/vnd.github.v3+json",
@@ -85,7 +63,7 @@ export async function GET() {
         }
 
         const repos: GitHubRepoItem[] = rawData
-            .filter((repo: { fork?: boolean; name?: string }) => repo.name !== "keerthiraajan")
+            .filter((repo: { fork?: boolean; name?: string }) => repo.name !== "kmkrofficial")
             .map((repo: {
                 id: number;
                 name: string;

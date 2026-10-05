@@ -80,12 +80,12 @@ export function LiveGitHubSection() {
                         {isLive ? "API Synced" : "Cached Feed"}
                     </span>
                     <a
-                        href="https://github.com/keerthiraajan"
+                        href="https://github.com/kmkrofficial"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors duration-150"
                     >
-                        <span>github.com/keerthiraajan</span>
+                        <span>github.com/kmkrofficial</span>
                         <ExternalLink size={12} />
                     </a>
                 </div>

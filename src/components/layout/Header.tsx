@@ -49,7 +49,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
 
     const navLinks = [
         { name: "Articles", href: "/", isActive: pathname === "/" || pathname.startsWith("/blog") },
-        { name: "About & Work", href: "/about", isActive: pathname.startsWith("/about") },
+        { name: "About", href: "/about", isActive: pathname.startsWith("/about") },
         { name: "RSS", href: "/feed.xml", isExternal: true },
     ];
 

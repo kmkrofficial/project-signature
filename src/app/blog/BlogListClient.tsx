@@ -180,14 +180,8 @@ export function BlogListClient() {
     // Keep the featured article hero visible when selecting category filters and sort options
     const showSpotlight = !searchQuery.trim() && currentPage === 1 && Boolean(currentSpotlightPost);
 
-    // Exclude spotlight posts from the chronological stream below to avoid duplication,
-    // but if the total posts are few, keep non-active ones visible so the list is never empty
-    const spotlightIds = useMemo(() => new Set(spotlightPosts.map(p => p.id)), [spotlightPosts]);
-    const displayPosts = showSpotlight
-        ? (filteredAndSortedPosts.length > spotlightPosts.length
-            ? filteredAndSortedPosts.filter(p => !spotlightIds.has(p.id))
-            : filteredAndSortedPosts.filter(p => p.id !== currentSpotlightPost?.id))
-        : filteredAndSortedPosts;
+    // The article list is completely disassociated from the spotlight carousel
+    const displayPosts = filteredAndSortedPosts;
 
     // Pagination
     const totalPages = Math.ceil(displayPosts.length / postsPerPage);
@@ -442,15 +436,11 @@ export function BlogListClient() {
                 <div className="text-center py-12 border border-dashed border-border rounded-xl p-6 bg-card/40">
                     <BookOpen size={32} className="mx-auto mb-2.5 text-muted-foreground/60" />
                     <h3 className="font-semibold text-base text-foreground mb-1">
-                        {showSpotlight && currentSpotlightPost && filteredAndSortedPosts.some(p => p.id === currentSpotlightPost.id)
-                            ? "All articles in this category are featured above"
-                            : "No articles found"}
+                        No articles found
                     </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground">
                         {searchQuery
                             ? `No posts matched "${searchQuery}".`
-                            : showSpotlight && currentSpotlightPost && filteredAndSortedPosts.some(p => p.id === currentSpotlightPost.id)
-                            ? "Explore the featured article above or choose another topic."
                             : "No articles published in this category yet."}
                     </p>
                 </div>

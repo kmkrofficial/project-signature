@@ -24,20 +24,42 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
-        if (savedTheme === "light" || savedTheme === "technicalBlueprint") {
-            requestAnimationFrame(() => setTheme("light"));
+        const isCurrentLight = document.documentElement.classList.contains("light-mode") || savedTheme === "light";
+        const initialTheme = isCurrentLight ? "light" : "dark";
+        setTheme(initialTheme);
+
+        if (initialTheme === "light") {
             document.documentElement.classList.add("light-mode");
             document.documentElement.classList.remove("dark");
         } else {
-            requestAnimationFrame(() => setTheme("dark"));
             document.documentElement.classList.add("dark");
             document.documentElement.classList.remove("light-mode");
         }
+
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === "theme" && (e.newValue === "light" || e.newValue === "dark")) {
+                setTheme(e.newValue);
+                if (e.newValue === "light") {
+                    document.documentElement.classList.add("light-mode");
+                    document.documentElement.classList.remove("dark");
+                } else {
+                    document.documentElement.classList.add("dark");
+                    document.documentElement.classList.remove("light-mode");
+                }
+            }
+        };
+
+        window.addEventListener("storage", handleStorage);
+        return () => window.removeEventListener("storage", handleStorage);
     }, []);
 
     const applyThemeChange = (newTheme: "dark" | "light") => {
         setTheme(newTheme);
-        localStorage.setItem("theme", newTheme);
+        try {
+            localStorage.setItem("theme", newTheme);
+        } catch {
+            // Safe fallback
+        }
         if (newTheme === "light") {
             document.documentElement.classList.add("light-mode");
             document.documentElement.classList.remove("dark");

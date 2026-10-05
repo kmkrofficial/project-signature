@@ -11,7 +11,7 @@ export const PORTFOLIO_CONFIG = {
         summary: "I build robust, high-throughput distributed systems and deploy custom edge AI models. My publication, Signature, is an unfiltered technical journal capturing system design overcomings, architecture breakdowns, and learnings from the frontier of engineering.",
         status: "Available for high-impact systems & AI architecture",
         social: {
-            github: "https://github.com/keerthiraajan",
+            github: "https://github.com/kmkrofficial",
             linkedin: "https://linkedin.com/in/keerthiraajan",
             email: "mailto:kmkrworks@gmail.com",
         }
@@ -79,7 +79,7 @@ export const PORTFOLIO_CONFIG = {
                 "Domain": "Defense AI"
             },
             tech: ["Python", "Computer Vision", "PyTorch", "Radar Fusion", "FastAPI"],
-            github: "https://github.com/keerthiraajan",
+            github: "https://github.com/kmkrofficial",
             icon: Shield
         },
         {
@@ -93,7 +93,7 @@ export const PORTFOLIO_CONFIG = {
                 "Latency": "<45ms token/s"
             },
             tech: ["PyTorch", "CUDA", "Transformer Architecture", "Tokenization"],
-            github: "https://github.com/keerthiraajan",
+            github: "https://github.com/kmkrofficial",
             icon: Cpu
         },
         {
@@ -107,7 +107,7 @@ export const PORTFOLIO_CONFIG = {
                 "Model": "LLaMA 3.2-1B Quantized"
             },
             tech: ["LLaMA 3.2", "Python", "FastAPI", "Redis Streams", "AIOps"],
-            github: "https://github.com/keerthiraajan",
+            github: "https://github.com/kmkrofficial",
             icon: Database
         }
     ],
