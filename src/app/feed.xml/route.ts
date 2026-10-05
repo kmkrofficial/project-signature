@@ -58,7 +58,7 @@ export async function GET() {
     const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
-        <title>Keerthi Raajan | Articles & Thoughts</title>
+        <title>Signature | Articles & Thoughts</title>
         <link>${siteUrl}</link>
         <description>Articles on technology, building software, and practical ideas from real-world projects.</description>
         <language>en-US</language>
