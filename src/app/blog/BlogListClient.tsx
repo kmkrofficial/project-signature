@@ -148,16 +148,13 @@ export function BlogListClient() {
             }
         });
 
-    // Multiple Spotlight articles (maximum of 3)
+    // Multiple Spotlight articles (maximum of 3 top featured publication stories)
+    // Completely decoupled from category filter selections to ensure fixed sizing and steady state
     const spotlightPosts = useMemo(() => {
-        if (selectedCategory !== "All") {
-            const catFeatured = filteredAndSortedPosts.filter(p => p.featured);
-            if (catFeatured.length > 0) return catFeatured.slice(0, 3);
-        }
         const allFeatured = posts.filter(p => p.featured);
         if (allFeatured.length > 0) return allFeatured.slice(0, 3);
         return posts.slice(0, Math.min(posts.length, 3));
-    }, [posts, filteredAndSortedPosts, selectedCategory]);
+    }, [posts]);
 
     const [currentSpotlightIndex, setCurrentSpotlightIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
@@ -240,10 +237,10 @@ export function BlogListClient() {
                         </button>
                     )}
 
-                    {/* The Spotlight Article Card (Fixed standard height, zero layout shift) */}
+                    {/* The Spotlight Article Card (Fixed locked height across all breakpoints, zero layout shift) */}
                     <Link
                         href={`/blog/${currentSpotlightPost.slug}`}
-                        className="group block relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 md:h-[310px]"
+                        className="group block relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 h-[410px] sm:h-[370px] md:h-[310px]"
                     >
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -255,7 +252,7 @@ export function BlogListClient() {
                                 className="grid grid-cols-1 md:grid-cols-12 gap-0 h-full"
                             >
                                 {/* Cover Canvas / Image (Left 5 Cols on desktop) */}
-                                <div className="md:col-span-5 relative overflow-hidden aspect-[16/10] md:aspect-auto md:h-full bg-secondary/40 border-b md:border-b-0 md:border-r border-border/60">
+                                <div className="md:col-span-5 relative overflow-hidden h-[190px] sm:h-[180px] md:h-full bg-secondary/40 border-b md:border-b-0 md:border-r border-border/60">
                                     {currentSpotlightPost.coverImage ? (
                                         <Image
                                             src={currentSpotlightPost.coverImage}
@@ -276,16 +273,14 @@ export function BlogListClient() {
                                 </div>
 
                                 {/* Content Side (Right 7 Cols on desktop) */}
-                                <div className="md:col-span-7 p-5 sm:p-6 md:p-7 flex flex-col justify-between h-full overflow-hidden">
+                                <div className="md:col-span-7 p-5 sm:p-6 md:p-7 flex flex-col justify-between h-[calc(100%-190px)] sm:h-[calc(100%-180px)] md:h-full overflow-hidden">
                                     <div>
                                         {/* Header Row: Live Badge + Category + Read Time */}
                                         <div className="flex items-center justify-between gap-2 mb-2 sm:mb-2.5">
                                             <div className="flex flex-wrap items-center gap-2 text-xs">
                                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                    {currentSpotlightPost.featured
-                                                        ? (spotlightPosts.length > 1 ? `Spotlight ${activeSpotlightIndex + 1} of ${spotlightPosts.length}` : "Spotlight Story")
-                                                        : "Latest Story"}
+                                                    Featured
                                                 </span>
                                                 <span className="text-muted-foreground/40">•</span>
                                                 <span className={clsx("px-2 py-0.5 rounded-full border text-[10px] font-sans font-semibold transition-colors", getCategoryBadgeClasses(currentSpotlightPost.category))}>
@@ -348,10 +343,10 @@ export function BlogListClient() {
                         </button>
                     )}
 
-                    {/* Slide Indicator Pills Below the Card */}
-                    {spotlightPosts.length > 1 && (
-                        <div className="flex items-center justify-center gap-1.5 mt-3 sm:mt-4">
-                            {spotlightPosts.map((_, idx) => (
+                    {/* Slide Indicator Bar Below the Card (Indicators on Left, Counter on Right) */}
+                    <div className="flex items-center justify-between mt-3 sm:mt-4 px-1">
+                        <div className="flex items-center gap-1.5">
+                            {spotlightPosts.length > 1 && spotlightPosts.map((_, idx) => (
                                 <button
                                     key={idx}
                                     type="button"
@@ -366,7 +361,12 @@ export function BlogListClient() {
                                 />
                             ))}
                         </div>
-                    )}
+
+                        {/* Counter positioned in the bottom right of the spotlight cards */}
+                        <span className="text-xs font-mono text-muted-foreground font-medium select-none">
+                            Spotlight {activeSpotlightIndex + 1} of {spotlightPosts.length}
+                        </span>
+                    </div>
                 </div>
             )}
 

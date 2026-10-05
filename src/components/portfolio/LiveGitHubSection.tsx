@@ -32,7 +32,6 @@ const LANGUAGE_COLORS: Record<string, string> = {
 export function LiveGitHubSection() {
     const [repos, setRepos] = useState<RepoItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isLive, setIsLive] = useState(true);
 
     useEffect(() => {
         let mounted = true;
@@ -44,7 +43,6 @@ export function LiveGitHubSection() {
                 const data = await res.json();
                 if (mounted && data.repos) {
                     setRepos(data.repos);
-                    setIsLive(data.source === "github_live");
                 }
             } catch (err) {
                 console.error("Error fetching live repos:", err);
@@ -75,10 +73,6 @@ export function LiveGitHubSection() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                        {isLive ? "API Synced" : "Cached Feed"}
-                    </span>
                     <a
                         href="https://github.com/kmkrofficial"
                         target="_blank"

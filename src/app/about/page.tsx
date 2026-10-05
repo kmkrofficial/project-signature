@@ -72,10 +72,6 @@ export default function AboutPage() {
 
                     {/* Author Intro */}
                     <div className="flex-1 space-y-1.5">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-mono font-medium text-primary mb-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <span>Author of Signature</span>
-                        </div>
                         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
                             Keerthi Raajan K M
                         </h1>
