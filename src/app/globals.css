@@ -161,44 +161,87 @@
 }
 
 /* ==========================================================================
-   Atmospheric Background Design (CSS-Only, Zero-Runtime, GPU-Accelerated)
+   Atmospheric Background System (CSS-Only, Hardware-Accelerated)
    ========================================================================== */
-.bg-ambient-glow {
+
+/* 1. Dual-Tone Aurora Horizon */
+.bg-ambient-aurora {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 520px;
+  height: 640px;
   pointer-events: none;
   z-index: 0;
   background: 
-    radial-gradient(ellipse 65% 340px at 50% -70px, rgba(245, 158, 11, 0.10), transparent),
-    radial-gradient(ellipse 40% 260px at 80% -50px, rgba(217, 119, 6, 0.06), transparent),
-    radial-gradient(ellipse 40% 260px at 20% -50px, rgba(180, 83, 9, 0.05), transparent);
+    radial-gradient(ellipse 70% 380px at 50% -80px, rgba(245, 158, 11, 0.12), transparent),
+    radial-gradient(ellipse 45% 300px at 85% -60px, rgba(99, 102, 241, 0.05), transparent),
+    radial-gradient(ellipse 45% 300px at 15% -60px, rgba(217, 119, 6, 0.07), transparent);
+  will-change: transform;
+  animation: aurora-drift 24s ease-in-out infinite alternate;
 }
 
-.light-mode .bg-ambient-glow {
+.light-mode .bg-ambient-aurora {
   background: 
-    radial-gradient(ellipse 70% 360px at 50% -60px, rgba(180, 83, 9, 0.07), transparent),
-    radial-gradient(ellipse 45% 280px at 85% -40px, rgba(217, 119, 6, 0.05), transparent),
-    radial-gradient(ellipse 45% 280px at 15% -40px, rgba(245, 158, 11, 0.04), transparent);
+    radial-gradient(ellipse 75% 400px at 50% -70px, rgba(180, 83, 9, 0.08), transparent),
+    radial-gradient(ellipse 50% 320px at 85% -50px, rgba(245, 158, 11, 0.05), transparent),
+    radial-gradient(ellipse 50% 320px at 15% -50px, rgba(217, 119, 6, 0.04), transparent);
 }
 
-.bg-grid-pattern {
+@keyframes aurora-drift {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.05) translateY(-12px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-ambient-aurora {
+    animation: none;
+  }
+}
+
+/* 2. Architectural Linear Grid Mesh */
+.bg-architectural-grid {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 20%, transparent 85%);
-  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 20%, transparent 85%);
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, black 20%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, black 20%, transparent 85%);
 }
 
-.light-mode .bg-grid-pattern {
-  background-image: radial-gradient(rgba(15, 23, 42, 0.075) 1px, transparent 1px);
-  mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 25%, transparent 85%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 25%, transparent 85%);
+.light-mode .bg-architectural-grid {
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 25%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 25%, transparent 85%);
+}
+
+/* 3. Tactile Film Micro-Grain (Zero-Banding SVG Texture) */
+.bg-film-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.028;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.light-mode .bg-film-grain {
+  opacity: 0.035;
+  mix-blend-mode: multiply;
 }
 
 .top-hairline {

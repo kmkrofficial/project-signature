@@ -33,9 +33,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Instant Navigation Route Progress */}
             <RouteProgressBar />
 
-            {/* CSS-Only Ambient Horizon & Grid Background */}
-            <div className="bg-ambient-glow" aria-hidden="true" />
-            <div className="bg-grid-pattern" aria-hidden="true" />
+            {/* Atmospheric Background Architecture (CSS-Only, Zero-Banding, GPU-Accelerated) */}
+            <div className="bg-ambient-aurora" aria-hidden="true" />
+            <div className="bg-architectural-grid" aria-hidden="true" />
+            <div className="bg-film-grain" aria-hidden="true" />
             <div className="top-hairline" aria-hidden="true" />
 
             <div className="relative z-10 flex flex-col min-h-screen">
