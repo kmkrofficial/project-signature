@@ -69,24 +69,23 @@ export function Header({ onOpenSearch }: HeaderProps) {
                 <nav className="hidden md:flex items-center gap-2">
                     {navLinks.map((link) => {
                         const active = link.isActive;
-                        return (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                target={link.isExternal ? "_blank" : undefined}
-                                rel={link.isExternal ? "noopener noreferrer" : undefined}
-                                className={clsx(
-                                    "relative px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 rounded-full flex items-center gap-1.5 border shadow-2xs group",
-                                    active
-                                        ? "bg-primary/10 border-primary/50 text-primary font-semibold shadow-primary/10"
-                                        : "bg-secondary/60 border-border text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-primary/40"
-                                )}
-                            >
-                                {active && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                )}
-                                <span>{link.name}</span>
-                                {link.isExternal && (
+                        const linkClass = clsx(
+                            "relative px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 rounded-full flex items-center gap-1.5 border shadow-2xs group",
+                            active
+                                ? "bg-primary/10 border-primary/50 text-primary font-semibold shadow-primary/10"
+                                : "bg-secondary/60 border-border text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-primary/40"
+                        );
+
+                        if (link.isExternal) {
+                            return (
+                                <a
+                                    key={link.name}
+                                    href={link.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={linkClass}
+                                >
+                                    <span>{link.name}</span>
                                     <Rss
                                         size={13}
                                         className={clsx(
@@ -96,7 +95,20 @@ export function Header({ onOpenSearch }: HeaderProps) {
                                                 : "text-amber-500 group-hover:text-amber-400"
                                         )}
                                     />
+                                </a>
+                            );
+                        }
+
+                        return (
+                            <Link
+                                key={link.name}
+                                href={link.href}
+                                className={linkClass}
+                            >
+                                {active && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                                 )}
+                                <span>{link.name}</span>
                             </Link>
                         );
                     })}
@@ -169,24 +181,38 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         <nav className="flex flex-col gap-2.5">
                             {navLinks.map((link) => {
                                 const active = link.isActive;
+                                const mobileClass = clsx(
+                                    "flex items-center justify-between py-2.5 text-sm font-medium rounded-xl px-3.5 transition-all border",
+                                    active
+                                        ? "bg-primary/10 border-primary/50 text-primary font-semibold shadow-xs"
+                                        : "bg-secondary/60 border-border text-foreground hover:bg-secondary hover:border-primary/40"
+                                );
+
+                                if (link.isExternal) {
+                                    return (
+                                        <a
+                                            key={link.name}
+                                            href={link.href}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={mobileClass}
+                                        >
+                                            <span>{link.name}</span>
+                                            <Rss size={15} className="text-amber-500" />
+                                        </a>
+                                    );
+                                }
+
                                 return (
                                     <Link
                                         key={link.name}
                                         href={link.href}
-                                        target={link.isExternal ? "_blank" : undefined}
-                                        rel={link.isExternal ? "noopener noreferrer" : undefined}
-                                        className={clsx(
-                                            "flex items-center justify-between py-2.5 text-sm font-medium rounded-xl px-3.5 transition-all border",
-                                            active
-                                                ? "bg-primary/10 border-primary/50 text-primary font-semibold shadow-xs"
-                                                : "bg-secondary/60 border-border text-foreground hover:bg-secondary hover:border-primary/40"
-                                        )}
+                                        className={mobileClass}
                                     >
                                         <span className="flex items-center gap-2">
                                             {active && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
                                             <span>{link.name}</span>
                                         </span>
-                                        {link.isExternal && <Rss size={15} className="text-amber-500" />}
                                     </Link>
                                 );
                             })}

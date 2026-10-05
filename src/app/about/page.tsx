@@ -13,6 +13,7 @@ import {
     Layers,
     BookOpen
 } from "lucide-react";
+import { LiveGitHubSection } from "@/components/portfolio/LiveGitHubSection";
 
 export const metadata: Metadata = {
     title: "About | Signature",
@@ -116,13 +117,15 @@ export default function AboutPage() {
                         <span>Email</span>
                     </a>
 
-                    <Link
+                    <a
                         href="/feed.xml"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 transition-all duration-200 ml-auto"
                     >
                         <Rss size={14} className="text-amber-500" />
                         <span>RSS Feed</span>
-                    </Link>
+                    </a>
                 </div>
             </section>
 
@@ -179,7 +182,10 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* 4. Publication Ethos */}
+            {/* 4. Live Open Source Codebase Feed */}
+            <LiveGitHubSection />
+
+            {/* 5. Publication Ethos */}
             <section className="p-6 sm:p-7 rounded-2xl bg-secondary/30 border border-border/60 space-y-2.5">
                 <div className="flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-wider">
                     <Sparkles size={14} />

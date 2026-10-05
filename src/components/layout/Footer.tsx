@@ -84,7 +84,7 @@ export function Footer() {
                             </a>
                         )}
 
-                        <Link
+                        <a
                             href="/feed.xml"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -93,7 +93,7 @@ export function Footer() {
                             aria-label="RSS Feed"
                         >
                             <Rss size={16} />
-                        </Link>
+                        </a>
 
                         <button
                             onClick={() => setIsModalOpen(true)}
