@@ -224,23 +224,23 @@ export function BlogListClient() {
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                 >
-                    {/* Spotlight Navigation - Left Button (Outside Card) */}
+                    {/* Desktop Spotlight Navigation - Left Button (Outside Card) */}
                     {spotlightPosts.length > 1 && (
                         <button
                             type="button"
                             onClick={handlePrevSpotlight}
                             aria-label="Previous spotlight story"
                             title="Previous story"
-                            className="absolute -left-3 sm:-left-5 md:-left-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full border border-border/80 bg-background/95 hover:bg-background text-muted-foreground hover:text-foreground hover:border-primary/60 shadow-md sm:shadow-lg hover:shadow-xl hover:shadow-primary/10 backdrop-blur-md flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 group/btn"
+                            className="hidden md:flex absolute -left-5 md:-left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full border border-border/80 bg-background/95 hover:bg-background text-muted-foreground hover:text-foreground hover:border-primary/60 shadow-md md:shadow-lg hover:shadow-xl hover:shadow-primary/10 backdrop-blur-md items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 group/btn"
                         >
-                            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover/btn:-translate-x-0.5 transition-transform" />
+                            <ChevronLeft className="w-5 h-5 group-hover/btn:-translate-x-0.5 transition-transform" />
                         </button>
                     )}
 
                     {/* The Spotlight Article Card (Fixed locked height across all breakpoints, zero layout shift) */}
                     <Link
                         href={`/blog/${currentSpotlightPost.slug}`}
-                        className="group block relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 h-[410px] sm:h-[370px] md:h-[310px]"
+                        className="group block relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 h-[385px] sm:h-[365px] md:h-[310px]"
                     >
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -249,10 +249,10 @@ export function BlogListClient() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -8 }}
                                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                                className="grid grid-cols-1 md:grid-cols-12 gap-0 h-full"
+                                className="flex flex-col md:grid md:grid-cols-12 gap-0 h-full"
                             >
-                                {/* Cover Canvas / Image (Left 5 Cols on desktop) */}
-                                <div className="md:col-span-5 relative overflow-hidden h-[190px] sm:h-[180px] md:h-full bg-secondary/40 border-b md:border-b-0 md:border-r border-border/60">
+                                {/* Cover Canvas / Image (Top on mobile, Left 5 Cols on desktop) */}
+                                <div className="relative shrink-0 overflow-hidden h-[150px] sm:h-[160px] md:h-full md:col-span-5 bg-secondary/40 border-b md:border-b-0 md:border-r border-border/60">
                                     {currentSpotlightPost.coverImage ? (
                                         <Image
                                             src={currentSpotlightPost.coverImage}
@@ -272,13 +272,13 @@ export function BlogListClient() {
                                     )}
                                 </div>
 
-                                {/* Content Side (Right 7 Cols on desktop) */}
-                                <div className="md:col-span-7 p-5 sm:p-6 md:p-7 flex flex-col justify-between h-[calc(100%-190px)] sm:h-[calc(100%-180px)] md:h-full overflow-hidden">
+                                {/* Content Side (Bottom on mobile, Right 7 Cols on desktop) */}
+                                <div className="flex-1 md:col-span-7 p-4 sm:p-5 md:p-7 flex flex-col justify-between min-h-0 overflow-hidden">
                                     <div>
                                         {/* Header Row: Live Badge + Category + Read Time */}
                                         <div className="flex items-center justify-between gap-2 mb-2 sm:mb-2.5">
-                                            <div className="flex flex-wrap items-center gap-2 text-xs">
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[11px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
+                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-mono text-[10px] sm:text-[11px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                                     Featured
                                                 </span>
@@ -287,42 +287,42 @@ export function BlogListClient() {
                                                     {currentSpotlightPost.category}
                                                 </span>
                                                 <span className="text-muted-foreground/40">•</span>
-                                                <span className="flex items-center gap-1 text-muted-foreground font-mono">
+                                                <span className="flex items-center gap-1 text-muted-foreground font-mono text-[11px] sm:text-xs">
                                                     <Clock size={12} />
                                                     {currentSpotlightPost.readTime}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        {/* Headline (Standardized vertical footprint) */}
-                                        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200 leading-tight line-clamp-2 mb-2 sm:mb-2.5">
+                                        {/* Headline */}
+                                        <h2 className="text-base sm:text-xl md:text-2xl font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200 leading-snug line-clamp-2 mb-1.5 sm:mb-2">
                                             {currentSpotlightPost.title}
                                         </h2>
 
-                                        {/* Excerpt (Standardized vertical footprint) */}
+                                        {/* Excerpt */}
                                         {currentSpotlightPost.excerpt ? (
-                                            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-3">
+                                            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2">
                                                 {currentSpotlightPost.excerpt}
                                             </p>
                                         ) : null}
                                     </div>
 
                                     {/* Footer Row: Tags + Read CTA */}
-                                    <div className="flex items-center justify-between pt-3 border-t border-border/50 text-xs mt-3">
-                                        <div className="flex items-center gap-1.5 overflow-hidden max-w-[65%]">
+                                    <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-border/50 text-xs mt-2 sm:mt-3">
+                                        <div className="flex items-center gap-1 sm:gap-1.5 overflow-hidden max-w-[65%]">
                                             {currentSpotlightPost.tags.slice(0, 3).map(tag => (
                                                 <span
                                                     key={tag}
-                                                    className="px-2 py-0.5 rounded-md bg-secondary text-[11px] font-mono text-muted-foreground border border-border/50 whitespace-nowrap"
+                                                    className="px-2 py-0.5 rounded-md bg-secondary text-[10px] sm:text-[11px] font-mono text-muted-foreground border border-border/50 whitespace-nowrap truncate"
                                                 >
                                                     #{tag}
                                                 </span>
                                             ))}
                                         </div>
 
-                                        <span className="inline-flex items-center gap-1.5 font-semibold text-primary group-hover:translate-x-1.5 transition-transform duration-200 shrink-0">
+                                        <span className="inline-flex items-center gap-1 sm:gap-1.5 font-semibold text-primary group-hover:translate-x-1.5 transition-transform duration-200 shrink-0 text-xs">
                                             <span>Read article</span>
-                                            <ArrowRight size={14} />
+                                            <ArrowRight size={13} />
                                         </span>
                                     </div>
                                 </div>
@@ -330,36 +330,63 @@ export function BlogListClient() {
                         </AnimatePresence>
                     </Link>
 
-                    {/* Spotlight Navigation - Right Button (Outside Card) */}
+                    {/* Desktop Spotlight Navigation - Right Button (Outside Card) */}
                     {spotlightPosts.length > 1 && (
                         <button
                             type="button"
                             onClick={handleNextSpotlight}
                             aria-label="Next spotlight story"
                             title="Next story"
-                            className="absolute -right-3 sm:-right-5 md:-right-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-full border border-border/80 bg-background/95 hover:bg-background text-muted-foreground hover:text-foreground hover:border-primary/60 shadow-md sm:shadow-lg hover:shadow-xl hover:shadow-primary/10 backdrop-blur-md flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 group/btn"
+                            className="hidden md:flex absolute -right-5 md:-right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full border border-border/80 bg-background/95 hover:bg-background text-muted-foreground hover:text-foreground hover:border-primary/60 shadow-md md:shadow-lg hover:shadow-xl hover:shadow-primary/10 backdrop-blur-md items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 group/btn"
                         >
-                            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover/btn:translate-x-0.5 transition-transform" />
+                            <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-0.5 transition-transform" />
                         </button>
                     )}
 
-                    {/* Slide Indicator Bar Below the Card (Indicators on Left, Counter on Right) */}
+                    {/* Slide Indicator Bar Below the Card */}
                     <div className="flex items-center justify-between mt-3 sm:mt-4 px-1">
-                        <div className="flex items-center gap-1.5">
-                            {spotlightPosts.length > 1 && spotlightPosts.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={(e) => handleSelectSpotlight(idx, e)}
-                                    aria-label={`Go to spotlight article ${idx + 1}`}
-                                    className={clsx(
-                                        "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
-                                        idx === activeSpotlightIndex
-                                            ? "w-7 bg-primary shadow-xs shadow-primary/40"
-                                            : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
-                                    )}
-                                />
-                            ))}
+                        <div className="flex items-center gap-2">
+                            {/* Mobile Navigation Arrows (Visible only on mobile/tablet) */}
+                            {spotlightPosts.length > 1 && (
+                                <div className="flex items-center gap-1 md:hidden">
+                                    <button
+                                        type="button"
+                                        onClick={handlePrevSpotlight}
+                                        aria-label="Previous story"
+                                        className="p-1 rounded-lg border border-border/70 bg-card hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                    >
+                                        <ChevronLeft size={14} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleNextSpotlight}
+                                        aria-label="Next story"
+                                        className="p-1 rounded-lg border border-border/70 bg-card hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                    >
+                                        <ChevronRight size={14} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Indicator Dots */}
+                            {spotlightPosts.length > 1 && (
+                                <div className="flex items-center gap-1.5">
+                                    {spotlightPosts.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={(e) => handleSelectSpotlight(idx, e)}
+                                            aria-label={`Go to spotlight article ${idx + 1}`}
+                                            className={clsx(
+                                                "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
+                                                idx === activeSpotlightIndex
+                                                    ? "w-6 sm:w-7 bg-primary shadow-xs shadow-primary/40"
+                                                    : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
+                                            )}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Counter positioned in the bottom right of the spotlight cards */}
