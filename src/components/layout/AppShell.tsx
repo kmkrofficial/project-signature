@@ -8,7 +8,6 @@ import { SearchModal } from "@/components/blog/SearchModal";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { FirebaseAnalytics } from "@/components/providers/FirebaseAnalytics";
 import { RouteProgressBar } from "@/components/layout/RouteProgressBar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -53,7 +52,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <Analytics />
             <SpeedInsights />
-            <FirebaseAnalytics />
         </ThemeProvider>
     );
 }
