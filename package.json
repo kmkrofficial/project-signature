@@ -9,7 +9,8 @@
     "lint": "eslint",
     "emulators": "npx --yes firebase-tools emulators:start",
     "emulators:export": "npx --yes firebase-tools emulators:start --export-on-exit=./emulator-data --import=./emulator-data",
-    "seed:emulator": "node scripts/seed-emulator.mjs"
+    "seed:emulator": "node scripts/seed-emulator.mjs",
+    "test:rules": "npx --yes firebase-tools emulators:exec --only firestore,storage --project demo-signature-rules \"node --test scripts/test-rules.mjs\""
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.20",
@@ -23,7 +24,6 @@
     "framer-motion": "^14.0.0",
     "lucide-react": "^0.561.0",
     "next": "^16.3.8",
-    "nodemailer": "^10.0.13",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-markdown": "^10.1.0",
@@ -33,14 +33,19 @@
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.4",
-    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.8",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.5",
+    "postcss-selector-parser": "^7.1.6",
+    "uuid": "^11.1.1"
   }
 }
