@@ -89,7 +89,6 @@ export default async function BlogPostPage({ params }: Props) {
                 year: "numeric",
             }),
             readTime: `${Math.max(1, Math.ceil((data.content?.split(/\s+/).length || 0) / 200))} min read`,
-            views: data.views || 0,
             likes: data.likes || 0,
             published: data.published ?? true,
         };

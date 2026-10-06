@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ArrowRight, BookOpen, Loader2, Eye, Heart, ChevronLeft, ChevronRight, SlidersHorizontal, ChevronDown, Clock, Calendar } from "lucide-react";
+import { Search, ArrowRight, BookOpen, Loader2, Heart, ChevronLeft, ChevronRight, SlidersHorizontal, ChevronDown, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/firebase";
@@ -83,7 +83,6 @@ export function BlogListClient() {
                             : "Recent",
                         readTime: `${Math.max(1, Math.ceil((data.content?.split(/\s+/).length || 0) / 200))} min read`,
                         category: toFriendlyCategory(rawCat),
-                        views: data.views || 0,
                         likes: data.likes || 0,
                     };
                 }) as BlogPost[];
@@ -138,8 +137,6 @@ export function BlogListClient() {
             switch (sortOption) {
                 case "oldest":
                     return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
-                case "views":
-                    return (b.views || 0) - (a.views || 0);
                 case "likes":
                     return (b.likes || 0) - (a.likes || 0);
                 case "newest":
@@ -211,7 +208,6 @@ export function BlogListClient() {
     const sortLabels: Record<SortOption, string> = {
         newest: "Newest First",
         oldest: "Oldest First",
-        views: "Most Viewed",
         likes: "Most Liked",
     };
 
@@ -463,7 +459,7 @@ export function BlogListClient() {
                         <>
                             <div className="fixed inset-0 z-20" onClick={() => setIsSortOpen(false)} />
                             <div className="absolute right-0 top-full mt-1.5 w-44 bg-card border border-border/80 rounded-xl shadow-xl z-30 py-1 overflow-hidden">
-                                {(["newest", "oldest", "views", "likes"] as SortOption[]).map(option => (
+                                {(["newest", "oldest", "likes"] as SortOption[]).map(option => (
                                     <button
                                         key={option}
                                         onClick={() => {
@@ -534,23 +530,13 @@ export function BlogListClient() {
                                             {post.readTime}
                                         </span>
 
-                                        {(post.views !== undefined || post.likes !== undefined) && (
+                                        {post.likes !== undefined && post.likes > 0 && (
                                             <>
                                                 <span>•</span>
-                                                <div className="flex items-center gap-3">
-                                                    {post.views !== undefined && (
-                                                        <span className="flex items-center gap-1" title="Views">
-                                                            <Eye size={12} />
-                                                            {post.views}
-                                                        </span>
-                                                    )}
-                                                    {post.likes !== undefined && post.likes > 0 && (
-                                                        <span className="flex items-center gap-1 text-rose-500/80" title="Likes">
-                                                            <Heart size={12} className="fill-current" />
-                                                            {post.likes}
-                                                        </span>
-                                                    )}
-                                                </div>
+                                                <span className="flex items-center gap-1 text-rose-500/80" title="Likes">
+                                                    <Heart size={12} className="fill-current" />
+                                                    {post.likes}
+                                                </span>
                                             </>
                                         )}
                                     </div>

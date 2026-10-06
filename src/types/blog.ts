@@ -7,14 +7,14 @@ export interface BlogPost {
     coverImage?: string;
     date?: string;
     readTime?: string;
+    readingTime?: number;
     category?: string;
     tags: string[];
     published?: boolean;
     featured?: boolean;
-    views?: number;
     likes?: number;
     createdAt?: { seconds: number; nanoseconds: number } | null;
     updatedAt?: { seconds: number; nanoseconds: number } | null;
 }
 
-export type SortOption = "newest" | "oldest" | "views" | "likes";
+export type SortOption = "newest" | "oldest" | "likes";

@@ -107,7 +107,7 @@ export default function AdminStudio() {
         total: posts.length,
         published: posts.filter((p) => p.published !== false).length,
         drafts: posts.filter((p) => p.published === false).length,
-        views: posts.reduce((acc, p) => acc + (p.views || 0), 0),
+        likes: posts.reduce((acc, p) => acc + (p.likes || 0), 0),
     };
 
     // Calculate word count & reading time
@@ -166,9 +166,6 @@ export default function AdminStudio() {
             await signOut(auth);
         } catch {
             // ignore
-        }
-        if (typeof window !== "undefined") {
-            localStorage.removeItem("admin_last_accessed");
         }
         router.push("/admin/login");
     };
@@ -275,8 +272,7 @@ export default function AdminStudio() {
             tags: currentPost.tags || [],
             published: currentPost.published !== false,
             featured: Boolean(currentPost.featured),
-            views: currentPost.views || 0,
-            likes: currentPost.likes || 0,
+            readingTime,
             updatedAt: Timestamp.now(),
         };
 
@@ -289,6 +285,7 @@ export default function AdminStudio() {
                 await setDoc(newDocRef, {
                     ...postPayload,
                     id: newDocRef.id,
+                    likes: 0,
                     createdAt: Timestamp.now(),
                 });
                 addToast("New article published successfully!", "success");
@@ -555,11 +552,11 @@ export default function AdminStudio() {
 
                         <div className="p-4 rounded-xl bg-card border border-border/80">
                             <div className="flex items-center justify-between text-muted-foreground mb-2">
-                                <span className="text-xs font-mono uppercase tracking-wider">Reads</span>
+                                <span className="text-xs font-mono uppercase tracking-wider">Likes</span>
                                 <BarChart3 size={14} className="text-primary" />
                             </div>
-                            <div className="text-2xl font-bold font-mono text-primary">{stats.views.toLocaleString()}</div>
-                            <span className="text-[11px] text-muted-foreground">Total impressions</span>
+                            <div className="text-2xl font-bold font-mono text-primary">{stats.likes.toLocaleString()}</div>
+                            <span className="text-[11px] text-muted-foreground">Across all articles</span>
                         </div>
                     </div>
 
@@ -661,7 +658,7 @@ export default function AdminStudio() {
                                         <div className="flex items-center gap-4 text-[11px] font-mono text-muted-foreground">
                                             <span>/{post.slug}</span>
                                             <span>•</span>
-                                            <span>{post.views || 0} views</span>
+                                            <span>{post.likes || 0} likes</span>
                                             <span>•</span>
                                             <span>
                                                 {post.createdAt?.seconds

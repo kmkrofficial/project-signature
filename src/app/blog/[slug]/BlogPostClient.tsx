@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Calendar, Clock, Eye, Heart, Share2, Check, X, ZoomIn } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Clock, Heart, Share2, Check, X, ZoomIn } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -9,7 +9,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, updateDoc, increment, doc } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReadingProgressBar } from "@/components/blog/ReadingProgressBar";
 import { TableOfContents } from "@/components/blog/TableOfContents";
@@ -33,6 +33,25 @@ interface BlogPostClientProps {
     initialPost?: BlogPost | null;
     prevPost?: AdjacentPostSummary | null;
     nextPost?: AdjacentPostSummary | null;
+}
+
+const likedKey = (postId: string) => `liked_${postId}`;
+
+function readLiked(postId: string): boolean {
+    try {
+        return localStorage.getItem(likedKey(postId)) === "1";
+    } catch {
+        return false;
+    }
+}
+
+function writeLiked(postId: string, liked: boolean): void {
+    try {
+        if (liked) localStorage.setItem(likedKey(postId), "1");
+        else localStorage.removeItem(likedKey(postId));
+    } catch {
+        // Storage unavailable; the server still deduplicates
+    }
 }
 
 export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClientProps) {
@@ -81,17 +100,7 @@ export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClie
 
     useEffect(() => {
         if (initialPost) {
-            // Register view count once per session
-            const viewedKey = `viewed_${initialPost.id}`;
-            if (typeof window !== "undefined" && !sessionStorage.getItem(viewedKey)) {
-                updateDoc(doc(db, "blog", initialPost.id), {
-                    views: increment(1),
-                }).catch(() => {});
-                sessionStorage.setItem(viewedKey, "true");
-            }
-            if (typeof window !== "undefined" && sessionStorage.getItem(`liked_${initialPost.id}`)) {
-                setHasLiked(true);
-            }
+            setHasLiked(readLiked(initialPost.id));
             return;
         }
 
@@ -104,7 +113,7 @@ export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClie
 
         const fetchPost = async () => {
             try {
-                const q = query(collection(db, "blog"), where("slug", "==", slug));
+                const q = query(collection(db, "blog"), where("slug", "==", slug), where("published", "==", true));
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
@@ -112,15 +121,6 @@ export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClie
                 } else {
                     const docSnap = querySnapshot.docs[0];
                     const data = docSnap.data();
-
-                    // Increment views once per session
-                    const viewedKey = `viewed_${docSnap.id}`;
-                    if (typeof window !== "undefined" && !sessionStorage.getItem(viewedKey)) {
-                        updateDoc(doc(db, "blog", docSnap.id), {
-                            views: increment(1),
-                        }).catch(() => {});
-                        sessionStorage.setItem(viewedKey, "true");
-                    }
 
                     const postData: BlogPost = {
                         id: docSnap.id,
@@ -139,7 +139,6 @@ export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClie
                               })
                             : "Recent",
                         readTime: `${Math.max(1, Math.ceil((data.content?.split(/\s+/).length || 0) / 200))} min read`,
-                        views: (data.views || 0) + (typeof window !== "undefined" && sessionStorage.getItem(viewedKey) ? 1 : 0),
                         likes: data.likes || 0,
                     };
 
@@ -147,11 +146,7 @@ export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClie
                     setCachedPost(slug, postData);
                     setLikes(data.likes || 0);
 
-                    if (typeof window !== "undefined") {
-                        if (sessionStorage.getItem(`liked_${docSnap.id}`)) {
-                            setHasLiked(true);
-                        }
-                    }
+                    setHasLiked(readLiked(docSnap.id));
                 }
             } catch (error) {
                 console.error("Error fetching post:", error);
@@ -169,25 +164,32 @@ export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClie
         }
     }, [slug, initialPost]);
 
-    // Optimistic Like Handler (0ms visual feedback)
+    // Optimistic like toggle; the server deduplicates per reader and returns the true count
     const handleLike = async () => {
         if (!post) return;
-        const viewedKey = `liked_${post.id}`;
+        const nextLiked = !hasLiked;
+        const previous = { liked: hasLiked, likes };
 
-        if (hasLiked) {
-            setLikes((prev) => Math.max(0, prev - 1));
-            setHasLiked(false);
-            sessionStorage.removeItem(viewedKey);
-            await updateDoc(doc(db, "blog", post.id), {
-                likes: increment(-1),
-            }).catch(() => {});
-        } else {
-            setLikes((prev) => prev + 1);
-            setHasLiked(true);
-            sessionStorage.setItem(viewedKey, "true");
-            await updateDoc(doc(db, "blog", post.id), {
-                likes: increment(1),
-            }).catch(() => {});
+        setHasLiked(nextLiked);
+        setLikes((prev) => Math.max(0, prev + (nextLiked ? 1 : -1)));
+        writeLiked(post.id, nextLiked);
+
+        try {
+            const res = await fetch("/api/likes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ postId: post.id, action: nextLiked ? "like" : "unlike" }),
+            });
+            if (!res.ok) throw new Error(`Like request failed: ${res.status}`);
+            const data: { likes: number; liked: boolean } = await res.json();
+            setLikes(data.likes);
+            setHasLiked(data.liked);
+            writeLiked(post.id, data.liked);
+        } catch {
+            setHasLiked(previous.liked);
+            setLikes(previous.likes);
+            writeLiked(post.id, previous.liked);
+            addToast("Couldn't update your like. Please try again.", "error");
         }
     };
 
@@ -279,15 +281,6 @@ export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClie
                                         <Clock size={13} />
                                         {post.readTime}
                                     </span>
-                                    {post.views !== undefined && post.views > 0 && (
-                                        <>
-                                             <span>•</span>
-                                            <span className="flex items-center gap-1">
-                                                <Eye size={13} />
-                                                {post.views} views
-                                            </span>
-                                        </>
-                                    )}
                                 </div>
 
                                 {/* Article Actions (Like, Share) for Mobile/Tablet */}
@@ -475,12 +468,6 @@ export function BlogPostClient({ initialPost, prevPost, nextPost }: BlogPostClie
                             <div className="p-3.5 rounded-2xl bg-card border border-border shadow-xs">
                                 <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground mb-2.5 px-0.5">
                                     <span className="uppercase tracking-wider font-semibold">Article Actions</span>
-                                    {post.views !== undefined && post.views > 0 && (
-                                        <span className="flex items-center gap-1 text-[11px]">
-                                            <Eye size={11} />
-                                            {post.views}
-                                        </span>
-                                    )}
                                 </div>
 
                                 <div className="flex items-center gap-2">
