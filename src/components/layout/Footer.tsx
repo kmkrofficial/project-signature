@@ -5,15 +5,14 @@ import { Github, Linkedin, Twitter, Mail, Rss } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
-import { SocialsModal } from "@/components/features/SocialsModal";
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
     const [links, setLinks] = useState<Record<string, string>>({
         github: "https://github.com/kmkrofficial",
         linkedin: "https://linkedin.com/in/keerthiraajan",
+        email: "kmkrworks@gmail.com",
     });
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchLinks = async () => {
@@ -86,8 +85,6 @@ export function Footer() {
 
                         <a
                             href="/feed.xml"
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
                             title="RSS Feed"
                             aria-label="RSS Feed"
@@ -95,19 +92,19 @@ export function Footer() {
                             <Rss size={16} />
                         </a>
 
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
-                            title="Contact"
-                            aria-label="Contact"
-                        >
-                            <Mail size={16} />
-                        </button>
+                        {links.email && (
+                            <a
+                                href={`mailto:${links.email}`}
+                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
+                                title="Email"
+                                aria-label="Email"
+                            >
+                                <Mail size={16} />
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>
-
-            <SocialsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </footer>
     );
 }

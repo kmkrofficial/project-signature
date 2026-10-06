@@ -5,7 +5,7 @@ import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Sparkles, AlertCircle, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, browserSessionPersistence, setPersistence, signInWithPopup } from "firebase/auth";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -17,13 +17,13 @@ export default function LoginPage() {
         setLoading(true);
         setError("");
         try {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
+            // Session persistence: admin sign-in ends when the browser closes
+            await setPersistence(auth, browserSessionPersistence);
+            await signInWithPopup(auth, new GoogleAuthProvider());
             router.push("/admin");
         } catch (err: unknown) {
             console.error("Login error:", err);
-            const msg = err instanceof Error ? err.message : "Google Authentication failed.";
-            setError(msg);
+            setError("Sign-in failed. Please try again.");
         } finally {
             setLoading(false);
         }

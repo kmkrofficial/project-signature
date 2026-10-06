@@ -4,12 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { auth } from "@/lib/firebase";
 
-// Get admin emails from environment variable
-const getAdminEmails = (): string[] => {
-    const emails = process.env.NEXT_PUBLIC_ADMIN_EMAILS || "";
-    return emails.split(",").map((email) => email.trim().toLowerCase()).filter(Boolean);
-};
-
+// UX gate only: real enforcement lives in firestore.rules / storage.rules and the
+// server routes, which all require the `admin` custom claim.
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
@@ -18,10 +14,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const [isAuthorized, setIsAuthorized] = useState(isLoginPage);
 
     useEffect(() => {
-        // Bypass auth check for login page
-        if (pathname === "/admin/login") {
-            return;
-        }
+        if (isLoginPage) return;
 
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (!user) {
@@ -30,43 +23,21 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            // Check if user's email is in the admin list
-            const adminEmails = getAdminEmails();
-            const userEmail = user.email?.toLowerCase() || "";
-            // If admin emails are configured, enforce check; otherwise allow authenticated user in local development
-            const hasAdminAccess = adminEmails.length === 0 || adminEmails.includes(userEmail);
-
-            if (!hasAdminAccess) {
-                console.warn(`Access denied for email: ${userEmail}. Allowed emails: ${adminEmails.join(", ")}`);
+            const { claims } = await user.getIdTokenResult();
+            if (claims.admin !== true) {
                 router.push("/unauthorized");
                 setLoading(false);
                 return;
             }
 
-            // Session check
-            const SESSION_TIMEOUT_MS = 6 * 60 * 60 * 1000; // 6 hours
-            const lastAccessed = localStorage.getItem("admin_last_accessed");
-
-            if (lastAccessed) {
-                const timeSinceLastAccess = Date.now() - parseInt(lastAccessed);
-                if (timeSinceLastAccess > SESSION_TIMEOUT_MS) {
-                    await auth.signOut();
-                    localStorage.removeItem("admin_last_accessed");
-                    router.push("/admin/login");
-                    return;
-                }
-            }
-
-            localStorage.setItem("admin_last_accessed", Date.now().toString());
             setIsAuthorized(true);
             setLoading(false);
         });
 
         return () => unsubscribe();
-    }, [router, pathname]);
+    }, [router, isLoginPage]);
 
-    // If on login page, just render children
-    if (pathname === "/admin/login") {
+    if (isLoginPage) {
         return <>{children}</>;
     }
 
