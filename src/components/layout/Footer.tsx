@@ -1,14 +1,16 @@
 import React from "react";
 import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
-import { Github, Linkedin, Twitter, Mail, Rss, type LucideIcon } from "lucide-react";
+import type { ComponentType } from "react";
+import { Mail, Rss } from "lucide-react";
+import { GitHubIcon, LinkedInIcon, XIcon } from "@/components/ui/BrandIcons";
 import { CONFIG_TAG, getSiteConfig } from "@/lib/posts";
 import { Wordmark } from "@/components/layout/Wordmark";
 
 interface FooterLink {
     href: string;
     label: string;
-    icon: LucideIcon;
+    icon: ComponentType<{ size?: number }>;
     external?: boolean;
 }
 
@@ -21,9 +23,9 @@ export async function Footer() {
     const currentYear = new Date().getFullYear();
 
     const links: FooterLink[] = [
-        { href: config.github, label: "GitHub", icon: Github, external: true },
-        { href: config.linkedin, label: "LinkedIn", icon: Linkedin, external: true },
-        { href: config.twitter, label: "Twitter", icon: Twitter, external: true },
+        { href: config.github, label: "GitHub", icon: GitHubIcon, external: true },
+        { href: config.linkedin, label: "LinkedIn", icon: LinkedInIcon, external: true },
+        { href: config.twitter, label: "X", icon: XIcon, external: true },
         { href: config.email && `mailto:${config.email}`, label: "Email", icon: Mail },
         { href: "/feed.xml", label: "RSS feed", icon: Rss },
     ].filter((link) => Boolean(link.href));

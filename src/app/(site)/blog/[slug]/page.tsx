@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Github, Linkedin, Rss } from "lucide-react";
+import { ArrowLeft, ArrowRight, Rss } from "lucide-react";
+import { GitHubIcon, LinkedInIcon } from "@/components/ui/BrandIcons";
 import { getAdjacentPosts, getPostBySlug, getPublishedPosts, getSiteConfig } from "@/lib/posts";
 import { formatDate, formatReadingTime } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image-utils";
@@ -171,12 +172,12 @@ async function Article({ params }: Props) {
                                 </a>
                                 {config.github && (
                                     <a href={config.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub" className="p-1.5 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors">
-                                        <Github size={18} />
+                                        <GitHubIcon size={16} />
                                     </a>
                                 )}
                                 {config.linkedin && (
                                     <a href={config.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn" className="p-1.5 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors">
-                                        <Linkedin size={18} />
+                                        <LinkedInIcon size={16} />
                                     </a>
                                 )}
                             </div>

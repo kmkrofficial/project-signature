@@ -1,8 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
 import {
-    Github,
-    Linkedin,
     Mail,
     Rss,
     ArrowUpRight,
@@ -13,6 +11,7 @@ import {
     BookOpen
 } from "lucide-react";
 import { GitHubRepos } from "@/components/about/GitHubRepos";
+import { GitHubIcon, LinkedInIcon } from "@/components/ui/BrandIcons";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getSiteConfig } from "@/lib/posts";
 import { absoluteUrl } from "@/lib/site";
@@ -103,7 +102,7 @@ export default async function AboutPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 transition-all duration-200"
                     >
-                        <Github size={14} className="text-primary" />
+                        <GitHubIcon size={13} className="text-primary" />
                         <span>GitHub</span>
                         <ArrowUpRight size={11} className="text-muted-foreground" />
                     </a>
@@ -114,7 +113,7 @@ export default async function AboutPage() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 transition-all duration-200"
                     >
-                        <Linkedin size={14} className="text-primary" />
+                        <LinkedInIcon size={13} className="text-primary" />
                         <span>LinkedIn</span>
                         <ArrowUpRight size={11} className="text-muted-foreground" />
                     </a>
