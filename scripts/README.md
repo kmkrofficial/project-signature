@@ -1,28 +1,11 @@
-# `scripts/` — Administrative & CLI Utilities
-
-This directory contains standalone Node.js automation scripts for managing Firebase Local Emulators and user authentication claims.
-
-## Scripts Overview
+# Scripts
 
 | Script | Command | Purpose |
 | :--- | :--- | :--- |
-| **`seed-emulator.mjs`** | `node scripts/seed-emulator.mjs` | Connects to the local Firestore and Auth emulators (ports 8080 and 9099) using Firebase Admin to populate sample articles, configure `config/site`, and register an admin user. |
-| **`set-admin-claim.js`** | `node scripts/set-admin-claim.js <email>` | Sets `{ admin: true }` custom claim on a Firebase user account by email address. |
-| **`remove-admin-claim.js`** | `node scripts/remove-admin-claim.js <email>` | Revokes the `{ admin: true }` custom claim from a Firebase user account. |
+| `seed-emulator.mjs` | `npm run seed:emulator` | Seeds sample posts and `config/site` into the local emulators and creates an emulator admin user with the `admin` claim |
+| `test-rules.mjs` | `npm run test:rules` | Firestore and Storage security rules tests (`node:test` + `@firebase/rules-unit-testing`); starts its own emulators |
+| `set-admin-claim.mjs` | `node scripts/set-admin-claim.mjs <email>` | Grants the `admin` custom claim to a production user (needs `service-account.json`) |
+| `remove-admin-claim.mjs` | `node scripts/remove-admin-claim.mjs <email>` | Revokes the `admin` claim |
+| `generate-favicon.mjs` | `node scripts/generate-favicon.mjs` | Regenerates `src/app` icons and the PWA icons in `public/` |
 
-## Usage Examples
-
-### Seeding Local Emulator Data
-```bash
-node scripts/seed-emulator.mjs
-```
-
-### Granting Administrator Access
-```bash
-node scripts/set-admin-claim.js user@example.com
-```
-
-### Revoking Administrator Access
-```bash
-node scripts/remove-admin-claim.js user@example.com
-```
+The user has to sign out and back in before a claim change takes effect.

@@ -1,197 +1,131 @@
-# System Architecture & Technical Specifications
+# Architecture
 
-This document outlines the architectural blueprint, data flow, component hierarchy, security model, and design principles behind **Project Signature**.
+Signature is a personal technical blog. The design goals, in order: **secure by default, fast, cheap to run, simple to maintain**.
+
+The public site is prerendered and served from the CDN. Firestore is read only when content changes, and readers download very little JavaScript. The Admin Studio is the only part of the app that loads the Firebase client SDK.
 
 ---
 
-## 1. High-Level System Architecture
-
-The following diagram illustrates how incoming client requests flow through Next.js, React Client Components, and the Firebase data layer:
+## 1. Request flow
 
 ```mermaid
-flowchart TD
-    User["Reader / Administrator Browser"]
+flowchart LR
+    Reader["Reader"] -->|"HTML from CDN"| Pages["Prerendered pages<br/>(Cache Components)"]
+    Pages -. "on build / revalidate" .-> Data["lib/posts.ts<br/>'use cache' + tags"]
+    Data -->|"Admin SDK"| Firestore[("Firestore")]
+    Reader -->|"POST /api/likes"| Likes["Likes route"]
+    Likes -->|"transaction"| Firestore
 
-    subgraph NextJSLayer["Next.js App Router (Port 3000)"]
-        direction TB
-        Layout["Root Layout (Geist Typography & ThemeProvider)"]
-        Shell["AppShell (Header, Footer, Cmd+K Modal)"]
-
-        subgraph Routes["Application Routes"]
-            FeedRoute["Public Feed (/)"]
-            SlugRoute["Article Reader (/blog/:slug)"]
-            AboutRoute["About & Work (/about)"]
-            AdminLogin["Admin Login (/admin/login)"]
-            AdminStudio["Admin Studio (/admin - Protected)"]
-            RSSRoute["RSS 2.0 Feed (/feed.xml)"]
-        end
-
-        Layout --> Shell
-        Shell --> Routes
-    end
-
-    subgraph ClientState["Client-Side State & Contexts"]
-        ToastCtx["ToastContext (Notification Stack)"]
-        ThemeCtx["ThemeProvider (Dark / Light Palette)"]
-        AuthGrd["AuthGuard (Firebase Claim Verification)"]
-    end
-
-    subgraph FirebaseLayer["Firebase Layer (Local Emulator / Cloud)"]
-        AuthService["Firebase Authentication (Port 9099)"]
-        FirestoreDB["Cloud Firestore (Port 8080)"]
-        StorageSvc["Cloud Storage (Port 9199)"]
-    end
-
-    User --> Layout
-    AdminStudio --> AuthGrd
-    AuthGrd --> AuthService
-    Routes --> FirestoreDB
-    Routes --> StorageSvc
-    Shell --> ToastCtx
-    Shell --> ThemeCtx
+    Admin["Admin (admin claim)"] -->|"client SDK, rules-enforced"| Firestore
+    Admin -->|"uploads"| Storage[("Cloud Storage")]
+    Admin -->|"Server Action: updateTag"| Data
 ```
 
----
+- **Readers** get static HTML for home, topics, articles, about, feed, sitemap, search index and Open Graph images.
+- **Writes** go through one of two paths:
+  - The Admin Studio writes with the client SDK. Firestore and Storage rules require the `admin` custom claim.
+  - Likes go through one server route that uses the Admin SDK.
+- **Invalidation:** after every save or delete, the studio calls `revalidateContent()`, a Server Action that verifies the admin ID token and then calls `updateTag`. Changes appear immediately; otherwise caches refresh daily.
 
-## 2. Technology Stack & Rationale
+## 2. Stack
 
-| Layer | Technology | Rationale |
+| Layer | Choice | Why |
 | :--- | :--- | :--- |
-| **Framework** | **Next.js 16 (App Router)** | Hybrid Server/Client rendering, file-based routing, SEO dynamic metadata, and Turbopack compiler. |
-| **UI Library** | **React 19** | Component-driven reactive UI with concurrent rendering and hooks. |
-| **Styling** | **Tailwind CSS v4** | Utility-first, zero-runtime CSS with custom matte graphite palette (`#0d0f12`), dark mode support, and typography plugins. |
-| **Typography** | **Geist & Geist Mono** | Clean, modern sans and monospace font families designed for readability and code rendering. |
-| **Database** | **Google Cloud Firestore** | NoSQL document database providing real-time synchronization, compound querying, and schema flexibility. |
-| **Authentication** | **Firebase Auth** | Industry-standard identity management with custom JWT claims (`admin: true`) for role-based access. |
-| **Asset Storage** | **Firebase Cloud Storage** | Reliable object storage for article banner images and markdown media uploads. |
-| **Markdown Engine** | **react-markdown + remark-gfm + rehype-raw** | Mixed HTML/GFM parser supporting embedded diagrams, tables, and raw formatting safely. |
-| **Syntax Highlighting** | **react-syntax-highlighter (Prism atomDark)** | Syntax-colored code blocks with copy-to-clipboard functionality and terminal framing. |
-| **Icons & Motion** | **Lucide React + Framer Motion** | Consistent iconography and hardware-accelerated micro-interactions (category pills, modal transitions). |
+| Framework | Next.js 16 App Router, Cache Components | Prerendering with `'use cache'`, tag-based invalidation |
+| UI | React 19, Tailwind CSS v4 + typography | Server Components by default, zero-runtime CSS |
+| Data | Cloud Firestore (Admin SDK on the server) | Managed, cheap at blog scale |
+| Auth | Firebase Auth (Google) + `admin` custom claim | Claims are enforced in rules and on the server |
+| Media | Cloud Storage | Images resized in the browser before upload |
+| Markdown | unified: remark-gfm, rehype-sanitize, rehype-slug, Shiki | Rendered once per revalidation, not in the browser |
+| Hosting | Vercel | CDN, ISR and Analytics |
 
----
-
-## 3. Directory Taxonomy
+## 3. Directory layout
 
 ```
-project-signature/
-├── public/                 # Static public assets (SVGs, favicons, branding)
-├── scripts/                # Administrative utilities (emulator seed, claim management)
-├── src/
-│   ├── app/                # Next.js App Router (pages, layouts, dynamic routes, API endpoints)
-│   │   ├── about/          # Executive showcase, career timeline, and skills matrix
-│   │   ├── admin/          # Unified Admin Studio (CRUD, drafts, media manager)
-│   │   │   └── login/      # Administrator authentication portal
-│   │   ├── api/            # Serverless HTTP endpoints (contact, portfolio, REST)
-│   │   ├── blog/           # Publication feed and category filtering
-│   │   │   └── [slug]/     # Single article reader with sticky Table of Contents
-│   │   ├── feed.xml/       # Dynamic RSS 2.0 endpoint for feed readers
-│   │   ├── unauthorized/   # 403 Access Denied fallback page
-│   │   ├── globals.css     # Global theme variables, utility styles, and typography
-│   │   ├── layout.tsx      # Root HTML wrapper with fonts and dynamic site metadata
-│   │   └── page.tsx        # Homepage root route (renders publication feed)
-│   ├── components/         # Reusable modular React components
-│   │   ├── admin/          # Admin-specific components (AuthGuard, role enforcement)
-│   │   ├── blog/           # Reader components (CodeBlock, TableOfContents, ReadingProgress, SearchModal)
-│   │   ├── features/       # Feature modals and dialogs (SocialsModal)
-│   │   ├── layout/         # Core layout chrome (Header, Footer, AppShell, ThemeProvider)
-│   │   ├── providers/      # Third-party SDK wrappers (FirebaseAnalytics)
-│   │   └── ui/             # General-purpose UI atoms (Toast)
-│   ├── context/            # React context providers (ToastContext)
-│   ├── hooks/              # Custom reusable hooks (useToast)
-│   └── lib/                # Shared utilities, Firebase client/admin singletons, static portfolio data
-├── SETUP.md                # Local environment and emulator setup instructions
-├── ARCHITECTURE.md         # Detailed architectural documentation (this document)
-└── README.md               # Repository overview and quick start guide
+src/
+├── app/
+│   ├── (site)/                  # Public pages sharing the header and footer
+│   │   ├── page.tsx             # Home: featured post + latest list
+│   │   ├── topics/[topic]/      # Static topic pages
+│   │   ├── blog/[slug]/         # Article page + per-article OG image
+│   │   └── about/
+│   ├── admin/                   # Admin Studio (client) + actions.ts (revalidation)
+│   ├── api/likes/               # The only dynamic route
+│   ├── feed.xml/  search-index.json/  sitemap.ts  robots.ts  opengraph-image.tsx
+│   └── layout.tsx               # Root: fonts, theme script, providers, analytics
+├── components/
+│   ├── blog/                    # Post list/cards, article islands, search
+│   ├── layout/                  # Header, Footer, Wordmark, ThemeProvider
+│   ├── about/  admin/  seo/  ui/
+├── lib/
+│   ├── posts.ts                 # Cached data access (server-only)
+│   ├── markdown.ts              # Markdown → sanitized HTML + headings
+│   ├── firebase.ts              # Client SDK (Admin Studio only)
+│   ├── firebase-admin.ts        # Admin SDK (server only)
+│   └── categoryUtils.ts  format.ts  github.ts  og.tsx  site.ts
+└── types/blog.ts
 ```
 
----
+## 4. Data model
 
-## 4. Data Architecture & Schemas
+**`blog/{postId}`**
 
-### 4.1. Firestore Document Models
-
-#### `blog` Collection (Articles)
-Each document represents a published or draft article:
-
-| Field | Type | Description |
+| Field | Type | Notes |
 | :--- | :--- | :--- |
-| `id` | `string` | Auto-generated document ID or slug identifier |
-| `title` | `string` | Article headline |
-| `slug` | `string` | URL-safe slug (e.g., `zero-downtime-migration-http3`) |
-| `excerpt` | `string` | Short lead paragraph for preview cards |
-| `content` | `string` | Raw Markdown / HTML string |
-| `category` | `string` | Primary topic (`Web & Software`, `Cloud & Data`, `Artificial Intelligence`, `Guides & Tips`) |
-| `tags` | `string[]` | Searchable tag tokens (e.g., `["HTTP3", "Networking"]`) |
-| `published` | `boolean` | Publication state (draft vs. live) |
-| `featured` | `boolean` | Pin status on the feed |
-| `views` | `number` | Incremental read counter |
-| `likes` | `number` | Reader engagement counter |
-| `createdAt` | `Timestamp` | Original authoring timestamp |
-| `updatedAt` | `Timestamp` | Last modification timestamp |
+| `title`, `slug`, `excerpt`, `content` | string | `slug` must match `^[a-z0-9-]+$`; `content` is Markdown |
+| `category` | string | One of the four topics in `TOPICS` |
+| `tags` | string[] | |
+| `coverImage` | string | Required when `featured` |
+| `published`, `featured` | boolean | Drafts are readable only by admins |
+| `readingTime` | number | Minutes, stored on save |
+| `likes` | number | Written only by `/api/likes` |
+| `createdAt`, `updatedAt` | Timestamp | |
 
-#### `config/site` Document (Site Metadata)
-Global configuration singleton consumed by `layout.tsx` and `Footer.tsx`:
+**`blog/{postId}/likers/{hash}`**: one document per reader per post. The ID is `sha256(ip:postId:LIKE_HASH_SALT)`, so raw IPs are never stored. Only the Admin SDK can access these.
 
-| Field | Type | Description |
+**`config/site`**: `siteTitle`, `siteDescription`, `author`, `email`, `github`, `linkedin`, `twitter`. Public read, admin write.
+
+## 5. Caching
+
+| Function | Tags | Lifetime |
 | :--- | :--- | :--- |
-| `siteTitle` | `string` | Browser title bar fallback |
-| `siteDescription` | `string` | Meta description for search engines |
-| `author` | `string` | Site owner name |
-| `tagline` | `string` | Subtitle for editorial branding |
-| `bio` | `string` | Short introductory paragraph |
-| `github` | `string` | GitHub profile URI |
-| `linkedin` | `string` | LinkedIn profile URI |
+| `getPublishedPosts()` | `posts` | `days` |
+| `getPostBySlug(slug)` | `posts`, `post:<slug>` | `days` |
+| `getSiteConfig()` | `config` | `days` |
+| Feed, search index | `posts` (+ `config`) | `days` |
+| GitHub repos (About) | none | `days` (`hours` on API failure) |
 
----
+- `generateStaticParams` prerenders every published article, its OG image and every topic page.
+- New slugs render on first request and are then cached.
+- A like change calls `revalidateTag('post:<slug>', 'max')`, so the count refreshes in the background.
 
-## 5. Security Model & Authentication
+## 6. Security model
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant LoginView as /admin/login
-    participant FirebaseAuth as Firebase Auth
-    participant AuthGuard as AuthGuard Component
-    participant AdminStudio as /admin Studio
+- **Authorization:**
+  - Firestore and Storage rules require `request.auth.token.admin == true` for every write.
+  - Published posts and site config are public; everything else is denied.
+  - The studio's `AuthGuard` only controls what's shown; enforcement lives in the rules and on the server.
+- **Storage:** uploads must be raster images under 5 MB (no SVG or HTML). Files are publicly fetchable but not listable.
+- **Server routes:**
+  - `/api/likes` is same-origin only, validates its input, deduplicates per reader, and runs in a transaction.
+  - `revalidateContent()` verifies the ID token and the admin claim.
+- **Content:** raw HTML in Markdown passes through `rehype-sanitize` (no scripts, iframes, forms, event handlers or inline styles).
+- **Headers** (`next.config.ts`):
+  - A CSP without nonces, so pages stay static.
+  - HSTS, `nosniff`, `X-Frame-Options: DENY`, Referrer-Policy and Permissions-Policy.
+- **Tests:** `npm run test:rules` runs the rules suite against the emulators.
 
-    User->>LoginView: Submits credentials
-    LoginView->>FirebaseAuth: signInWithEmailAndPassword()
-    FirebaseAuth-->>LoginView: UserCredential (JWT Token)
-    LoginView->>FirebaseAuth: getIdTokenResult(true)
-    alt Token has { admin: true } claim
-        FirebaseAuth-->>LoginView: Valid admin token
-        LoginView->>AdminStudio: Redirect to /admin
-        AdminStudio->>AuthGuard: Verify active session
-        AuthGuard->>FirebaseAuth: Check currentUser & claims
-        AuthGuard-->>AdminStudio: Allow render
-    else Token missing admin claim
-        FirebaseAuth-->>LoginView: User has no admin claim
-        LoginView-->>User: Display error / Redirect to /unauthorized
-    end
-```
+## 7. Client JavaScript
 
-### Role-Based Access Control (RBAC)
-- All administrative routes (`/admin`) are wrapped in `AuthGuard.tsx`.
-- Security does **not** rely on email hardcoding or insecure client state; it inspects Firebase Custom Claims (`tokenResult.claims.admin === true`).
-- In local emulator mode, `seed-emulator.mjs` grants this claim to `kmkrworks@gmail.com` using the Firebase Admin SDK.
+Pages are Server Components. The only client islands are:
 
----
+| Island | Where | Purpose |
+| :--- | :--- | :--- |
+| `SiteHeader` / `Header` | All public pages | Mobile menu, Cmd/Ctrl+K |
+| `SearchModal` | On open | `<dialog>`; fetches `/search-index.json` once |
+| `ThemeProvider` / `ThemeToggle` | All pages | Theme stored on `<html>`; circular view-transition reveal |
+| `LikeButton`, `ShareButton` | Articles | Optimistic likes; native share sheet |
+| `ArticleEnhancer` | Articles | Code copy buttons; `<dialog>` image lightbox |
+| `TableOfContents` | Articles (desktop) | Highlights the current section |
 
-## 6. Reader Ergonomics & Typography Pipeline
-
-The blog reader (`/blog/[slug]`) implements several UX patterns:
-
-1. **Hardware-Accelerated Reading Progress**:
-   `ReadingProgressBar.tsx` attaches a passive scroll listener and calculates scroll depth percentage, driving a fixed 2.5px gradient bar along the screen top.
-
-2. **Mixed Markdown & HTML Pipeline**:
-   Articles pass through `ReactMarkdown` with `rehype-raw` enabled. This allows inline HTML formatting (such as semantic tables, figures, and styling) while preserving Markdown convenience.
-
-3. **Sticky Dynamic Table of Contents**:
-   `TableOfContents.tsx` uses an `IntersectionObserver` to spy on rendered `<h2>` and `<h3>` tags in the article canvas. It highlights the current section in the right sidebar (`sticky top-20`) and provides smooth one-click scrolling.
-
-4. **Zero-Latency Optimistic Likes**:
-   Clicking the like button updates local React state immediately (0ms visual feedback) while firing an asynchronous Firestore `updateDoc` with `increment(1)` in the background. Duplicate likes are prevented per session using `sessionStorage`.
-
-5. **Universal Command Palette (Cmd+K / Ctrl+K)**:
-   `SearchModal.tsx` provides instant, client-side indexing across titles, excerpts, and tags without re-fetching from the database.
+The reading progress bar uses a CSS scroll-driven animation and no JavaScript.
