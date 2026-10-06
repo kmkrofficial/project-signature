@@ -1,11 +1,8 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { getPostBySlug, getPublishedPosts, getSiteConfig, CONFIG_TAG, POSTS_TAG } from "@/lib/posts";
+import { SITE_URL } from "@/lib/site";
 
 const FEED_SIZE = 20;
-
-function siteUrl(): string {
-    return (process.env.NEXT_PUBLIC_SITE_URL || "https://keerthiraajan.dev").replace(/\/$/, "");
-}
 
 function cdata(value: string): string {
     return `<![CDATA[${value.replaceAll("]]>", "]]]]><![CDATA[>")}]]>`;
@@ -21,7 +18,7 @@ async function buildFeed(): Promise<string> {
     cacheLife("days");
     cacheTag(POSTS_TAG, CONFIG_TAG);
 
-    const base = siteUrl();
+    const base = SITE_URL;
     const [summaries, config] = await Promise.all([getPublishedPosts(), getSiteConfig()]);
     const posts = await Promise.all(summaries.slice(0, FEED_SIZE).map((summary) => getPostBySlug(summary.slug)));
     const lastBuildDate = summaries[0]?.updatedAt ?? new Date(0).toISOString();

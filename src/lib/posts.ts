@@ -14,7 +14,6 @@ export const CONFIG_TAG = "config";
 const DEFAULT_SITE_CONFIG: SiteConfig = {
     siteTitle: "Signature | Systems, AI & Software Architecture",
     siteDescription: "Articles on technology, building software, and practical ideas from real-world projects.",
-    ogImageUrl: "",
     author: "Keerthi Raajan K M",
     email: "kmkrworks@gmail.com",
     github: "https://github.com/kmkrofficial",
@@ -110,7 +109,6 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     return {
         siteTitle: pick("siteTitle"),
         siteDescription: pick("siteDescription"),
-        ogImageUrl: pick("ogImageUrl"),
         author: pick("author"),
         email: pick("email"),
         github: pick("github"),

@@ -13,6 +13,9 @@ import {
     BookOpen
 } from "lucide-react";
 import { GitHubRepos } from "@/components/about/GitHubRepos";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getSiteConfig } from "@/lib/posts";
+import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
     title: "About",
@@ -40,9 +43,20 @@ const TOPICS = [
     },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+    const config = await getSiteConfig();
+    const personJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: config.author,
+        url: absoluteUrl("/about"),
+        jobTitle: "Software Engineer",
+        sameAs: [config.github, config.linkedin, config.twitter].filter(Boolean),
+    };
+
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-10 sm:pb-16 space-y-10 sm:space-y-12">
+            <JsonLd data={personJsonLd} />
             {/* 1. Header Profile */}
             <section className="relative p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-card border border-border/80 overflow-hidden shadow-xs">
                 {/* Ambient Subtle Topaz Glow */}

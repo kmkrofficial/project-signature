@@ -14,6 +14,8 @@ import { LikeButton } from "@/components/blog/LikeButton";
 import { ReadingProgressBar } from "@/components/blog/ReadingProgressBar";
 import { ShareButton } from "@/components/blog/ShareButton";
 import { TableOfContents } from "@/components/blog/TableOfContents";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { absoluteUrl } from "@/lib/site";
 import type { PostSummary } from "@/types/blog";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -29,27 +31,29 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const post = await getPostBySlug(slug);
+    const [post, config] = await Promise.all([getPostBySlug(slug), getSiteConfig()]);
     if (!post) return { title: "Article not found" };
 
-    const images = post.coverImage ? [post.coverImage] : [];
+    // Social images come from the sibling opengraph-image.tsx (branded card per article)
     return {
         title: post.title,
         description: post.excerpt || undefined,
+        authors: [{ name: config.author, url: "/about" }],
+        alternates: { canonical: `/blog/${post.slug}` },
         openGraph: {
             title: post.title,
             description: post.excerpt || undefined,
             type: "article",
+            url: `/blog/${post.slug}`,
             publishedTime: post.publishedAt,
             modifiedTime: post.updatedAt,
+            authors: [config.author],
             tags: post.tags,
-            images,
         },
         twitter: {
             card: "summary_large_image",
             title: post.title,
             description: post.excerpt || undefined,
-            images,
         },
     };
 }
@@ -70,8 +74,25 @@ async function Article({ params }: Props) {
     const [{ previous, next }, config] = await Promise.all([getAdjacentPosts(slug), getSiteConfig()]);
     const wasUpdated = Date.parse(post.updatedAt) - Date.parse(post.publishedAt) > ONE_DAY_MS;
 
+    const url = absoluteUrl(`/blog/${post.slug}`);
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt || undefined,
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt,
+        url,
+        mainEntityOfPage: url,
+        image: post.coverImage || undefined,
+        keywords: post.tags.join(", ") || undefined,
+        articleSection: post.category,
+        author: { "@type": "Person", name: config.author, url: absoluteUrl("/about") },
+    };
+
     return (
         <>
+            <JsonLd data={jsonLd} />
             <ReadingProgressBar />
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12">

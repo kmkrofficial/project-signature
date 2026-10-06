@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AppShell } from "@/components/layout/AppShell";
 import { getSiteConfig } from "@/lib/posts";
+import { SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -28,25 +29,22 @@ export async function generateMetadata(): Promise<Metadata> {
       template: "%s | Signature",
     },
     description: config.siteDescription,
-    icons: {
-      icon: [
-        { url: "/icon.svg", type: "image/svg+xml" },
-        { url: "/favicon.ico", sizes: "any" },
-      ],
-      apple: [
-        { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
-      ],
-    },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://keerthiraajan.dev"),
+    metadataBase: new URL(SITE_URL),
     alternates: {
       types: {
         "application/rss+xml": "/feed.xml",
       },
     },
+    // Icons and the default social image come from app/ file conventions
     openGraph: {
       title: config.siteTitle,
       description: config.siteDescription,
-      images: config.ogImageUrl ? [{ url: config.ogImageUrl }] : [],
+      siteName: "Signature",
+      type: "website",
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
     },
   };
 }

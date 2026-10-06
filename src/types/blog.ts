@@ -56,7 +56,6 @@ export interface AdjacentPosts {
 export interface SiteConfig {
     siteTitle: string;
     siteDescription: string;
-    ogImageUrl: string;
     author: string;
     email: string;
     github: string;
