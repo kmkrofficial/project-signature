@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Cinzel_Decorative } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -16,13 +16,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
-  display: "swap",
-});
-
-const cinzelDecorative = Cinzel_Decorative({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  variable: "--font-cinzel",
   display: "swap",
 });
 
@@ -96,12 +89,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${cinzelDecorative.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
         <AppShell>
-          {/* Decorative background layers */}
-          <div className="bg-ambient-aurora" aria-hidden="true" />
-          <div className="bg-architectural-grid" aria-hidden="true" />
-          <div className="bg-film-grain" aria-hidden="true" />
           <div className="top-hairline" aria-hidden="true" />
 
           <div className="relative z-10 flex flex-col min-h-screen">

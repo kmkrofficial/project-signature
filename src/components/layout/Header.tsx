@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, Search, X } from "lucide-react";
 import { clsx } from "clsx";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Wordmark } from "@/components/layout/Wordmark";
 
 interface HeaderProps {
     onOpenSearch: () => void;
@@ -42,8 +43,8 @@ export function Header({ onOpenSearch }: HeaderProps) {
             </a>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-                <Link href="/" className="py-1 select-none" aria-label="Signature home">
-                    <span className="font-cinzel font-bold text-xl sm:text-2xl text-primary tracking-wide leading-none">Signature</span>
+                <Link href="/" className="py-1 text-primary hover:opacity-85 transition-opacity" aria-label="Signature home">
+                    <Wordmark className="h-5 sm:h-6" />
                 </Link>
 
                 <nav aria-label="Main" className="hidden md:flex items-center gap-6">

@@ -45,6 +45,7 @@ import {
 import { useToast } from "@/context/ToastContext";
 import { revalidateContent } from "@/app/admin/actions";
 import { estimateReadingTime } from "@/lib/format";
+import { TOPICS } from "@/lib/categoryUtils";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { clsx } from "clsx";
@@ -59,12 +60,7 @@ interface StoredImage {
     size?: string;
 }
 
-const CATEGORIES = [
-    "Artificial Intelligence",
-    "Web & Software",
-    "Cloud & Data",
-    "Guides & Tips",
-];
+const CATEGORIES = TOPICS.map((topic) => topic.name);
 
 export default function AdminStudio() {
     const router = useRouter();

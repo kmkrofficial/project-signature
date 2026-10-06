@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
 import { Github, Linkedin, Twitter, Mail, Rss, type LucideIcon } from "lucide-react";
 import { CONFIG_TAG, getSiteConfig } from "@/lib/posts";
+import { Wordmark } from "@/components/layout/Wordmark";
 
 interface FooterLink {
     href: string;
@@ -32,8 +33,8 @@ export async function Footer() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Link href="/" className="flex items-center gap-1.5 text-foreground hover:text-primary transition-colors">
-                            <span className="font-cinzel font-bold text-sm sm:text-base text-primary tracking-wide">Signature</span>
+                        <Link href="/" className="text-primary hover:opacity-85 transition-opacity" aria-label="Signature home">
+                            <Wordmark className="h-3.5 sm:h-4" />
                         </Link>
                         <span className="text-muted-foreground/40" aria-hidden="true">•</span>
                         <span>© {currentYear}</span>
