@@ -1,80 +1,63 @@
-import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase-admin";
+import { cacheLife, cacheTag } from "next/cache";
+import { getPostBySlug, getPublishedPosts, getSiteConfig, CONFIG_TAG, POSTS_TAG } from "@/lib/posts";
 
-export const dynamic = "force-dynamic";
+const FEED_SIZE = 20;
 
-interface FeedItem {
-    id: string;
-    title: string;
-    slug: string;
-    excerpt: string;
-    pubDate: string;
-    category: string;
-    timestamp: number;
+function siteUrl(): string {
+    return (process.env.NEXT_PUBLIC_SITE_URL || "https://keerthiraajan.dev").replace(/\/$/, "");
 }
 
-export async function GET() {
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://keerthiraajan.dev").replace(/\/$/, "");
+function cdata(value: string): string {
+    return `<![CDATA[${value.replaceAll("]]>", "]]]]><![CDATA[>")}]]>`;
+}
 
-    let posts: FeedItem[] = [];
-    try {
-        const snap = await db
-            .collection("blog")
-            .where("published", "==", true)
-            .get();
+/** Feed readers get the article body without the interactive code-block chrome. */
+function feedHtml(html: string): string {
+    return html.replace(/<div class="code-block-header">[\s\S]*?<\/div>/g, "");
+}
 
-        posts = snap.docs.map((doc) => {
-            const d = doc.data();
-            const createdAtSeconds =
-                d.createdAt?.seconds ||
-                (d.createdAt?._seconds ??
-                (d.createdAt?.toDate ? Math.floor(d.createdAt.toDate().getTime() / 1000) : null) ??
-                Math.floor(Date.now() / 1000));
+async function buildFeed(): Promise<string> {
+    "use cache";
+    cacheLife("days");
+    cacheTag(POSTS_TAG, CONFIG_TAG);
 
-            return {
-                id: doc.id,
-                title: d.title || "Untitled Article",
-                slug: d.slug || doc.id,
-                excerpt: d.excerpt || "",
-                pubDate: new Date(createdAtSeconds * 1000).toUTCString(),
-                category: d.category || (d.tags && d.tags[0]) || "Engineering",
-                timestamp: createdAtSeconds,
-            };
-        }).sort((a, b) => b.timestamp - a.timestamp);
-    } catch (err) {
-        console.error("Error generating RSS feed via firebase-admin:", err);
-    }
+    const base = siteUrl();
+    const [summaries, config] = await Promise.all([getPublishedPosts(), getSiteConfig()]);
+    const posts = await Promise.all(summaries.slice(0, FEED_SIZE).map((summary) => getPostBySlug(summary.slug)));
+    const lastBuildDate = summaries[0]?.updatedAt ?? new Date(0).toISOString();
 
-    const itemsXml = posts
+    const items = posts
+        .filter((post) => post !== null)
         .map(
-            (p) => `        <item>
-            <title><![CDATA[${p.title}]]></title>
-            <link>${siteUrl}/blog/${p.slug}</link>
-            <guid isPermaLink="true">${siteUrl}/blog/${p.slug}</guid>
-            <description><![CDATA[${p.excerpt}]]></description>
-            <category><![CDATA[${p.category}]]></category>
-            <pubDate>${p.pubDate}</pubDate>
-        </item>`
+            (post) => `    <item>
+      <title>${cdata(post.title)}</title>
+      <link>${base}/blog/${post.slug}</link>
+      <guid isPermaLink="true">${base}/blog/${post.slug}</guid>
+      <dc:creator>${cdata(config.author)}</dc:creator>
+      <description>${cdata(post.excerpt)}</description>
+      <content:encoded>${cdata(feedHtml(post.html))}</content:encoded>
+      <category>${cdata(post.category)}</category>
+      <pubDate>${new Date(post.publishedAt).toUTCString()}</pubDate>
+    </item>`
         )
         .join("\n");
 
-    const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-    <channel>
-        <title><![CDATA[Signature | Articles & Thoughts]]></title>
-        <link>${siteUrl}</link>
-        <description><![CDATA[Articles, systems architecture breakdowns, and practical ideas from real-world digital products on Signature.]]></description>
-        <language>en-US</language>
-        <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-        <atom:link href="${siteUrl}/feed.xml" rel="self" type="application/rss+xml"/>
-${itemsXml}
-    </channel>
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>${cdata(config.siteTitle)}</title>
+    <link>${base}</link>
+    <description>${cdata(config.siteDescription)}</description>
+    <language>en-US</language>
+    <lastBuildDate>${new Date(lastBuildDate).toUTCString()}</lastBuildDate>
+    <atom:link href="${base}/feed.xml" rel="self" type="application/rss+xml"/>
+${items}
+  </channel>
 </rss>`;
+}
 
-    return new NextResponse(rssXml, {
-        headers: {
-            "Content-Type": "application/xml; charset=utf-8",
-            "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
-        },
+export async function GET() {
+    return new Response(await buildFeed(), {
+        headers: { "Content-Type": "application/rss+xml; charset=utf-8" },
     });
 }

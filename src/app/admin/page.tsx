@@ -43,6 +43,8 @@ import {
     Database
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
+import { revalidateContent } from "@/app/admin/actions";
+import { estimateReadingTime } from "@/lib/format";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { clsx } from "clsx";
@@ -112,7 +114,18 @@ export default function AdminStudio() {
 
     // Calculate word count & reading time
     const wordCount = currentPost.content ? currentPost.content.trim().split(/\s+/).filter(Boolean).length : 0;
-    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+    const readingTime = estimateReadingTime(currentPost.content || "");
+
+    // Expire the cached public pages so the edit is visible immediately
+    const refreshPublicSite = useCallback(async () => {
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            if (token) await revalidateContent(token, "posts");
+        } catch (err) {
+            console.error("Revalidation failed:", err);
+            addToast("Saved, but the public site may take a while to update", "error");
+        }
+    }, [addToast]);
 
     const fetchPosts = useCallback(async () => {
         setLoadingPosts(true);
@@ -234,6 +247,7 @@ export default function AdminStudio() {
         try {
             await deleteDoc(doc(db, "blog", id));
             setPosts((prev) => prev.filter((p) => p.id !== id));
+            await refreshPublicSite();
             addToast("Article deleted successfully", "success");
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : String(err);
@@ -291,6 +305,7 @@ export default function AdminStudio() {
                 addToast("New article published successfully!", "success");
             }
 
+            await refreshPublicSite();
             await fetchPosts();
             setActiveTab("articles");
         } catch (err: unknown) {

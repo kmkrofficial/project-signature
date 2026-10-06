@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { TOPICS } from "./src/lib/categoryUtils";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -32,6 +33,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+    cacheComponents: true,
     images: {
         formats: ["image/avif", "image/webp"],
         minimumCacheTTL: 31536000,
@@ -43,14 +45,6 @@ const nextConfig: NextConfig = {
             {
                 protocol: "https",
                 hostname: "images.unsplash.com",
-            },
-            {
-                protocol: "https",
-                hostname: "plus.unsplash.com",
-            },
-            {
-                protocol: "https",
-                hostname: "**.unsplash.com",
             },
             {
                 protocol: "http",
@@ -65,9 +59,21 @@ const nextConfig: NextConfig = {
         ],
     },
     experimental: {
-        optimizePackageImports: ["lucide-react", "framer-motion"],
+        optimizePackageImports: ["lucide-react"],
     },
     compress: true,
+    async redirects() {
+        // Legacy URLs: the old /blog listing and ?category= filters now map to static topic pages
+        const categoryRedirects = TOPICS.flatMap((topic) =>
+            ["/", "/blog"].map((source) => ({
+                source,
+                has: [{ type: "query" as const, key: "category", value: topic.name }],
+                destination: `/topics/${topic.slug}`,
+                permanent: true,
+            }))
+        );
+        return [...categoryRedirects, { source: "/blog", destination: "/", permanent: true }];
+    },
     async headers() {
         return [{ source: "/(.*)", headers: securityHeaders }];
     },

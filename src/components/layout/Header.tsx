@@ -1,233 +1,131 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Rss, Menu, X, Terminal } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { clsx } from "clsx";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface HeaderProps {
-    onOpenSearch?: () => void;
+    onOpenSearch: () => void;
 }
+
+const noopSubscribe = () => () => {};
+const detectMac = () => /Mac|iPhone|iPad/i.test(navigator.userAgent);
 
 export function Header({ onOpenSearch }: HeaderProps) {
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [shortcutLabel, setShortcutLabel] = useState("Ctrl + K");
+    const isMac = useSyncExternalStore(noopSubscribe, detectMac, () => false);
 
-    // Detect operating system for shortcut label (Cmd + K on macOS, Ctrl + K on others)
-    useEffect(() => {
-        if (typeof window !== "undefined" && typeof navigator !== "undefined") {
-            const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent || navigator.platform);
-            if (isMac) {
-                requestAnimationFrame(() => setShortcutLabel("Cmd + K"));
-            }
-        }
-    }, []);
-
+    // Close the mobile menu on navigation (render-phase update, no effect needed)
     const [prevPathname, setPrevPathname] = useState(pathname);
     if (prevPathname !== pathname) {
         setPrevPathname(pathname);
-        if (mobileOpen) {
-            setMobileOpen(false);
-        }
+        setMobileOpen(false);
     }
 
-    // Prevent body scroll when mobile menu is open
-    useEffect(() => {
-        if (mobileOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "unset";
-        }
-        return () => {
-            document.body.style.overflow = "unset";
-        };
-    }, [mobileOpen]);
-
     const navLinks = [
-        { name: "Articles", href: "/", isActive: pathname === "/" || pathname.startsWith("/blog") },
-        { name: "About", href: "/about", isActive: pathname.startsWith("/about") },
-        { name: "RSS", href: "/feed.xml", isExternal: true },
+        { name: "Articles", href: "/", active: pathname === "/" || pathname.startsWith("/blog") || pathname.startsWith("/topics") },
+        { name: "About", href: "/about", active: pathname.startsWith("/about") },
+        { name: "RSS", href: "/feed.xml", active: false, plain: true },
     ];
 
     return (
-        <header className="sticky top-0 left-0 right-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-                <Link
-                    href="/"
-                    className="flex items-center gap-2 group transition-transform active:scale-[0.98] select-none py-1"
-                >
-                    <span className="font-cinzel font-bold text-xl sm:text-2xl text-primary tracking-wide group-hover:brightness-110 transition-all leading-none">
-                        Signature
-                    </span>
+        <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60">
+            <a
+                href="#content"
+                className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:px-3 focus:py-2 focus:rounded-lg focus:bg-card focus:text-foreground focus:shadow-lg"
+            >
+                Skip to content
+            </a>
+
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+                <Link href="/" className="py-1 select-none" aria-label="Signature home">
+                    <span className="font-cinzel font-bold text-xl sm:text-2xl text-primary tracking-wide leading-none">Signature</span>
                 </Link>
 
-                {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center gap-2">
-                    {navLinks.map((link) => {
-                        const active = link.isActive;
-                        const linkClass = clsx(
-                            "relative px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 rounded-full flex items-center gap-1.5 border shadow-2xs group",
-                            active
-                                ? "bg-primary/10 border-primary/50 text-primary font-semibold shadow-primary/10"
-                                : "bg-secondary/60 border-border text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-primary/40"
-                        );
-
-                        if (link.isExternal) {
-                            return (
-                                <a
-                                    key={link.name}
-                                    href={link.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={linkClass}
-                                >
-                                    <span>{link.name}</span>
-                                    <Rss
-                                        size={13}
-                                        className={clsx(
-                                            "transition-colors",
-                                            active
-                                                ? "text-primary"
-                                                : "text-amber-500 group-hover:text-amber-400"
-                                        )}
-                                    />
-                                </a>
-                            );
-                        }
-
-                        return (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                className={linkClass}
-                            >
-                                {active && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                )}
-                                <span>{link.name}</span>
-                            </Link>
-                        );
-                    })}
+                <nav aria-label="Main" className="hidden md:flex items-center gap-6">
+                    {navLinks.map((link) => (
+                        <NavLink
+                            key={link.name}
+                            {...link}
+                            className={clsx(
+                                "text-sm font-medium py-1 border-b-2 transition-colors",
+                                link.active
+                                    ? "text-foreground border-primary"
+                                    : "text-muted-foreground border-transparent hover:text-foreground"
+                            )}
+                        />
+                    ))}
                 </nav>
 
-                {/* Desktop Action Controls */}
-                <div className="hidden md:flex items-center gap-2">
-                    {/* Search Trigger */}
-                    {onOpenSearch && (
-                        <button
-                            onClick={onOpenSearch}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-secondary/60 hover:bg-secondary hover:border-primary/40 text-muted-foreground hover:text-foreground text-xs font-mono transition-all duration-150 cursor-pointer"
-                            title={`Search (${shortcutLabel})`}
-                        >
-                            <Search size={14} />
-                            <span>Search</span>
-                            <kbd className="hidden lg:inline-block bg-background px-1.5 py-0.5 rounded text-[10px] border border-border text-muted-foreground font-mono">
-                                {shortcutLabel}
-                            </kbd>
-                        </button>
-                    )}
-
-                    {/* Admin Link */}
-                    <Link
-                        href="/admin"
-                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
-                        title="Admin Studio"
+                <div className="flex items-center gap-1.5">
+                    <button
+                        type="button"
+                        onClick={onOpenSearch}
+                        aria-label="Search articles"
+                        className="flex items-center gap-2 p-2 md:px-3 md:py-1.5 rounded-lg md:border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 text-sm transition-colors cursor-pointer"
                     >
-                        <Terminal size={18} />
-                    </Link>
-
-                    {/* Theme Switch Toggle */}
-                    <ThemeToggle />
-                </div>
-
-                {/* Mobile Right Controls */}
-                <div className="flex items-center gap-1.5 md:hidden">
-                    {onOpenSearch && (
-                        <button
-                            onClick={onOpenSearch}
-                            className="p-2 text-muted-foreground hover:text-foreground rounded-lg"
-                            aria-label="Search"
-                        >
-                            <Search size={20} />
-                        </button>
-                    )}
+                        <Search size={16} />
+                        <span className="hidden md:inline">Search</span>
+                        <kbd className="hidden lg:inline kbd">{isMac ? "⌘K" : "Ctrl K"}</kbd>
+                    </button>
 
                     <ThemeToggle size="sm" />
 
                     <button
-                        onClick={() => setMobileOpen(!mobileOpen)}
-                        className="p-2 text-muted-foreground hover:text-foreground rounded-lg"
-                        aria-label="Open menu"
+                        type="button"
+                        onClick={() => setMobileOpen((open) => !open)}
+                        aria-expanded={mobileOpen}
+                        aria-controls="mobile-menu"
+                        aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                        className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
                     >
-                        {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+                        {mobileOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Drawer Menu */}
-            <AnimatePresence>
-                {mobileOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="md:hidden border-b border-border bg-background/95 backdrop-blur-xl px-6 py-6"
-                    >
-                        <nav className="flex flex-col gap-2.5">
-                            {navLinks.map((link) => {
-                                const active = link.isActive;
-                                const mobileClass = clsx(
-                                    "flex items-center justify-between py-2.5 text-sm font-medium rounded-xl px-3.5 transition-all border",
-                                    active
-                                        ? "bg-primary/10 border-primary/50 text-primary font-semibold shadow-xs"
-                                        : "bg-secondary/60 border-border text-foreground hover:bg-secondary hover:border-primary/40"
-                                );
-
-                                if (link.isExternal) {
-                                    return (
-                                        <a
-                                            key={link.name}
-                                            href={link.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={mobileClass}
-                                        >
-                                            <span>{link.name}</span>
-                                            <Rss size={15} className="text-amber-500" />
-                                        </a>
-                                    );
-                                }
-
-                                return (
-                                    <Link
-                                        key={link.name}
-                                        href={link.href}
-                                        className={mobileClass}
-                                    >
-                                        <span className="flex items-center gap-2">
-                                            {active && <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
-                                            <span>{link.name}</span>
-                                        </span>
-                                    </Link>
-                                );
-                            })}
-                            <div className="h-px bg-border my-1.5" />
-                            <Link
-                                href="/admin"
-                                className="flex items-center gap-2 py-2.5 px-3.5 text-sm font-medium rounded-xl border border-border bg-secondary/60 text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all"
-                            >
-                                <Terminal size={16} />
-                                <span>Admin Studio</span>
-                            </Link>
-                        </nav>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {mobileOpen && (
+                <nav id="mobile-menu" aria-label="Main" className="md:hidden border-t border-border/60 bg-background px-4 py-3 animate-menu-in">
+                    <ul className="flex flex-col">
+                        {navLinks.map((link) => (
+                            <li key={link.name} className="border-b border-border/40 last:border-0">
+                                <NavLink
+                                    {...link}
+                                    className={clsx("block py-3 text-base font-medium", link.active ? "text-primary" : "text-foreground")}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            )}
         </header>
+    );
+}
+
+interface NavLinkProps {
+    name: string;
+    href: string;
+    active: boolean;
+    /** Non-page routes (e.g. the RSS feed) use a plain anchor instead of client navigation. */
+    plain?: boolean;
+    className: string;
+}
+
+function NavLink({ name, href, active, plain, className }: NavLinkProps) {
+    if (plain) {
+        return (
+            <a href={href} className={className}>
+                {name}
+            </a>
+        );
+    }
+    return (
+        <Link href={href} aria-current={active ? "page" : undefined} className={className}>
+            {name}
+        </Link>
     );
 }

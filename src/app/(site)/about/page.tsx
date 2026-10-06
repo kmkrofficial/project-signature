@@ -1,6 +1,5 @@
 import React from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
     Github,
     Linkedin,
@@ -13,10 +12,11 @@ import {
     Layers,
     BookOpen
 } from "lucide-react";
-import { LiveGitHubSection } from "@/components/portfolio/LiveGitHubSection";
+import { GitHubRepos } from "@/components/about/GitHubRepos";
 
 export const metadata: Metadata = {
-    title: "About | Signature",
+    title: "About",
+    alternates: { canonical: "/about" },
     description: "About Keerthi Raajan and Signature—a technical publication focused on software architecture, systems, and AI.",
 };
 
@@ -115,8 +115,6 @@ export default function AboutPage() {
 
                     <a
                         href="/feed.xml"
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 transition-all duration-200 ml-auto"
                     >
                         <Rss size={14} className="text-amber-500" />
@@ -179,7 +177,7 @@ export default function AboutPage() {
             </section>
 
             {/* 4. Live Open Source Codebase Feed */}
-            <LiveGitHubSection />
+            <GitHubRepos />
 
             {/* 5. Publication Ethos */}
             <section className="p-6 sm:p-7 rounded-2xl bg-secondary/30 border border-border/60 space-y-2.5">

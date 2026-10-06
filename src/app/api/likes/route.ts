@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createHash } from "node:crypto";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase-admin";
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
 
             const current = Math.max(0, Number(post.get("likes")) || 0);
             if (liker.exists === wantLiked) {
-                return { likes: current, liked: wantLiked };
+                return { likes: current, liked: wantLiked, changedSlug: null };
             }
 
             if (wantLiked) {
@@ -78,13 +79,23 @@ export async function POST(req: NextRequest) {
             }
             tx.update(postRef, { likes: FieldValue.increment(wantLiked ? 1 : -1) });
 
-            return { likes: Math.max(0, current + (wantLiked ? 1 : -1)), liked: wantLiked };
+            return {
+                likes: Math.max(0, current + (wantLiked ? 1 : -1)),
+                liked: wantLiked,
+                changedSlug: String(post.get("slug") || ""),
+            };
         });
 
         if (!result) {
             return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
-        return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
+        // Refresh the cached article in the background so the new count shows on reload
+        if (result.changedSlug) revalidateTag(`post:${result.changedSlug}`, "max");
+
+        return NextResponse.json(
+            { likes: result.likes, liked: result.liked },
+            { headers: { "Cache-Control": "no-store" } }
+        );
     } catch (error) {
         console.error("[likes] Transaction failed:", error);
         return NextResponse.json({ error: "Could not update like" }, { status: 500 });

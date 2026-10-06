@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Cinzel_Decorative } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AppShell } from "@/components/layout/AppShell";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
-import { ToastProvider } from "@/context/ToastContext";
+import { getSiteConfig } from "@/lib/posts";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -27,30 +27,11 @@ const cinzelDecorative = Cinzel_Decorative({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  let config = {
-    siteTitle: "Signature | Systems, AI & Software Architecture",
-    siteDescription: "Articles on technology, building software, and practical ideas from real-world projects.",
-    ogImageUrl: "",
-  };
-
-  try {
-    const docRef = doc(db, "config", "site");
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      config = {
-        siteTitle: data.siteTitle || config.siteTitle,
-        siteDescription: data.siteDescription || config.siteDescription,
-        ogImageUrl: data.ogImageUrl || "",
-      };
-    }
-  } catch (error) {
-    console.warn(`[Layout] Error fetching metadata from Firestore:`, error);
-  }
+  const config = await getSiteConfig();
 
   return {
     title: {
-      default: config.siteTitle || "Signature | Systems, AI & Software Architecture",
+      default: config.siteTitle,
       template: "%s | Signature",
     },
     description: config.siteDescription,
@@ -116,11 +97,19 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${cinzelDecorative.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
-        <ToastProvider>
-          <AppShell>
+        <AppShell>
+          {/* Decorative background layers */}
+          <div className="bg-ambient-aurora" aria-hidden="true" />
+          <div className="bg-architectural-grid" aria-hidden="true" />
+          <div className="bg-film-grain" aria-hidden="true" />
+          <div className="top-hairline" aria-hidden="true" />
+
+          <div className="relative z-10 flex flex-col min-h-screen">
             {children}
-          </AppShell>
-        </ToastProvider>
+          </div>
+        </AppShell>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

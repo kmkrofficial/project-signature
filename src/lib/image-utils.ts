@@ -7,7 +7,6 @@
 const OPTIMIZABLE_HOSTS = new Set([
     "firebasestorage.googleapis.com",
     "images.unsplash.com",
-    "plus.unsplash.com",
     "127.0.0.1",
     "localhost",
 ]);
@@ -19,7 +18,7 @@ export function isOptimizableImage(src?: string | null): boolean {
 
     try {
         const parsed = new URL(src);
-        if (OPTIMIZABLE_HOSTS.has(parsed.hostname) || parsed.hostname.endsWith(".unsplash.com")) {
+        if (OPTIMIZABLE_HOSTS.has(parsed.hostname)) {
             return true;
         }
         return false;

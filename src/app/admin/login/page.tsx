@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Sparkles, AlertCircle, ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
 import { GoogleAuthProvider, browserSessionPersistence, setPersistence, signInWithPopup } from "firebase/auth";
 import Link from "next/link";
 
@@ -42,11 +41,7 @@ export default function LoginPage() {
                 </Link>
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className="w-full max-w-md bg-card border border-border/80 p-8 rounded-2xl shadow-xl relative"
+            <div className="w-full max-w-md bg-card border border-border/80 p-8 rounded-2xl shadow-xl relative"
             >
                 {/* Header Badge */}
                 <div className="flex items-center justify-between mb-6">
@@ -102,7 +97,7 @@ export default function LoginPage() {
                         <span>{loading ? "Authenticating..." : "Continue with Google"}</span>
                     </button>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 }

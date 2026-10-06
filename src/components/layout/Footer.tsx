@@ -1,108 +1,58 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { Github, Linkedin, Twitter, Mail, Rss } from "lucide-react";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import React from "react";
 import Link from "next/link";
+import { cacheLife, cacheTag } from "next/cache";
+import { Github, Linkedin, Twitter, Mail, Rss, type LucideIcon } from "lucide-react";
+import { CONFIG_TAG, getSiteConfig } from "@/lib/posts";
 
-export function Footer() {
+interface FooterLink {
+    href: string;
+    label: string;
+    icon: LucideIcon;
+    external?: boolean;
+}
+
+export async function Footer() {
+    "use cache";
+    cacheLife("days");
+    cacheTag(CONFIG_TAG);
+
+    const config = await getSiteConfig();
     const currentYear = new Date().getFullYear();
-    const [links, setLinks] = useState<Record<string, string>>({
-        github: "https://github.com/kmkrofficial",
-        linkedin: "https://linkedin.com/in/keerthiraajan",
-        email: "kmkrworks@gmail.com",
-    });
 
-    useEffect(() => {
-        const fetchLinks = async () => {
-            try {
-                const docRef = doc(db, "config", "site");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setLinks((prev) => ({ ...prev, ...(docSnap.data() as Record<string, string>) }));
-                }
-            } catch (error) {
-                console.error("Error fetching footer links:", error);
-            }
-        };
-        fetchLinks();
-    }, []);
+    const links: FooterLink[] = [
+        { href: config.github, label: "GitHub", icon: Github, external: true },
+        { href: config.linkedin, label: "LinkedIn", icon: Linkedin, external: true },
+        { href: config.twitter, label: "Twitter", icon: Twitter, external: true },
+        { href: config.email && `mailto:${config.email}`, label: "Email", icon: Mail },
+        { href: "/feed.xml", label: "RSS feed", icon: Rss },
+    ].filter((link) => Boolean(link.href));
 
     return (
-        <footer className="border-t border-border bg-background/40 mt-6 sm:mt-8 py-5 sm:py-6 transition-colors duration-200">
+        <footer className="border-t border-border bg-background/40 mt-6 sm:mt-8 py-5 sm:py-6">
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    {/* Brand & Copyright */}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Link href="/" className="flex items-center gap-1.5 text-foreground hover:text-primary transition-colors">
                             <span className="font-cinzel font-bold text-sm sm:text-base text-primary tracking-wide">Signature</span>
                         </Link>
-                        <span className="text-muted-foreground/40">•</span>
+                        <span className="text-muted-foreground/40" aria-hidden="true">•</span>
                         <span>© {currentYear}</span>
                     </div>
 
-                    {/* Social & Contact Actions */}
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                        {links.github && (
+                    <nav aria-label="Social links" className="flex items-center gap-1.5 text-muted-foreground">
+                        {links.map(({ href, label, icon: Icon, external }) => (
                             <a
-                                href={links.github}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                                key={label}
+                                href={href}
+                                {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                                 className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
-                                title="GitHub"
-                                aria-label="GitHub"
+                                title={label}
+                                aria-label={label}
                             >
-                                <Github size={16} />
+                                <Icon size={16} />
                             </a>
-                        )}
-
-                        {links.linkedin && (
-                            <a
-                                href={links.linkedin}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
-                                title="LinkedIn"
-                                aria-label="LinkedIn"
-                            >
-                                <Linkedin size={16} />
-                            </a>
-                        )}
-
-                        {links.twitter && (
-                            <a
-                                href={links.twitter}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
-                                title="Twitter"
-                                aria-label="Twitter"
-                            >
-                                <Twitter size={16} />
-                            </a>
-                        )}
-
-                        <a
-                            href="/feed.xml"
-                            className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
-                            title="RSS Feed"
-                            aria-label="RSS Feed"
-                        >
-                            <Rss size={16} />
-                        </a>
-
-                        {links.email && (
-                            <a
-                                href={`mailto:${links.email}`}
-                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
-                                title="Email"
-                                aria-label="Email"
-                            >
-                                <Mail size={16} />
-                            </a>
-                        )}
-                    </div>
+                        ))}
+                    </nav>
                 </div>
             </div>
         </footer>
