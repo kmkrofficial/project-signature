@@ -81,10 +81,9 @@ async function run() {
   const baseSvgBuffer = Buffer.from(SVG_FAVICON.trim());
 
   // 1. Write SVG icons
+  // app/ file conventions serve /icon.svg, /apple-icon.png and /favicon.ico
   fs.writeFileSync(path.join("src", "app", "icon.svg"), SVG_FAVICON.trim());
-  fs.writeFileSync(path.join("public", "icon.svg"), SVG_FAVICON.trim());
-  fs.writeFileSync(path.join("public", "favicon.svg"), SVG_FAVICON.trim());
-  console.log("  ✓ Wrote src/app/icon.svg, public/icon.svg, public/favicon.svg");
+  console.log("  ✓ Wrote src/app/icon.svg");
 
   // 2. Generate PNGs for various resolutions
   const [b16, b32, b48, b180, b192, b512] = await Promise.all([
@@ -98,7 +97,6 @@ async function run() {
 
   // 3. Write Apple touch icon & standard PWA icons
   fs.writeFileSync(path.join("src", "app", "apple-icon.png"), b180);
-  fs.writeFileSync(path.join("public", "apple-touch-icon.png"), b180);
   fs.writeFileSync(path.join("public", "icon-192.png"), b192);
   fs.writeFileSync(path.join("public", "icon-512.png"), b512);
   console.log("  ✓ Generated Apple Touch and PWA icons (180x180, 192x192, 512x512)");
@@ -111,7 +109,6 @@ async function run() {
   ]);
 
   fs.writeFileSync(path.join("src", "app", "favicon.ico"), icoBuffer);
-  fs.writeFileSync(path.join("public", "favicon.ico"), icoBuffer);
   console.log("  ✓ Generated multi-resolution favicon.ico (16px, 32px, 48px) for legacy browsers");
 
   console.log("✨ All Cinzel Decorative 'S' favicon assets successfully created!");

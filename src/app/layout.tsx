@@ -84,7 +84,7 @@ export default function RootLayout({
             `,
           }}
         />
-        <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossOrigin="anonymous" />
+        {/* Article images load straight from Firebase Storage; resolve DNS early without holding a socket */}
         <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
