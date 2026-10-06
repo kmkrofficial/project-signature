@@ -132,11 +132,12 @@ async function seed() {
     try {
         const auth = getAuth();
         const testEmail = "kmkrworks@gmail.com";
+        let user;
         try {
-            await auth.getUserByEmail(testEmail);
+            user = await auth.getUserByEmail(testEmail);
             console.log(`  ✓ Test admin user already exists: ${testEmail}`);
         } catch {
-            await auth.createUser({
+            user = await auth.createUser({
                 email: testEmail,
                 emailVerified: true,
                 displayName: "Keerthi Raajan",
@@ -144,6 +145,9 @@ async function seed() {
             });
             console.log(`  ✓ Created test admin user: ${testEmail} (password: password123)`);
         }
+        // Security rules require the admin custom claim, not just a signed-in user
+        await auth.setCustomUserClaims(user.uid, { admin: true });
+        console.log(`  ✓ Granted admin claim to ${testEmail}`);
     } catch (authErr) {
         console.warn("  ℹ Auth emulator user note:", authErr instanceof Error ? authErr.message : authErr);
     }
