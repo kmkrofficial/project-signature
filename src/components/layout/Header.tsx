@@ -155,7 +155,7 @@ function NavLink({ name, href, active, plain, underline, className }: NavLinkPro
             {underline &&
                 (active ? (
                     <ViewTransition name="nav-underline" share="nav-underline-move" default="none">
-                        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary" />
+                        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" />
                     </ViewTransition>
                 ) : (
                     <HoverUnderline />

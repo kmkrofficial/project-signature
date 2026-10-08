@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Rss } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/BrandIcons";
 import { getAdjacentPosts, getPostBySlug, getPublishedPosts, getSiteConfig } from "@/lib/posts";
 import { formatDate, formatReadingTime } from "@/lib/format";
-import { isOptimizableImage } from "@/lib/image-utils";
+import { COVER_IMAGE_SIZES, isOptimizableImage } from "@/lib/image-utils";
 import { ArticleEnhancer } from "@/components/blog/ArticleEnhancer";
 import { ArticleSkeleton } from "@/components/blog/ArticleSkeleton";
 import { CategoryBadge } from "@/components/blog/CategoryBadge";
@@ -157,7 +157,7 @@ async function Article({ params }: Props) {
                                             fill
                                             priority
                                             unoptimized={!isOptimizableImage(post.coverImage)}
-                                            sizes="(max-width: 1024px) 100vw, 768px"
+                                            sizes={COVER_IMAGE_SIZES}
                                             className="object-cover"
                                         />
                                     </div>

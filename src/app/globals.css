@@ -32,6 +32,8 @@
   /* Motion tokens: compositor-only properties (transform, opacity) and short durations */
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Large shared-element moves: soft start, no single frame covers more than about 9% of the distance */
+  --ease-morph: cubic-bezier(0.25, 0.1, 0.2, 1);
 
   --animate-fade-in: fade-in 180ms ease-out backwards;
   --animate-fade-up: fade-up 240ms var(--ease-smooth) backwards;
@@ -362,64 +364,93 @@ html.theme-reveal .site-header {
   animation: none;
 }
 
-/* Default page change: quick crossfade with a small rise */
+/* Page change. Old and new fade at the same time on mirrored linear curves and blend with plus-lighter,
+   so their opacities always sum to 1 and the content never dips while the page swaps. (Overriding
+   `animation` drops the browser's own plus-lighter animation, so the blend is set explicitly.) */
+::view-transition-old(.page-fade),
+::view-transition-new(.page-fade),
+::view-transition-old(.nav-forward),
+::view-transition-new(.nav-forward),
+::view-transition-old(.nav-back),
+::view-transition-new(.nav-back),
+::view-transition-old(.slide-down),
+::view-transition-new(.slide-up),
+::view-transition-old(.post-cover),
+::view-transition-new(.post-cover),
+::view-transition-old(.post-title),
+::view-transition-new(.post-title) {
+  mix-blend-mode: plus-lighter;
+}
+
 ::view-transition-old(.page-fade) {
-  animation: 130ms ease-in both vt-fade reverse;
+  animation: 160ms linear both vt-fade reverse;
 }
 
 ::view-transition-new(.page-fade) {
   animation:
-    220ms var(--ease-smooth) 80ms both vt-fade,
-    280ms var(--ease-smooth) 80ms both vt-rise;
+    160ms linear both vt-fade,
+    320ms var(--ease-smooth) both vt-rise;
 }
 
 /* Directional navigation (older/newer article, back to list) */
 ::view-transition-old(.nav-forward) {
-  --slide-offset: -24px;
+  --slide-offset: -20px;
   animation:
-    120ms ease-in both vt-fade reverse,
-    240ms var(--ease-smooth) both vt-slide reverse;
+    160ms linear both vt-fade reverse,
+    320ms var(--ease-smooth) both vt-slide reverse;
 }
 
 ::view-transition-new(.nav-forward) {
-  --slide-offset: 24px;
+  --slide-offset: 20px;
   animation:
-    200ms ease-out 100ms both vt-fade,
-    260ms var(--ease-smooth) both vt-slide;
+    160ms linear both vt-fade,
+    320ms var(--ease-smooth) both vt-slide;
 }
 
 ::view-transition-old(.nav-back) {
-  --slide-offset: 24px;
+  --slide-offset: 20px;
   animation:
-    120ms ease-in both vt-fade reverse,
-    240ms var(--ease-smooth) both vt-slide reverse;
+    160ms linear both vt-fade reverse,
+    320ms var(--ease-smooth) both vt-slide reverse;
 }
 
 ::view-transition-new(.nav-back) {
-  --slide-offset: -24px;
+  --slide-offset: -20px;
   animation:
-    200ms ease-out 100ms both vt-fade,
-    260ms var(--ease-smooth) both vt-slide;
+    160ms linear both vt-fade,
+    320ms var(--ease-smooth) both vt-slide;
 }
 
-/* Suspense reveal: skeleton drops away, content rises in */
+/* Suspense reveal: skeleton drops away as the content rises in */
 ::view-transition-old(.slide-down) {
   animation:
-    120ms ease-in both vt-fade reverse,
-    160ms ease-in both vt-rise reverse;
+    160ms linear both vt-fade reverse,
+    200ms ease-in both vt-rise reverse;
 }
 
 ::view-transition-new(.slide-up) {
   animation:
-    200ms ease-out 120ms both vt-fade,
-    280ms var(--ease-smooth) 120ms both vt-rise;
+    160ms linear both vt-fade,
+    300ms var(--ease-smooth) both vt-rise;
 }
 
-/* Shared elements: cover and title morph from the list to the article; the active underline and pill slide */
+/* Shared elements. The cover and title move over 440ms on a soft curve. Both ends of the cover have the
+   same 16:9 shape, 16px corners and image file, so the morph is a pure move and scale with nothing to
+   re-crop; the snapshots only cross-fade early so the sharp new one takes over while it is still small. */
 ::view-transition-group(.post-cover),
 ::view-transition-group(.post-title) {
-  animation-duration: 320ms;
-  animation-timing-function: var(--ease-smooth);
+  animation-duration: 440ms;
+  animation-timing-function: var(--ease-morph);
+}
+
+::view-transition-old(.post-cover),
+::view-transition-old(.post-title) {
+  animation: 240ms linear both vt-fade reverse;
+}
+
+::view-transition-new(.post-cover),
+::view-transition-new(.post-title) {
+  animation: 240ms linear both vt-fade;
 }
 
 ::view-transition-old(.post-cover),
@@ -428,8 +459,7 @@ html.theme-reveal .site-header {
   object-fit: cover;
 }
 
-/* The cover snapshot is a plain rectangle; rounding it here keeps the corners the same size for the whole
-   morph instead of starting square and rounding on arrival. Matches the article cover (rounded-2xl). */
+/* The cover snapshot is a plain rectangle; the rounding is applied here at a fixed size for the whole morph */
 ::view-transition-image-pair(.post-cover) {
   overflow: clip;
   border-radius: 1rem;
@@ -451,8 +481,24 @@ html.theme-reveal .site-header {
 
 ::view-transition-group(.pill-slide),
 ::view-transition-group(.nav-underline-move) {
-  animation-duration: 260ms;
-  animation-timing-function: var(--ease-smooth);
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-morph);
+}
+
+/* Snapshots keep their own aspect ratio by default, which made the old pill balloon to three times its
+   height while it slid. Solid shapes should simply fill the group; rounding is clipped at a fixed size. */
+::view-transition-old(.pill-slide),
+::view-transition-new(.pill-slide),
+::view-transition-old(.nav-underline-move),
+::view-transition-new(.nav-underline-move) {
+  height: 100%;
+  object-fit: fill;
+}
+
+::view-transition-image-pair(.pill-slide),
+::view-transition-image-pair(.nav-underline-move) {
+  overflow: clip;
+  border-radius: 9999px;
 }
 
 /* Link pending feedback (useLinkStatus): a gentle pulse that only appears if navigation takes >150ms */

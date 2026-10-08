@@ -23,7 +23,7 @@ export function TopicNav({ active }: TopicNavProps) {
                                 href={item.href}
                                 aria-current={isActive ? "page" : undefined}
                                 className={clsx(
-                                    "press relative block px-3.5 py-1.5 rounded-full text-sm whitespace-nowrap border",
+                                    "press relative block overflow-hidden px-3.5 py-1.5 rounded-full text-sm whitespace-nowrap border",
                                     isActive
                                         ? "border-foreground text-background font-medium"
                                         : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
@@ -31,7 +31,7 @@ export function TopicNav({ active }: TopicNavProps) {
                             >
                                 {isActive && (
                                     <ViewTransition name="topic-pill" share="pill-slide" default="none">
-                                        <span aria-hidden="true" className="absolute inset-0 rounded-full bg-foreground" />
+                                        <span aria-hidden="true" className="absolute inset-0 bg-foreground" />
                                     </ViewTransition>
                                 )}
                                 <span className="relative">{item.name}</span>
