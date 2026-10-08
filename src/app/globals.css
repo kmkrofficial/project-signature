@@ -789,7 +789,11 @@ body {
   }
 
   .toast-in {
-    animation: toast-in 200ms ease-out;
+    animation: toast-in 220ms var(--ease-smooth);
+  }
+
+  .toast-row {
+    animation: toast-expand 240ms var(--ease-smooth);
   }
 }
 
@@ -797,6 +801,64 @@ body {
   from {
     opacity: 0;
     transform: translateY(12px);
+  }
+}
+
+/* Toast rows grow in and collapse out so neighbours glide instead of jumping */
+.toast-row {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.toast-inner {
+  min-height: 0;
+}
+
+.toast-leave {
+  animation: toast-collapse 240ms var(--ease-smooth) forwards;
+}
+
+.toast-leave .toast-inner {
+  overflow: hidden;
+}
+
+.toast-leave .toast-card {
+  animation: toast-slide-out 200ms ease-in forwards;
+}
+
+@keyframes toast-expand {
+  from {
+    grid-template-rows: 0fr;
+  }
+}
+
+@keyframes toast-collapse {
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@keyframes toast-slide-out {
+  to {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+/* The timer bar drives auto-dismiss, so hovering or focusing a toast pauses both */
+.toast-timer {
+  animation: toast-timer 5s linear forwards;
+}
+
+.toast-row:hover .toast-timer,
+.toast-row:focus-within .toast-timer {
+  animation-play-state: paused;
+}
+
+@keyframes toast-timer {
+  to {
+    transform: scaleX(0);
   }
 }
 
@@ -888,9 +950,9 @@ body {
 
 /* Reduced motion: no movement or timed effects anywhere. State changes stay instant and fully usable. */
 @media (prefers-reduced-motion: reduce) {
-  *:not(.reading-progress),
-  *:not(.reading-progress)::before,
-  *:not(.reading-progress)::after {
+  *:not(.reading-progress):not(.toast-timer),
+  *:not(.reading-progress):not(.toast-timer)::before,
+  *:not(.reading-progress):not(.toast-timer)::after {
     animation-duration: 0.01ms !important;
     animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
@@ -903,5 +965,10 @@ body {
   ::view-transition-group(*) {
     animation-duration: 0s !important;
     animation-delay: 0s !important;
+  }
+
+  /* Still times the toast, but without the moving bar */
+  .toast-timer {
+    opacity: 0;
   }
 }

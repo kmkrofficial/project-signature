@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { CheckCircle, XCircle, X } from "lucide-react";
+import { clsx } from "clsx";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -12,43 +13,80 @@ export interface ToastProps {
     onClose: (id: string) => void;
 }
 
+/** Safety net if CSS animations are disabled and the progress bar never finishes. */
+const MAX_LIFETIME_MS = 15000;
+const LEAVE_FALLBACK_MS = 450;
+
 export function Toast({ id, message, type, onClose }: ToastProps) {
+    const [leaving, setLeaving] = useState(false);
+
     useEffect(() => {
-        const timer = setTimeout(() => onClose(id), 5000); // 5 seconds auto-dismiss
+        const timer = setTimeout(() => setLeaving(true), MAX_LIFETIME_MS);
         return () => clearTimeout(timer);
-    }, [id, onClose]);
+    }, []);
+
+    useEffect(() => {
+        if (!leaving) return;
+        const timer = setTimeout(() => onClose(id), LEAVE_FALLBACK_MS);
+        return () => clearTimeout(timer);
+    }, [leaving, id, onClose]);
+
+    const accent = type === "success" ? "emerald" : type === "error" ? "red" : "primary";
 
     return (
         <div
-            role={type === "error" ? "alert" : "status"}
-            className={`toast-in w-full max-w-sm px-4 py-3 rounded-xl border shadow-lg backdrop-blur-md flex items-start gap-3 pointer-events-auto
-                ${type === "success"
-                    ? "bg-card/95 border-l-4 border-l-emerald-500 border-border text-foreground"
-                    : type === "error"
-                    ? "bg-card/95 border-l-4 border-l-red-500 border-border text-foreground"
-                    : "bg-card/95 border-l-4 border-l-primary border-border text-foreground"
-                }`}
+            className={clsx("toast-row", leaving && "toast-leave")}
+            onAnimationEnd={(event) => event.animationName === "toast-collapse" && onClose(id)}
         >
-            {type === "success" ? (
-                <CheckCircle size={18} className="text-emerald-500 mt-0.5 shrink-0" />
-            ) : type === "error" ? (
-                <XCircle size={18} className="text-red-500 mt-0.5 shrink-0" />
-            ) : (
-                <CheckCircle size={18} className="text-primary mt-0.5 shrink-0" />
-            )}
+            <div className="toast-inner">
+                <div className="pb-3">
+                    <div
+                        role={type === "error" ? "alert" : "status"}
+                        className={clsx(
+                            "toast-card toast-in relative overflow-hidden w-full max-w-sm px-4 py-3 rounded-xl border border-l-4 border-border bg-card/95 text-foreground shadow-lg backdrop-blur-md flex items-start gap-3 pointer-events-auto",
+                            type === "success" && "border-l-emerald-500",
+                            type === "error" && "border-l-red-500",
+                            type === "info" && "border-l-primary"
+                        )}
+                    >
+                        {type === "error" ? (
+                            <XCircle size={18} className="animate-pop text-red-500 mt-0.5 shrink-0 [animation-delay:80ms]" />
+                        ) : (
+                            <CheckCircle
+                                size={18}
+                                className={clsx("animate-pop mt-0.5 shrink-0 [animation-delay:80ms]", type === "success" ? "text-emerald-500" : "text-primary")}
+                            />
+                        )}
 
-            <div className="flex-1 min-w-0">
-                <p className="text-sm leading-snug break-words">{message}</p>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm leading-snug break-words">{message}</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setLeaving(true)}
+                            aria-label="Dismiss notification"
+                            className="press text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                        >
+                            <X size={16} />
+                        </button>
+
+                        <span
+                            aria-hidden="true"
+                            onAnimationEnd={(event) => {
+                                event.stopPropagation();
+                                setLeaving(true);
+                            }}
+                            className={clsx(
+                                "toast-timer absolute inset-x-0 bottom-0 h-0.5 origin-left opacity-60",
+                                accent === "emerald" && "bg-emerald-500",
+                                accent === "red" && "bg-red-500",
+                                accent === "primary" && "bg-primary"
+                            )}
+                        />
+                    </div>
+                </div>
             </div>
-
-            <button
-                type="button"
-                onClick={() => onClose(id)}
-                aria-label="Dismiss notification"
-                className="text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
-            >
-                <X size={16} />
-            </button>
         </div>
     );
 }
@@ -60,7 +98,7 @@ interface ToastContainerProps {
 
 export function ToastContainer({ toasts, removeToast }: ToastContainerProps) {
     return (
-        <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 z-[100] flex flex-col gap-3 sm:w-full max-w-sm pointer-events-none">
+        <div className="fixed bottom-1 right-4 left-4 sm:left-auto sm:bottom-3 sm:right-6 z-[100] flex flex-col sm:w-full max-w-sm pointer-events-none">
             {toasts.map((toast) => (
                 <Toast key={toast.id} id={toast.id} message={toast.message} type={toast.type} onClose={removeToast} />
             ))}
