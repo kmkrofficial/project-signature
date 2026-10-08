@@ -311,6 +311,12 @@ html.theme-reveal::view-transition-new(root) {
   z-index: 9999;
 }
 
+/* The header is anchored (its own transition group) during page navigation. While the theme reveals it
+   must join the page snapshot instead, or it would switch colors before the circle reaches it. */
+html.theme-reveal .site-header {
+  view-transition-name: none !important;
+}
+
 /* ==========================================================================
    Page transitions (React <ViewTransition> + Next route navigation)
    ========================================================================== */
@@ -420,6 +426,27 @@ html.theme-reveal::view-transition-new(root) {
 ::view-transition-new(.post-cover) {
   height: 100%;
   object-fit: cover;
+}
+
+/* The cover snapshot is a plain rectangle; rounding it here keeps the corners the same size for the whole
+   morph instead of starting square and rounding on arrival. Matches the article cover (rounded-2xl). */
+::view-transition-image-pair(.post-cover) {
+  overflow: clip;
+  border-radius: 1rem;
+}
+
+/* The featured card shows on the home and topic pages. It is shared between them and shown as-is,
+   so switching topics never fades or moves it. */
+::view-transition-old(.spotlight-stay) {
+  display: none;
+}
+
+::view-transition-new(.spotlight-stay) {
+  animation: none;
+}
+
+::view-transition-group(.spotlight-stay) {
+  animation-duration: 0s;
 }
 
 ::view-transition-group(.pill-slide),

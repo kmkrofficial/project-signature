@@ -147,19 +147,22 @@ async function Article({ params }: Props) {
                         </header>
 
                         {post.coverImage && (
-                            <ViewTransition name={`post-cover-${post.slug}`} share="post-cover" default="none">
-                                <div className="relative w-full aspect-[16/9] mb-10 overflow-hidden rounded-2xl border border-border/70 bg-secondary/40">
-                                    <Image
-                                        src={post.coverImage}
-                                        alt=""
-                                        fill
-                                        priority
-                                        unoptimized={!isOptimizableImage(post.coverImage)}
-                                        sizes="(max-width: 1024px) 100vw, 768px"
-                                        className="object-cover"
-                                    />
-                                </div>
-                            </ViewTransition>
+                            <div className="relative w-full aspect-[16/9] mb-10 overflow-hidden rounded-2xl border border-border/70 bg-secondary/40">
+                                {/* Plain rectangle inside the rounded frame: the corners are drawn by the frame, so the morph stays clean */}
+                                <ViewTransition name={`post-cover-${post.slug}`} share="post-cover" default="none">
+                                    <div className="absolute inset-0">
+                                        <Image
+                                            src={post.coverImage}
+                                            alt=""
+                                            fill
+                                            priority
+                                            unoptimized={!isOptimizableImage(post.coverImage)}
+                                            sizes="(max-width: 1024px) 100vw, 768px"
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                </ViewTransition>
+                            </div>
                         )}
 
                         <div
