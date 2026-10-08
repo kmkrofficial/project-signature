@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { clsx } from "clsx";
@@ -13,10 +13,13 @@ interface ThemeToggleProps {
 export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
     const { theme, toggleTheme } = useTheme();
     const buttonRef = useRef<HTMLButtonElement>(null);
+    // Animate the icon swap only after a click, never on first paint
+    const [interacted, setInteracted] = useState(false);
 
     const isDark = theme === "dark";
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        setInteracted(true);
         let x = e.clientX;
         let y = e.clientY;
 
@@ -47,8 +50,8 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
             aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
             title={`Switch to ${isDark ? "light" : "dark"} theme`}
             className={clsx(
-                "relative inline-flex items-center shrink-0 cursor-pointer select-none rounded-full p-0.5",
-                "border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95",
+                "press relative inline-flex items-center shrink-0 cursor-pointer select-none rounded-full p-0.5",
+                "border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 isDark
                     ? "bg-secondary/90 border-border/80 hover:border-primary/50 text-muted-foreground"
                     : "bg-amber-100/70 border-amber-200/80 hover:border-amber-300 text-amber-700",
@@ -67,14 +70,14 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
                 <Sun
                     size={isSmall ? 10 : 12}
                     className={clsx(
-                        "transition-all duration-200",
+                        "transition-[opacity,color] duration-200",
                         !isDark ? "text-amber-500 opacity-100" : "text-muted-foreground/30 opacity-40"
                     )}
                 />
                 <Moon
                     size={isSmall ? 10 : 12}
                     className={clsx(
-                        "transition-all duration-200",
+                        "transition-[opacity,color] duration-200",
                         isDark ? "text-amber-400 opacity-100" : "text-muted-foreground/30 opacity-40"
                     )}
                 />
@@ -98,9 +101,9 @@ export function ThemeToggle({ className, size = "md" }: ThemeToggleProps) {
                 )}
             >
                 {isDark ? (
-                    <Moon size={isSmall ? 10 : 12} className="stroke-[2.2] animate-in fade-in zoom-in-75 duration-200" />
+                    <Moon size={isSmall ? 10 : 12} className={clsx("stroke-[2.2]", interacted && "animate-spin-in")} />
                 ) : (
-                    <Sun size={isSmall ? 10 : 12} className="stroke-[2.2] animate-in fade-in zoom-in-75 duration-200" />
+                    <Sun size={isSmall ? 10 : 12} className={clsx("stroke-[2.2]", interacted && "animate-spin-in")} />
                 )}
             </span>
         </button>

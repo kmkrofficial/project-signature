@@ -33,9 +33,10 @@
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --animate-fade-in: fade-in 180ms ease-out both;
-  --animate-fade-up: fade-up 240ms var(--ease-smooth) both;
-  --animate-pop: pop 320ms var(--ease-spring) both;
+  --animate-fade-in: fade-in 180ms ease-out backwards;
+  --animate-fade-up: fade-up 240ms var(--ease-smooth) backwards;
+  --animate-pop: pop 320ms var(--ease-spring) backwards;
+  --animate-spin-in: spin-in 360ms var(--ease-spring) backwards;
   --animate-shake: shake 360ms ease-in-out;
 
   @keyframes fade-in {
@@ -58,6 +59,13 @@
     }
     60% {
       transform: scale(1.12);
+    }
+  }
+
+  @keyframes spin-in {
+    from {
+      opacity: 0;
+      transform: rotate(-90deg) scale(0.5);
     }
   }
 
@@ -601,15 +609,109 @@ body {
   text-decoration: var(--shiki-dark-text-decoration) !important;
 }
 
-/* Native dialogs and the mobile menu: short, purposeful entry motion */
+/* Native dialogs: animate open AND close. @starting-style sets the entry state and the discrete
+   display/overlay transitions keep the dialog (and its top-layer backdrop) alive during the exit. */
 @media (prefers-reduced-motion: no-preference) {
-  .search-dialog[open],
-  .lightbox[open] {
-    animation: dialog-in 160ms ease-out;
+  .search-dialog,
+  .lightbox {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    transition:
+      opacity 160ms var(--ease-smooth),
+      transform 200ms var(--ease-smooth),
+      overlay 200ms allow-discrete,
+      display 200ms allow-discrete;
   }
 
-  .animate-menu-in {
-    animation: menu-in 160ms ease-out;
+  .search-dialog[open],
+  .lightbox[open] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .search-dialog::backdrop,
+  .lightbox::backdrop {
+    opacity: 0;
+    transition:
+      opacity 200ms ease-out,
+      overlay 200ms allow-discrete,
+      display 200ms allow-discrete;
+  }
+
+  .search-dialog[open]::backdrop,
+  .lightbox[open]::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .search-dialog[open],
+    .lightbox[open] {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+
+    .search-dialog[open]::backdrop,
+    .lightbox[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}
+
+/* Mobile menu: always rendered, toggled by data-open so it can animate out as well as in */
+.mobile-menu {
+  display: none;
+}
+
+.mobile-menu[data-open] {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .mobile-menu,
+  .mobile-menu[data-open] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-menu {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 160ms ease-out,
+      transform 200ms var(--ease-smooth),
+      display 200ms allow-discrete;
+  }
+
+  .mobile-menu[data-open] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .mobile-menu li {
+    opacity: 0;
+    translate: 0 -4px;
+    transition:
+      opacity 160ms ease-out,
+      translate 220ms var(--ease-smooth);
+  }
+
+  .mobile-menu[data-open] li {
+    opacity: 1;
+    translate: 0;
+    transition-delay: calc(var(--i, 0) * 30ms + 50ms);
+  }
+
+  @starting-style {
+    .mobile-menu[data-open] {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+
+    .mobile-menu[data-open] li {
+      opacity: 0;
+      translate: 0 -4px;
+    }
   }
 
   .toast-in {
@@ -624,17 +726,32 @@ body {
   }
 }
 
-@keyframes dialog-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.98);
+/* Header edge: the divider and soft shadow fade in over the first 48px of scroll (no JS) */
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgb(var(--border) / 0.7);
+  box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.25);
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .site-header::after {
+      opacity: 0;
+      animation: header-edge linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 48px;
+    }
   }
 }
 
-@keyframes menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
+@keyframes header-edge {
+  to {
+    opacity: 1;
   }
 }
 

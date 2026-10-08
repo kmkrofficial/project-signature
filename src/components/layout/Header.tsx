@@ -3,7 +3,7 @@
 import React, { useState, useSyncExternalStore, ViewTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import { clsx } from "clsx";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Wordmark } from "@/components/layout/Wordmark";
@@ -37,7 +37,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
     return (
         <header
             style={{ viewTransitionName: "site-header" }}
-            className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60"
+            className="site-header sticky top-0 z-40 bg-background/85 backdrop-blur-md"
         >
             <a
                 href="#content"
@@ -47,7 +47,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
             </a>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-                <Link href="/" className="py-1 text-primary hover:opacity-85 transition-opacity" aria-label="Signature home">
+                <Link href="/" className="press py-1 text-primary hover:opacity-80" aria-label="Signature home">
                     <Wordmark className="h-5 sm:h-6" />
                 </Link>
 
@@ -70,11 +70,11 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         type="button"
                         onClick={onOpenSearch}
                         aria-label="Search articles"
-                        className="flex items-center gap-2 p-2 md:px-3 md:py-1.5 rounded-lg md:border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 text-sm transition-colors cursor-pointer"
+                        className="group press flex items-center gap-2 p-2 md:px-3 md:py-1.5 rounded-lg md:border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 text-sm cursor-pointer"
                     >
-                        <Search size={16} />
+                        <Search size={16} className="transition-transform duration-200 ease-smooth group-hover:scale-110 group-hover:-rotate-6" />
                         <span className="hidden md:inline">Search</span>
-                        <kbd className="hidden lg:inline kbd">{isMac ? "⌘K" : "Ctrl K"}</kbd>
+                        <kbd className="hidden lg:inline kbd transition-colors group-hover:text-foreground">{isMac ? "⌘K" : "Ctrl K"}</kbd>
                     </button>
 
                     <ThemeToggle size="sm" />
@@ -85,28 +85,47 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         aria-expanded={mobileOpen}
                         aria-controls="mobile-menu"
                         aria-label={mobileOpen ? "Close menu" : "Open menu"}
-                        className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
+                        className="press md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
                     >
-                        {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+                        <MenuIcon open={mobileOpen} />
                     </button>
                 </div>
             </div>
 
-            {mobileOpen && (
-                <nav id="mobile-menu" aria-label="Main" className="md:hidden border-t border-border/60 bg-background px-4 py-3 animate-menu-in">
-                    <ul className="flex flex-col">
-                        {navLinks.map((link) => (
-                            <li key={link.name} className="border-b border-border/40 last:border-0">
-                                <NavLink
-                                    {...link}
-                                    className={clsx("block py-3 text-base font-medium", link.active ? "text-primary" : "text-foreground")}
-                                />
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            )}
+            <nav
+                id="mobile-menu"
+                aria-label="Main"
+                data-open={mobileOpen || undefined}
+                className="mobile-menu border-t border-border/60 bg-background px-4 py-3"
+            >
+                <ul className="flex flex-col">
+                    {navLinks.map((link, index) => (
+                        <li
+                            key={link.name}
+                            style={{ "--i": index } as React.CSSProperties}
+                            className="border-b border-border/40 last:border-0"
+                        >
+                            <NavLink
+                                {...link}
+                                className={clsx("block py-3 text-base font-medium", link.active ? "text-primary" : "text-foreground")}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </nav>
         </header>
+    );
+}
+
+/** Three bars that morph into an X; transforms only. */
+function MenuIcon({ open }: { open: boolean }) {
+    const bar = "absolute left-0 h-0.5 w-5 rounded-full bg-current transition-[transform,opacity] duration-200 ease-smooth";
+    return (
+        <span aria-hidden="true" className="relative block h-4 w-5">
+            <span className={clsx(bar, "top-0", open && "translate-y-[7px] rotate-45")} />
+            <span className={clsx(bar, "top-[7px]", open && "scale-x-0 opacity-0")} />
+            <span className={clsx(bar, "top-[14px]", open && "-translate-y-[7px] -rotate-45")} />
+        </span>
     );
 }
 

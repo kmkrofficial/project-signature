@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Search, X } from "lucide-react";
@@ -91,11 +91,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         }
     };
 
-    const status = failed
-        ? "Search is unavailable right now."
-        : entries === null
-          ? "Loading articles…"
-          : `No articles found for “${query}”.`;
+    const loading = entries === null && !failed;
+    const status = failed ? "Search is unavailable right now." : `No articles found for “${query}”.`;
 
     return (
         <dialog
@@ -106,8 +103,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             className="search-dialog mt-[10vh] mx-auto w-[calc(100%-2rem)] max-w-2xl max-h-[75vh] p-0 rounded-2xl border border-border bg-card text-foreground shadow-2xl backdrop:bg-background/70 backdrop:backdrop-blur-sm"
         >
             <div className="flex flex-col max-h-[75vh]">
-                <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border/80">
-                    <Search size={18} className="text-muted-foreground shrink-0" aria-hidden="true" />
+                <div className="group/field flex items-center gap-3 px-4 py-3.5 border-b border-border/80">
+                    <Search
+                        size={18}
+                        className="text-muted-foreground shrink-0 transition-colors duration-200 group-focus-within/field:text-primary"
+                        aria-hidden="true"
+                    />
                     <input
                         type="search"
                         autoFocus
@@ -126,28 +127,38 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         type="button"
                         onClick={onClose}
                         aria-label="Close search"
-                        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                        className="group press p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
                     >
-                        <X size={18} />
+                        <X size={18} className="transition-transform duration-200 ease-smooth group-hover:rotate-90" />
                     </button>
                 </div>
 
-                {results.length === 0 ? (
-                    <p className="py-12 text-center text-sm text-muted-foreground" role="status">
+                {loading ? (
+                    <ul className="p-2 space-y-1" role="status" aria-label="Loading articles">
+                        {[0, 1, 2].map((row) => (
+                            <li key={row} className="p-3 space-y-2" aria-hidden="true">
+                                <div className="h-3 w-28 rounded bg-secondary animate-pulse" />
+                                <div className="h-4 w-3/4 rounded bg-secondary animate-pulse" />
+                            </li>
+                        ))}
+                    </ul>
+                ) : results.length === 0 ? (
+                    <p className="py-12 text-center text-sm text-muted-foreground animate-fade-in" role="status">
                         {status}
                     </p>
                 ) : (
                     <ul ref={listRef} id="search-results" className="overflow-y-auto p-2 space-y-1">
                         {results.map((entry, idx) => (
-                            <li key={entry.slug}>
+                            <li key={entry.slug} style={{ "--i": idx } as CSSProperties} className="animate-fade-up stagger">
                                 <Link
                                     data-index={idx}
                                     href={`/blog/${entry.slug}`}
                                     onClick={onClose}
                                     onMouseEnter={() => setSelectedIndex(idx)}
                                     className={clsx(
-                                        "group flex items-center justify-between gap-4 p-3 rounded-xl transition-colors",
-                                        idx === selectedIndex ? "bg-secondary" : "hover:bg-secondary/60"
+                                        "group relative flex items-center justify-between gap-4 p-3 rounded-xl transition-colors",
+                                        "before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-0.5 before:rounded-full before:bg-primary before:transition-transform before:duration-200 before:ease-smooth",
+                                        idx === selectedIndex ? "bg-secondary before:scale-y-100" : "before:scale-y-0 hover:bg-secondary/60"
                                     )}
                                 >
                                     <span className="min-w-0">
@@ -161,7 +172,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                     <ArrowRight
                                         size={16}
                                         aria-hidden="true"
-                                        className={clsx("shrink-0", idx === selectedIndex ? "text-primary" : "text-muted-foreground")}
+                                        className={clsx(
+                                            "shrink-0 transition-[opacity,translate,color] duration-200 ease-smooth",
+                                            idx === selectedIndex ? "translate-x-0 text-primary opacity-100" : "-translate-x-1 text-muted-foreground opacity-40"
+                                        )}
                                     />
                                 </Link>
                             </li>
