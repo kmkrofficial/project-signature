@@ -28,20 +28,36 @@ export function ArticleEnhancer({ contentId }: ArticleEnhancerProps) {
 
             const copyButton = target.closest<HTMLButtonElement>(".copy-code");
             if (copyButton) {
-                const code = copyButton.closest(".code-block")?.querySelector("pre")?.textContent ?? "";
+                const block = copyButton.closest<HTMLElement>(".code-block");
+                const code = block?.querySelector("pre")?.textContent ?? "";
                 try {
                     await navigator.clipboard.writeText(code);
                     copyButton.textContent = "Copied";
+                    copyButton.dataset.state = "copied";
+                    if (block) block.dataset.copied = "true";
                 } catch {
                     copyButton.textContent = "Failed";
                 }
-                setTimeout(() => (copyButton.textContent = "Copy"), 2000);
+                setTimeout(() => {
+                    copyButton.textContent = "Copy";
+                    delete copyButton.dataset.state;
+                    if (block) delete block.dataset.copied;
+                }, 2000);
                 return;
             }
 
             if (target instanceof HTMLImageElement && !target.closest("a")) {
-                setImage({ src: target.currentSrc || target.src, alt: target.alt });
-                dialogRef.current?.showModal();
+                const dialog = dialogRef.current;
+                if (dialog) {
+                    // Zoom out of the clicked image: the dialog is centered, so the origin is the offset from the viewport center
+                    const rect = target.getBoundingClientRect();
+                    const dx = rect.left + rect.width / 2 - window.innerWidth / 2;
+                    const dy = rect.top + rect.height / 2 - window.innerHeight / 2;
+                    dialog.style.setProperty("--lb-x", `calc(50% + ${Math.round(dx)}px)`);
+                    dialog.style.setProperty("--lb-y", `calc(50% + ${Math.round(dy)}px)`);
+                    setImage({ src: target.currentSrc || target.src, alt: target.alt });
+                    dialog.showModal();
+                }
             }
         };
 
@@ -69,7 +85,7 @@ export function ArticleEnhancer({ contentId }: ArticleEnhancerProps) {
                         onClick={close}
                         autoFocus
                         aria-label="Close image"
-                        className="absolute top-2 right-2 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors cursor-pointer"
+                        className="press absolute top-2 right-2 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 cursor-pointer"
                     >
                         <X size={18} />
                     </button>

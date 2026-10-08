@@ -171,7 +171,7 @@ async function Article({ params }: Props) {
                         {post.tags.length > 0 && (
                             <ul className="mt-10 flex flex-wrap gap-2" aria-label="Tags">
                                 {post.tags.map((tag) => (
-                                    <li key={tag} className="px-2.5 py-1 rounded-full bg-secondary text-xs text-muted-foreground">
+                                    <li key={tag} className="lift px-2.5 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:text-foreground">
                                         #{tag}
                                     </li>
                                 ))}
@@ -185,16 +185,16 @@ async function Article({ params }: Props) {
                             </div>
                             <div className="flex items-center gap-3 text-sm text-muted-foreground">
                                 <span>Follow along</span>
-                                <a href="/feed.xml" aria-label="RSS feed" title="RSS feed" className="p-1.5 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors">
+                                <a href="/feed.xml" aria-label="RSS feed" title="RSS feed" className="lift press p-1.5 rounded-lg hover:text-foreground hover:bg-secondary/60">
                                     <Rss size={18} />
                                 </a>
                                 {config.github && (
-                                    <a href={config.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub" className="p-1.5 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors">
+                                    <a href={config.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub" className="lift press p-1.5 rounded-lg hover:text-foreground hover:bg-secondary/60">
                                         <GitHubIcon size={16} />
                                     </a>
                                 )}
                                 {config.linkedin && (
-                                    <a href={config.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn" className="p-1.5 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors">
+                                    <a href={config.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn" className="lift press p-1.5 rounded-lg hover:text-foreground hover:bg-secondary/60">
                                         <LinkedInIcon size={16} />
                                     </a>
                                 )}

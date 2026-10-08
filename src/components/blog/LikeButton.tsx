@@ -35,6 +35,37 @@ function subscribe(onChange: () => void): () => void {
     };
 }
 
+/** Count that rolls vertically: the old value slides out while the new one slides in. */
+function RollingCount({ value }: { value: number }) {
+    const [tracked, setTracked] = useState(value);
+    const [leaving, setLeaving] = useState<{ value: number; up: boolean } | null>(null);
+
+    if (tracked !== value) {
+        setLeaving({ value: tracked, up: value > tracked });
+        setTracked(value);
+    }
+
+    const roll = leaving ? (leaving.up ? "[--roll:60%]" : "[--roll:-60%]") : "";
+
+    return (
+        <span className="relative inline-grid overflow-hidden tabular-nums leading-tight">
+            <span key={value} className={clsx(leaving && "roll-in", roll)}>
+                {value}
+            </span>
+            {leaving && (
+                <span
+                    key={`out-${leaving.value}`}
+                    aria-hidden="true"
+                    className={clsx("roll-out absolute inset-0", roll)}
+                    onAnimationEnd={() => setLeaving(null)}
+                >
+                    {leaving.value}
+                </span>
+            )}
+        </span>
+    );
+}
+
 interface LikeButtonProps {
     postId: string;
     initialLikes: number;
@@ -45,6 +76,8 @@ export function LikeButton({ postId, initialLikes }: LikeButtonProps) {
     const liked = useSyncExternalStore(subscribe, () => readLiked(postId), () => false);
     const [likes, setLikes] = useState(initialLikes);
     const [pending, setPending] = useState(false);
+    const [burst, setBurst] = useState(0);
+    const [shaking, setShaking] = useState(false);
 
     const toggle = async () => {
         if (pending) return;
@@ -52,6 +85,7 @@ export function LikeButton({ postId, initialLikes }: LikeButtonProps) {
         const previousLikes = likes;
 
         setPending(true);
+        if (nextLiked) setBurst((count) => count + 1);
         writeLiked(postId, nextLiked);
         setLikes((count) => Math.max(0, count + (nextLiked ? 1 : -1)));
 
@@ -68,6 +102,7 @@ export function LikeButton({ postId, initialLikes }: LikeButtonProps) {
         } catch {
             setLikes(previousLikes);
             writeLiked(postId, !nextLiked);
+            setShaking(true);
             addToast("Couldn't update your like. Please try again.", "error");
         } finally {
             setPending(false);
@@ -80,15 +115,31 @@ export function LikeButton({ postId, initialLikes }: LikeButtonProps) {
             onClick={toggle}
             aria-pressed={liked}
             aria-label={liked ? "Unlike this article" : "Like this article"}
+            onAnimationEnd={(event) => event.target === event.currentTarget && setShaking(false)}
             className={clsx(
-                "inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-colors cursor-pointer active:scale-95",
+                "press inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium cursor-pointer",
+                shaking && "animate-shake",
+                pending && "opacity-80",
                 liked
                     ? "border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400"
                     : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/40"
             )}
         >
-            <Heart size={16} className={clsx("transition-transform", liked && "fill-current scale-110")} />
-            <span className="tabular-nums">{likes}</span>
+            <span className="relative grid place-items-center">
+                {burst > 0 && liked && (
+                    <span
+                        key={`ring-${burst}`}
+                        aria-hidden="true"
+                        className="like-ring pointer-events-none absolute inset-0 rounded-full border-2 border-rose-500"
+                    />
+                )}
+                <Heart
+                    key={`heart-${liked ? burst : 0}`}
+                    size={16}
+                    className={clsx(liked && "fill-current", liked && burst > 0 && "heart-pop")}
+                />
+            </span>
+            <RollingCount value={likes} />
         </button>
     );
 }

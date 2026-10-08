@@ -74,7 +74,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const root = document.documentElement;
         root.classList.add("theme-reveal");
         const transition = document.startViewTransition(() => applyTheme(nextTheme, true));
-        transition.finished.finally(() => root.classList.remove("theme-reveal"));
+        const cleanup = () => root.classList.remove("theme-reveal");
+        transition.finished.then(cleanup, cleanup);
         transition.ready
             .then(() => {
                 document.documentElement.animate(
