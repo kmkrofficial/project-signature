@@ -142,13 +142,16 @@ export default async function AboutPage() {
                     Why this exists
                 </h2>
                 <p>
-                    Most software writing stops at the moment things work. The interesting part comes after: the 3 a.m. surprise, the assumption that quietly stopped being true, the fix that took one line and two days to find.
+                    Most software writing stops at the moment things work. I have always been more pulled by what happens next: the 3 a.m. surprise, the assumption that quietly stopped being true, the fix that took one line and two days to find.
                 </p>
                 <p className="text-muted-foreground">
-                    Signature collects those moments. Each article starts from a concrete problem, shows the reasoning that got through it, and keeps the dead ends in, because they are usually where the learning is.
+                    Signature is my recollection of those moments. Every article begins with a problem I actually sat in front of, and I try to put you in that chair with me. You get the first hunch, the theory I was sure about, the thing that proved me wrong, and the quiet click when it finally made sense.
                 </p>
                 <p className="text-muted-foreground">
-                    If you leave with one idea you can use on Monday, an article did its job.
+                    I leave the dead ends in on purpose. They are usually where I learned the most, and a tidy write-up that hides them makes the answer look easier than it was. If I lost an afternoon to a wrong turn, you should get to skip it, and see why it was tempting.
+                </p>
+                <p className="text-muted-foreground">
+                    I write because explaining something is how I find out whether I really understand it. If a piece leaves you with one idea you can use on Monday, or just the feeling that someone else got stuck here too, it did its job.
                 </p>
             </section>
 
