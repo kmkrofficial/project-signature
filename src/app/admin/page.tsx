@@ -15,7 +15,7 @@ import {
     Timestamp,
     orderBy
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, listAll } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL, listAll } from "firebase/storage";
 import Link from "next/link";
 import NextImage from "next/image";
 import {
@@ -48,16 +48,22 @@ import { estimateReadingTime } from "@/lib/format";
 import { TOPICS } from "@/lib/categoryUtils";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { CollapseRow } from "@/components/ui/CollapseRow";
 import { clsx } from "clsx";
 import type { BlogPost } from "@/types/blog";
 
-const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
+    ssr: false,
+    loading: () => <div className="h-[520px] rounded-xl bg-secondary/40 animate-pulse" aria-hidden="true" />,
+});
 
 interface StoredImage {
     name: string;
     url: string;
     fullPath?: string;
     size?: string;
+    /** Just uploaded in this session; animates in. */
+    fresh?: boolean;
 }
 
 const CATEGORIES = TOPICS.map((topic) => topic.name);
@@ -91,11 +97,14 @@ export default function AdminStudio() {
     const [tagInput, setTagInput] = useState("");
     const [manualSlug, setManualSlug] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [justSaved, setJustSaved] = useState(false);
+    const [removingIds, setRemovingIds] = useState<string[]>([]);
 
     // Media State
     const [images, setImages] = useState<StoredImage[]>([]);
     const [loadingImages, setLoadingImages] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
     const isUsingEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
@@ -242,7 +251,11 @@ export default function AdminStudio() {
 
         try {
             await deleteDoc(doc(db, "blog", id));
-            setPosts((prev) => prev.filter((p) => p.id !== id));
+            setRemovingIds((prev) => [...prev, id]);
+            setTimeout(() => {
+                setPosts((prev) => prev.filter((p) => p.id !== id));
+                setRemovingIds((prev) => prev.filter((removing) => removing !== id));
+            }, 260);
             await refreshPublicSite();
             addToast("Article deleted successfully", "success");
         } catch (err: unknown) {
@@ -303,7 +316,10 @@ export default function AdminStudio() {
 
             await refreshPublicSite();
             await fetchPosts();
+            setJustSaved(true);
+            await new Promise((resolve) => setTimeout(resolve, 520));
             setActiveTab("articles");
+            setJustSaved(false);
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : String(err);
             console.error("Save error:", msg);
@@ -319,6 +335,7 @@ export default function AdminStudio() {
         if (!file) return;
 
         setUploadingImage(true);
+        setUploadProgress(0);
         try {
             // Compress image on client canvas before upload (max 1600px, 82% quality)
             const compressedBlob: Blob = await new Promise((resolve) => {
@@ -353,7 +370,15 @@ export default function AdminStudio() {
             const storagePath = `media/${Date.now()}_${cleanName}`;
             const fileRef = ref(storage, storagePath);
 
-            await uploadBytes(fileRef, compressedBlob);
+            const task = uploadBytesResumable(fileRef, compressedBlob);
+            await new Promise<void>((resolve, reject) => {
+                task.on(
+                    "state_changed",
+                    (snapshot) => setUploadProgress(snapshot.bytesTransferred / snapshot.totalBytes),
+                    reject,
+                    () => resolve()
+                );
+            });
             const downloadUrl = await getDownloadURL(fileRef);
 
             const newImg: StoredImage = {
@@ -361,6 +386,7 @@ export default function AdminStudio() {
                 url: downloadUrl,
                 fullPath: storagePath,
                 size: (compressedBlob.size / 1024).toFixed(1) + " KB",
+                fresh: true,
             };
 
             setImages((prev) => [newImg, ...prev]);
@@ -371,6 +397,7 @@ export default function AdminStudio() {
             addToast("Failed to upload image: " + msg, "error");
         } finally {
             setUploadingImage(false);
+            setUploadProgress(0);
         }
     };
 
@@ -426,7 +453,7 @@ export default function AdminStudio() {
                     <Link
                         href="/"
                         target="_blank"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        className="press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-xs font-medium text-muted-foreground hover:text-foreground"
                         title="View Public Publication"
                     >
                         <ExternalLink size={13} />
@@ -438,7 +465,7 @@ export default function AdminStudio() {
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:border-red-500/30 bg-secondary/30 hover:bg-red-500/10 text-xs font-medium text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
+                        className="press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:border-red-500/30 bg-secondary/30 hover:bg-red-500/10 text-xs font-medium text-muted-foreground hover:text-red-400 cursor-pointer"
                         title="Sign Out"
                     >
                         <LogOut size={13} />
@@ -454,7 +481,7 @@ export default function AdminStudio() {
                         type="button"
                         onClick={() => setActiveTab("articles")}
                         className={clsx(
-                            "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer",
+                            "press flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium cursor-pointer",
                             activeTab === "articles"
                                 ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                                 : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
@@ -478,7 +505,7 @@ export default function AdminStudio() {
                         type="button"
                         onClick={() => setActiveTab("editor")}
                         className={clsx(
-                            "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer",
+                            "press flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium cursor-pointer",
                             activeTab === "editor"
                                 ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                                 : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
@@ -492,7 +519,7 @@ export default function AdminStudio() {
                         type="button"
                         onClick={() => setActiveTab("media")}
                         className={clsx(
-                            "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer",
+                            "press flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium cursor-pointer",
                             activeTab === "media"
                                 ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                                 : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
@@ -506,7 +533,7 @@ export default function AdminStudio() {
                         type="button"
                         onClick={() => setActiveTab("settings")}
                         className={clsx(
-                            "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer",
+                            "press flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium cursor-pointer",
                             activeTab === "settings"
                                 ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                                 : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
@@ -521,7 +548,7 @@ export default function AdminStudio() {
                     <button
                         type="button"
                         onClick={handleCreateNew}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-xs hover:opacity-90 active:scale-95 transition-all shadow-sm shrink-0 cursor-pointer"
+                        className="press inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-xs hover:opacity-90 shadow-sm shrink-0 cursor-pointer"
                     >
                         <Plus size={14} />
                         <span>New Article</span>
@@ -534,7 +561,7 @@ export default function AdminStudio() {
                 <div className="space-y-6">
                     {/* Metrics Banner */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                        <div className="p-4 rounded-xl bg-card border border-border/80">
+                        <div style={{ "--i": 0 } as React.CSSProperties} className="animate-fade-up stagger p-4 rounded-xl bg-card border border-border/80">
                             <div className="flex items-center justify-between text-muted-foreground mb-2">
                                 <span className="text-xs font-mono uppercase tracking-wider">Total</span>
                                 <Layers size={14} />
@@ -543,7 +570,7 @@ export default function AdminStudio() {
                             <span className="text-[11px] text-muted-foreground">Articles in catalog</span>
                         </div>
 
-                        <div className="p-4 rounded-xl bg-card border border-border/80">
+                        <div style={{ "--i": 1 } as React.CSSProperties} className="animate-fade-up stagger p-4 rounded-xl bg-card border border-border/80">
                             <div className="flex items-center justify-between text-muted-foreground mb-2">
                                 <span className="text-xs font-mono uppercase tracking-wider">Published</span>
                                 <CheckCircle2 size={14} className="text-emerald-400" />
@@ -552,7 +579,7 @@ export default function AdminStudio() {
                             <span className="text-[11px] text-muted-foreground">Live on publication</span>
                         </div>
 
-                        <div className="p-4 rounded-xl bg-card border border-border/80">
+                        <div style={{ "--i": 2 } as React.CSSProperties} className="animate-fade-up stagger p-4 rounded-xl bg-card border border-border/80">
                             <div className="flex items-center justify-between text-muted-foreground mb-2">
                                 <span className="text-xs font-mono uppercase tracking-wider">Drafts</span>
                                 <Edit3 size={14} className="text-amber-400" />
@@ -561,7 +588,7 @@ export default function AdminStudio() {
                             <span className="text-[11px] text-muted-foreground">Work in progress</span>
                         </div>
 
-                        <div className="p-4 rounded-xl bg-card border border-border/80">
+                        <div style={{ "--i": 3 } as React.CSSProperties} className="animate-fade-up stagger p-4 rounded-xl bg-card border border-border/80">
                             <div className="flex items-center justify-between text-muted-foreground mb-2">
                                 <span className="text-xs font-mono uppercase tracking-wider">Likes</span>
                                 <BarChart3 size={14} className="text-primary" />
@@ -593,7 +620,7 @@ export default function AdminStudio() {
                                     type="button"
                                     onClick={() => setCategoryFilter(cat)}
                                     className={clsx(
-                                        "px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer",
+                                        "press px-2.5 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap cursor-pointer",
                                         categoryFilter === cat
                                             ? "bg-secondary text-primary font-semibold border border-primary/30"
                                             : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
@@ -607,9 +634,14 @@ export default function AdminStudio() {
 
                     {/* Articles List / Cards */}
                     {loadingPosts ? (
-                        <div className="py-16 text-center text-muted-foreground flex flex-col items-center gap-3">
-                            <Loader2 size={24} className="animate-spin text-primary" />
-                            <p className="text-xs font-mono">Loading articles from Firestore...</p>
+                        <div className="space-y-3" role="status" aria-label="Loading articles">
+                            {[0, 1, 2].map((row) => (
+                                <div key={row} className="p-5 rounded-xl bg-card border border-border/80 space-y-3 animate-pulse" aria-hidden="true">
+                                    <div className="h-4 w-24 rounded-full bg-secondary" />
+                                    <div className="h-5 w-2/3 rounded bg-secondary" />
+                                    <div className="h-3 w-1/2 rounded bg-secondary/70" />
+                                </div>
+                            ))}
                         </div>
                     ) : filteredPosts.length === 0 ? (
                         <div className="py-16 text-center border border-dashed border-border rounded-2xl bg-card/30 p-8">
@@ -621,18 +653,20 @@ export default function AdminStudio() {
                             <button
                                 type="button"
                                 onClick={handleCreateNew}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-xs hover:opacity-90 transition-opacity cursor-pointer"
+                                className="press inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-medium text-xs hover:opacity-90 cursor-pointer"
                             >
                                 <Plus size={14} />
                                 <span>New Article</span>
                             </button>
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            {filteredPosts.map((post) => (
-                                <div
+                        <div>
+                            {filteredPosts.map((post, index) => (
+                                <CollapseRow
                                     key={post.id}
-                                    className="p-4 sm:p-5 rounded-xl bg-card border border-border/80 hover:border-primary/40 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group"
+                                    index={index + 4}
+                                    leaving={removingIds.includes(post.id)}
+                                    className="p-4 sm:p-5 rounded-xl bg-card border border-border/80 hover:border-primary/40 transition-colors flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group"
                                 >
                                     <div className="space-y-2 flex-1 min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
@@ -684,7 +718,7 @@ export default function AdminStudio() {
                                         <Link
                                             href={`/blog/${post.slug}`}
                                             target="_blank"
-                                            className="p-2 rounded-lg border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                                            className="press p-2 rounded-lg border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground"
                                             title="View Public Post"
                                         >
                                             <Eye size={14} />
@@ -693,7 +727,7 @@ export default function AdminStudio() {
                                         <button
                                             type="button"
                                             onClick={() => handleEditPost(post)}
-                                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-secondary/30 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-medium text-foreground transition-all cursor-pointer"
+                                            className="press inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-secondary/30 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-medium text-foreground cursor-pointer"
                                         >
                                             <Edit3 size={13} />
                                             <span>Edit</span>
@@ -702,13 +736,13 @@ export default function AdminStudio() {
                                         <button
                                             type="button"
                                             onClick={() => handleDeletePost(post.id)}
-                                            className="p-2 rounded-lg border border-border hover:border-red-500/30 bg-secondary/30 hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
+                                            className="press p-2 rounded-lg border border-border hover:border-red-500/30 bg-secondary/30 hover:bg-red-500/10 text-muted-foreground hover:text-red-400 cursor-pointer"
                                             title="Delete Article"
                                         >
                                             <Trash2 size={14} />
                                         </button>
                                     </div>
-                                </div>
+                                </CollapseRow>
                             ))}
                         </div>
                     )}
@@ -717,14 +751,14 @@ export default function AdminStudio() {
 
             {/* TAB 2: WRITING STUDIO / EDITOR */}
             {activeTab === "editor" && (
-                <div className="space-y-6">
+                <div className="animate-fade-up space-y-6">
                     {/* Editor Header Bar */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-card border border-border/80">
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
                                 onClick={() => setActiveTab("articles")}
-                                className="p-2 rounded-lg border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                className="press p-2 rounded-lg border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground cursor-pointer"
                                 title="Back to Articles"
                             >
                                 <ArrowLeft size={16} />
@@ -794,11 +828,11 @@ export default function AdminStudio() {
                             <button
                                 type="button"
                                 onClick={handleSavePost}
-                                disabled={saving}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 active:scale-95 transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                                disabled={saving || justSaved}
+                                className="press inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 shadow-md disabled:opacity-50 cursor-pointer"
                             >
-                                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                                <span>{saving ? "Saving..." : "Save to Firebase"}</span>
+                                {saving ? <Loader2 size={14} className="animate-spin" /> : justSaved ? <Check key="saved" size={14} className="animate-pop" /> : <Save size={14} />}
+                                <span>{saving ? "Saving..." : justSaved ? "Saved" : "Save to Firebase"}</span>
                             </button>
                         </div>
                     </div>
@@ -897,13 +931,13 @@ export default function AdminStudio() {
                                 {currentPost.tags?.map((t) => (
                                     <span
                                         key={t}
-                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono bg-secondary text-primary border border-border"
+                                        className="animate-pop inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono bg-secondary text-primary border border-border"
                                     >
                                         #{t}
                                         <button
                                             type="button"
                                             onClick={() => handleRemoveTag(t)}
-                                            className="hover:text-red-400 transition-colors ml-0.5 cursor-pointer"
+                                            className="press hover:text-red-400 ml-0.5 cursor-pointer"
                                         >
                                             <X size={12} />
                                         </button>
@@ -921,12 +955,12 @@ export default function AdminStudio() {
                         </div>
 
                         {/* Cover Image */}
-                        <div className={`space-y-1.5 md:col-span-2 p-3.5 rounded-xl transition-all ${currentPost.featured ? (currentPost.coverImage ? "bg-primary/5 border border-primary/20" : "bg-amber-500/10 border border-amber-500/30") : ""}`}>
+                        <div className={`space-y-1.5 md:col-span-2 p-3.5 rounded-xl transition-colors ${currentPost.featured ? (currentPost.coverImage ? "bg-primary/5 border border-primary/20" : "bg-amber-500/10 border border-amber-500/30") : ""}`}>
                             <div className="flex items-center justify-between">
                                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                                     <span>Cover Image URL (Editorial Spotlight Hero)</span>
                                     {currentPost.featured && (
-                                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase tracking-wider border ${currentPost.coverImage ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/20 text-amber-500 dark:text-amber-400 border-amber-500/30 animate-pulse"}`}>
+                                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase tracking-wider border ${currentPost.coverImage ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/20 text-amber-500 dark:text-amber-400 border-amber-500/30"}`}>
                                             * Mandatory for Spotlight
                                         </span>
                                     )}
@@ -955,7 +989,7 @@ export default function AdminStudio() {
                                     <button
                                         type="button"
                                         onClick={() => setCurrentPost((prev) => ({ ...prev, coverImage: "" }))}
-                                        className="px-2.5 py-2 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-xs text-muted-foreground hover:text-red-400 transition-colors cursor-pointer"
+                                        className="press px-2.5 py-2 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-xs text-muted-foreground hover:text-red-400 cursor-pointer"
                                         title="Clear Image"
                                     >
                                         <X size={14} />
@@ -963,7 +997,7 @@ export default function AdminStudio() {
                                 )}
                             </div>
                             {currentPost.coverImage && (
-                                <div className="mt-2 relative w-full max-w-sm h-32 rounded-xl overflow-hidden border border-border/80 bg-secondary/20">
+                                <div className="animate-fade-in mt-2 relative w-full max-w-sm h-32 rounded-xl overflow-hidden border border-border/80 bg-secondary/20">
                                     <NextImage
                                         src={currentPost.coverImage}
                                         alt="Cover preview"
@@ -1000,7 +1034,7 @@ export default function AdminStudio() {
                         <button
                             type="button"
                             onClick={() => setActiveTab("articles")}
-                            className="px-3.5 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            className="press px-3.5 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                         >
                             Cancel & Discard
                         </button>
@@ -1008,11 +1042,11 @@ export default function AdminStudio() {
                         <button
                             type="button"
                             onClick={handleSavePost}
-                            disabled={saving}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 active:scale-95 transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                            disabled={saving || justSaved}
+                            className="press inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 shadow-md disabled:opacity-50 cursor-pointer"
                         >
-                            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                            <span>{saving ? "Saving Changes..." : "Save to Firebase"}</span>
+                            {saving ? <Loader2 size={14} className="animate-spin" /> : justSaved ? <Check key="saved" size={14} className="animate-pop" /> : <Save size={14} />}
+                            <span>{saving ? "Saving Changes..." : justSaved ? "Saved" : "Save to Firebase"}</span>
                         </button>
                     </div>
                 </div>
@@ -1020,7 +1054,7 @@ export default function AdminStudio() {
 
             {/* TAB 3: MEDIA ASSETS */}
             {activeTab === "media" && (
-                <div className="space-y-6">
+                <div className="animate-fade-up space-y-6">
                     {/* Media Upload Banner */}
                     <div className="p-6 rounded-2xl bg-card border border-dashed border-border/80 text-center hover:border-primary/50 transition-colors">
                         <UploadCloud size={32} className="mx-auto text-primary mb-3" />
@@ -1031,7 +1065,7 @@ export default function AdminStudio() {
                             Images are automatically pre-compressed via client canvas (max 1600px, 82% WebP) before upload to conserve bandwidth.
                         </p>
 
-                        <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-md">
+                        <label className="press inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 cursor-pointer shadow-md">
                             {uploadingImage ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                             <span>{uploadingImage ? "Compressing & Uploading..." : "Select Image from Disk"}</span>
                             <input
@@ -1042,6 +1076,22 @@ export default function AdminStudio() {
                                 className="hidden"
                             />
                         </label>
+
+                        {uploadingImage && (
+                            <div
+                                role="progressbar"
+                                aria-label="Upload progress"
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-valuenow={Math.round(uploadProgress * 100)}
+                                className="animate-fade-in mx-auto mt-4 h-1 w-48 overflow-hidden rounded-full bg-secondary"
+                            >
+                                <div
+                                    className="h-full origin-left bg-primary transition-transform duration-200 ease-out"
+                                    style={{ transform: `scaleX(${Math.max(uploadProgress, 0.04)})` }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Images Grid */}
@@ -1058,8 +1108,11 @@ export default function AdminStudio() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {images.map((img, i) => (
                                 <div
-                                    key={i}
-                                    className="rounded-xl border border-border bg-card overflow-hidden group hover:border-primary/40 transition-all flex flex-col justify-between"
+                                    key={img.fullPath ?? i}
+                                    className={clsx(
+                                        "rounded-xl border border-border bg-card overflow-hidden group hover:border-primary/40 transition-colors flex flex-col justify-between",
+                                        img.fresh && "animate-pop"
+                                    )}
                                 >
                                     <div className="h-44 w-full bg-secondary/50 relative overflow-hidden flex items-center justify-center">
                                         <NextImage
@@ -1083,11 +1136,11 @@ export default function AdminStudio() {
                                         <button
                                             type="button"
                                             onClick={() => handleCopyMarkdownSnippet(img.url, img.name)}
-                                            className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-border bg-secondary/40 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-medium text-foreground transition-all cursor-pointer"
+                                            className="press w-full inline-flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-border bg-secondary/40 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-medium text-foreground cursor-pointer"
                                         >
                                             {copiedUrl === img.url ? (
                                                 <>
-                                                    <Check size={13} className="text-emerald-400" />
+                                                    <Check size={13} className="animate-pop text-emerald-400" />
                                                     <span>Copied Snippet!</span>
                                                 </>
                                             ) : (
@@ -1107,7 +1160,7 @@ export default function AdminStudio() {
 
             {/* TAB 4: SETTINGS & DIAGNOSTICS */}
             {activeTab === "settings" && (
-                <div className="space-y-6">
+                <div className="animate-fade-up space-y-6">
                     <div className="p-5 rounded-2xl bg-card border border-border/80 space-y-4">
                         <div className="flex items-center gap-2.5 text-foreground font-semibold text-sm">
                             <Database size={16} className="text-primary" />

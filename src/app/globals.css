@@ -38,6 +38,7 @@
   --animate-pop: pop 320ms var(--ease-spring) backwards;
   --animate-spin-in: spin-in 360ms var(--ease-spring) backwards;
   --animate-shake: shake 360ms ease-in-out;
+  --animate-alert: alert-in 420ms var(--ease-smooth);
 
   @keyframes fade-in {
     from {
@@ -66,6 +67,23 @@
     from {
       opacity: 0;
       transform: rotate(-90deg) scale(0.5);
+    }
+  }
+
+  @keyframes alert-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    35% {
+      opacity: 1;
+      transform: translateX(-4px);
+    }
+    55% {
+      transform: translateX(4px);
+    }
+    75% {
+      transform: translateX(-2px);
     }
   }
 
@@ -844,6 +862,24 @@ body {
     transform: translateX(24px);
     opacity: 0;
   }
+}
+
+/* Generic list row that collapses out (admin article list); reuses the toast collapse keyframes */
+.collapse-row {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.collapse-row > * {
+  min-height: 0;
+}
+
+.collapse-row[data-leaving] {
+  animation: toast-collapse 240ms var(--ease-smooth) forwards;
+}
+
+.collapse-row[data-leaving] > * {
+  overflow: hidden;
 }
 
 /* The timer bar drives auto-dismiss, so hovering or focusing a toast pauses both */

@@ -9,6 +9,7 @@ import Link from "next/link";
 
 export default function LoginPage() {
     const [error, setError] = useState("");
+    const [attempt, setAttempt] = useState(0);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
@@ -23,6 +24,7 @@ export default function LoginPage() {
         } catch (err: unknown) {
             console.error("Login error:", err);
             setError("Sign-in failed. Please try again.");
+            setAttempt((count) => count + 1);
         } finally {
             setLoading(false);
         }
@@ -41,8 +43,7 @@ export default function LoginPage() {
                 </Link>
             </div>
 
-            <div className="w-full max-w-md bg-card border border-border/80 p-8 rounded-2xl shadow-xl relative"
-            >
+            <div className="animate-fade-up w-full max-w-md bg-card border border-border/80 p-8 rounded-2xl shadow-xl relative">
                 {/* Header Badge */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-mono">
@@ -62,7 +63,7 @@ export default function LoginPage() {
                 </p>
 
                 {error && (
-                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 text-red-400 flex items-start gap-2.5 rounded-xl text-xs leading-relaxed">
+                    <div key={attempt} role="alert" className="animate-alert mb-6 p-3 bg-red-500/10 border border-red-500/30 text-red-400 flex items-start gap-2.5 rounded-xl text-xs leading-relaxed">
                         <AlertCircle size={15} className="shrink-0 mt-0.5" />
                         <span>{error}</span>
                     </div>
@@ -74,7 +75,7 @@ export default function LoginPage() {
                         type="button"
                         onClick={handleGoogleLogin}
                         disabled={loading}
-                        className="w-full bg-primary text-primary-foreground font-semibold py-3 px-4 rounded-xl hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-3 text-sm shadow-md hover:shadow-primary/20 disabled:opacity-50 cursor-pointer"
+                        className="press w-full bg-primary text-primary-foreground font-semibold py-3 px-4 rounded-xl hover:opacity-90 flex items-center justify-center gap-3 text-sm shadow-md hover:shadow-primary/20 disabled:opacity-50 cursor-pointer"
                     >
                         <svg className="w-4 h-4" viewBox="0 0 24 24">
                             <path
