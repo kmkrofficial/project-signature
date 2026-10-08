@@ -1,4 +1,4 @@
-import { Suspense, ViewTransition } from "react";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Rss } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/BrandIcons";
 import { getAdjacentPosts, getPostBySlug, getPublishedPosts, getSiteConfig } from "@/lib/posts";
 import { formatDate, formatReadingTime } from "@/lib/format";
-import { COVER_IMAGE_SIZES, isOptimizableImage } from "@/lib/image-utils";
+import { isOptimizableImage } from "@/lib/image-utils";
 import { ArticleEnhancer } from "@/components/blog/ArticleEnhancer";
 import { ArticleSkeleton } from "@/components/blog/ArticleSkeleton";
 import { CategoryBadge } from "@/components/blog/CategoryBadge";
@@ -17,7 +17,6 @@ import { ShareButton } from "@/components/blog/ShareButton";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { LinkPending } from "@/components/layout/LinkPending";
-import { PageTransition } from "@/components/layout/PageTransition";
 import { absoluteUrl } from "@/lib/site";
 import type { PostSummary } from "@/types/blog";
 
@@ -63,19 +62,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default function BlogPostPage({ params }: Props) {
     return (
-        <PageTransition>
-            <Suspense
-                fallback={
-                    <ViewTransition exit="slide-down" default="none">
-                        <ArticleSkeleton />
-                    </ViewTransition>
-                }
-            >
-                <ViewTransition enter="slide-up" default="none">
-                    <Article params={params} />
-                </ViewTransition>
-            </Suspense>
-        </PageTransition>
+        <Suspense fallback={<ArticleSkeleton />}>
+            <Article params={params} />
+        </Suspense>
     );
 }
 
@@ -113,7 +102,6 @@ async function Article({ params }: Props) {
                     <article className="min-w-0 max-w-3xl">
                         <Link
                             href="/"
-                            transitionTypes={["nav-back"]}
                             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors group"
                         >
                             <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -123,11 +111,9 @@ async function Article({ params }: Props) {
 
                         <header className="mb-8">
                             <CategoryBadge category={post.category} className="mb-4" />
-                            <ViewTransition name={`post-title-${post.slug}`} share="post-title" default="none">
-                                <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-tight text-foreground leading-[1.15] text-balance">
-                                    {post.title}
-                                </h1>
-                            </ViewTransition>
+                            <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold tracking-tight text-foreground leading-[1.15] text-balance">
+                                {post.title}
+                            </h1>
                             {post.excerpt && (
                                 <p className="mt-4 text-lg text-muted-foreground leading-relaxed text-pretty">{post.excerpt}</p>
                             )}
@@ -148,20 +134,15 @@ async function Article({ params }: Props) {
 
                         {post.coverImage && (
                             <div className="relative w-full aspect-[16/9] mb-10 overflow-hidden rounded-2xl border border-border/70 bg-secondary/40">
-                                {/* Plain rectangle inside the rounded frame: the corners are drawn by the frame, so the morph stays clean */}
-                                <ViewTransition name={`post-cover-${post.slug}`} share="post-cover" default="none">
-                                    <div className="absolute inset-0">
-                                        <Image
-                                            src={post.coverImage}
-                                            alt=""
-                                            fill
-                                            priority
-                                            unoptimized={!isOptimizableImage(post.coverImage)}
-                                            sizes={COVER_IMAGE_SIZES}
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                </ViewTransition>
+                                <Image
+                                    src={post.coverImage}
+                                    alt=""
+                                    fill
+                                    priority
+                                    unoptimized={!isOptimizableImage(post.coverImage)}
+                                    sizes="(max-width: 1024px) 100vw, 768px"
+                                    className="object-cover"
+                                />
                             </div>
                         )}
 
@@ -232,7 +213,6 @@ function AdjacentLink({ post, direction }: { post: PostSummary; direction: "prev
     return (
         <Link
             href={`/blog/${post.slug}`}
-            transitionTypes={[isNext ? "nav-forward" : "nav-back"]}
             className={`group lift press p-5 rounded-2xl border border-border/80 bg-card hover:border-primary/50 ${isNext ? "sm:text-right" : ""}`}
         >
             <span className={`flex items-center gap-1.5 text-xs text-muted-foreground mb-2 ${isNext ? "sm:justify-end" : ""}`}>

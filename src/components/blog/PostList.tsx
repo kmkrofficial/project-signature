@@ -1,4 +1,3 @@
-import { ViewTransition } from "react";
 import Link from "next/link";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { CategoryBadge } from "@/components/blog/CategoryBadge";
@@ -6,16 +5,7 @@ import { LinkPending } from "@/components/layout/LinkPending";
 import { formatDate, formatReadingTime } from "@/lib/format";
 import type { PostSummary } from "@/types/blog";
 
-/** Only the first rows get a shared-title morph, which keeps the transition snapshot small. */
-const MORPH_LIMIT = 12;
-
-export function PostCard({ post, morph = false }: { post: PostSummary; morph?: boolean }) {
-    const title = (
-        <h2 className="mt-2 text-lg sm:text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors text-balance">
-            {post.title}
-        </h2>
-    );
-
+export function PostCard({ post }: { post: PostSummary }) {
     return (
         <article className="reveal">
             <Link
@@ -34,13 +24,9 @@ export function PostCard({ post, morph = false }: { post: PostSummary; morph?: b
                         className="ml-auto text-muted-foreground opacity-0 -translate-x-2 transition-[opacity,translate,color] duration-200 ease-smooth group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-primary"
                     />
                 </p>
-                {morph ? (
-                    <ViewTransition name={`post-title-${post.slug}`} share="post-title" default="none">
-                        {title}
-                    </ViewTransition>
-                ) : (
-                    title
-                )}
+                <h2 className="mt-2 text-lg sm:text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors text-balance">
+                    {post.title}
+                </h2>
                 {post.excerpt && (
                     <p className="mt-1.5 text-sm sm:text-base text-muted-foreground leading-relaxed line-clamp-2">{post.excerpt}</p>
                 )}
@@ -67,8 +53,8 @@ export function PostList({ posts, emptyMessage = "No articles published yet." }:
 
     return (
         <div className="divide-y divide-border/60">
-            {posts.map((post, index) => (
-                <PostCard key={post.id} post={post} morph={index < MORPH_LIMIT} />
+            {posts.map((post) => (
+                <PostCard key={post.id} post={post} />
             ))}
         </div>
     );

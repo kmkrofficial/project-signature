@@ -135,18 +135,19 @@ The reading progress bar uses a CSS scroll-driven animation and no JavaScript.
 Animation is CSS and browser-native only; there is no animation library. The rules:
 
 - **Compositor-only.** Animate `transform`, `opacity` (and the individual `translate`, `scale`, `rotate` properties). Color transitions are allowed. Never use `transition: all`, and never animate `width`, `height`, `top` or `margin`. The single exception is `grid-template-rows` for collapsing toasts and admin list rows.
-- **Short.** Hover and press 120-180 ms, enters 180-240 ms, exits shorter than enters, page transitions at most about 280 ms.
-- **Progressive.** Anything that depends on a newer API sits behind `@supports` or degrades to an instant change (view transitions, `@starting-style`, scroll-driven animations).
+- **Short.** Hover and press 120-180 ms, enters 180-240 ms, exits shorter than enters.
+- **Progressive.** Anything that depends on a newer API sits behind `@supports` or degrades to an instant change (`@starting-style`, scroll-driven animations, the theme reveal).
 - **Reduced motion.** `globals.css` ends with a global `prefers-reduced-motion: reduce` block that disables movement and timed effects. Smooth scrolling is gated by `no-preference`.
+- **No page-to-page transitions.** Route changes are instant: there are no view transitions, shared-element morphs or crossfades between pages. Loading is shown with skeletons instead.
 
 | Need | Use |
 | :--- | :--- |
-| Page changes | `<PageTransition>` (React `<ViewTransition>`) wrapped around each `page.tsx`; layouts persist and never animate |
-| Direction | `transitionTypes={["nav-forward" \| "nav-back"]}` on `<Link>` |
-| Shared elements | `<ViewTransition name="..." share="...">`: header underline, topic pill, post cover and title |
+| Loading a page | a `loading.tsx` per route that renders a page-shaped skeleton (`ListSkeleton`, `AboutSkeleton`, `ArticleSkeleton`), built from `<Skeleton>` blocks with the `skeleton` shimmer |
+| Matching the real layout | skeletons use the same container (`PageContainer`) and sizes as the page they stand in for, so nothing shifts when content arrives |
+| Page width | `PageContainer` for the home, topic and About pages (one width and padding), so they line up |
 | Slow navigations | `<LinkPending />` inside a `<Link>`; CSS pulses the link after 150 ms |
 | Dialogs and menus | `@starting-style` plus `allow-discrete` `display`/`overlay` transitions, so they animate out too |
 | Press and hover | the `press` and `lift` utilities (`scale` and `translate` compose) |
 | Entrances | `animate-fade-up` + `stagger`, or the scroll-driven `reveal` class |
 
-The theme toggle's circular reveal is scoped to `html.theme-reveal`, so it never interferes with page transitions.
+The one remaining view transition is the theme toggle's circular reveal, scoped to `html.theme-reveal`.

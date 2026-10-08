@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useSyncExternalStore, ViewTransition } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
@@ -35,10 +35,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
     ];
 
     return (
-        <header
-            style={{ viewTransitionName: "site-header" }}
-            className="site-header sticky top-0 z-40 bg-background/85 backdrop-blur-md"
-        >
+        <header className="site-header sticky top-0 z-40 bg-background/85 backdrop-blur-md">
             <a
                 href="#content"
                 className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:px-3 focus:py-2 focus:rounded-lg focus:bg-card focus:text-foreground focus:shadow-lg"
@@ -135,7 +132,7 @@ interface NavLinkProps {
     active: boolean;
     /** Non-page routes (e.g. the RSS feed) use a plain anchor instead of client navigation. */
     plain?: boolean;
-    /** Desktop nav: animated underline (slides between pages, grows on hover). */
+    /** Desktop nav: underline for the active page, grows in on hover for the others. */
     underline?: boolean;
     className: string;
 }
@@ -154,9 +151,7 @@ function NavLink({ name, href, active, plain, underline, className }: NavLinkPro
             {name}
             {underline &&
                 (active ? (
-                    <ViewTransition name="nav-underline" share="nav-underline-move" default="none">
-                        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" />
-                    </ViewTransition>
+                    <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary" />
                 ) : (
                     <HoverUnderline />
                 ))}

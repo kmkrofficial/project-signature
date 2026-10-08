@@ -1,4 +1,3 @@
-import { ViewTransition } from "react";
 import Link from "next/link";
 import { clsx } from "clsx";
 import { TOPICS } from "@/lib/categoryUtils";
@@ -23,18 +22,13 @@ export function TopicNav({ active }: TopicNavProps) {
                                 href={item.href}
                                 aria-current={isActive ? "page" : undefined}
                                 className={clsx(
-                                    "press relative block overflow-hidden px-3.5 py-1.5 rounded-full text-sm whitespace-nowrap border",
+                                    "press block px-3.5 py-1.5 rounded-full text-sm whitespace-nowrap border",
                                     isActive
-                                        ? "border-foreground text-background font-medium"
+                                        ? "bg-foreground text-background border-foreground font-medium"
                                         : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
                                 )}
                             >
-                                {isActive && (
-                                    <ViewTransition name="topic-pill" share="pill-slide" default="none">
-                                        <span aria-hidden="true" className="absolute inset-0 bg-foreground" />
-                                    </ViewTransition>
-                                )}
-                                <span className="relative">{item.name}</span>
+                                {item.name}
                                 <LinkPending />
                             </Link>
                         </li>

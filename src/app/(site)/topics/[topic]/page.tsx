@@ -5,7 +5,7 @@ import { TOPICS, getTopicBySlug } from "@/lib/categoryUtils";
 import { FeaturedSection, pickFeatured } from "@/components/blog/FeaturedSection";
 import { PostList } from "@/components/blog/PostList";
 import { TopicNav } from "@/components/blog/TopicNav";
-import { PageTransition } from "@/components/layout/PageTransition";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 type Props = { params: Promise<{ topic: string }> };
 
@@ -36,16 +36,14 @@ export default async function TopicPage({ params }: Props) {
         topicPosts.length > posts.length ? `No other articles about ${topic.name} yet.` : `No articles about ${topic.name} yet.`;
 
     return (
-        <PageTransition>
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-8">
-                {featured && <FeaturedSection post={featured} />}
+        <PageContainer>
+            {featured && <FeaturedSection post={featured} />}
 
-                <div className="flex flex-col gap-4 mb-4">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{topic.name}</h1>
-                    <TopicNav active={topic.slug} />
-                </div>
-                <PostList posts={posts} emptyMessage={emptyMessage} />
+            <div className="flex flex-col gap-4 mb-4">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{topic.name}</h1>
+                <TopicNav active={topic.slug} />
             </div>
-        </PageTransition>
+            <PostList posts={posts} emptyMessage={emptyMessage} />
+        </PageContainer>
     );
 }

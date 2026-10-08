@@ -49,12 +49,13 @@ import { TOPICS } from "@/lib/categoryUtils";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { CollapseRow } from "@/components/ui/CollapseRow";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { clsx } from "clsx";
 import type { BlogPost } from "@/types/blog";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
     ssr: false,
-    loading: () => <div className="h-[520px] rounded-xl bg-secondary/40 animate-pulse" aria-hidden="true" />,
+    loading: () => <Skeleton className="h-[520px] rounded-xl" />,
 });
 
 interface StoredImage {
@@ -636,10 +637,10 @@ export default function AdminStudio() {
                     {loadingPosts ? (
                         <div className="space-y-3" role="status" aria-label="Loading articles">
                             {[0, 1, 2].map((row) => (
-                                <div key={row} className="p-5 rounded-xl bg-card border border-border/80 space-y-3 animate-pulse" aria-hidden="true">
-                                    <div className="h-4 w-24 rounded-full bg-secondary" />
-                                    <div className="h-5 w-2/3 rounded bg-secondary" />
-                                    <div className="h-3 w-1/2 rounded bg-secondary/70" />
+                                <div key={row} className="p-5 rounded-xl bg-card border border-border/80 space-y-3" aria-hidden="true">
+                                    <Skeleton className="h-4 w-24 rounded-full" />
+                                    <Skeleton className="h-5 w-2/3" />
+                                    <Skeleton className="h-3 w-1/2" />
                                 </div>
                             ))}
                         </div>

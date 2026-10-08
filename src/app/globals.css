@@ -32,8 +32,6 @@
   /* Motion tokens: compositor-only properties (transform, opacity) and short durations */
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  /* Large shared-element moves: soft start, no single frame covers more than about 9% of the distance */
-  --ease-morph: cubic-bezier(0.25, 0.1, 0.2, 1);
 
   --animate-fade-in: fade-in 180ms ease-out backwards;
   --animate-fade-up: fade-up 240ms var(--ease-smooth) backwards;
@@ -173,6 +171,7 @@
   }
 
   html {
+    scrollbar-gutter: stable;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -253,19 +252,26 @@
   animation-delay: calc(min(var(--i, 0), 8) * 40ms);
 }
 
-/* Subtle loading shimmer on a transform-only pseudo-element (no paint per frame) */
-@utility shimmer {
+/* Loading placeholder with a light sweep. The sweep is a transform-only pseudo-element, so it runs on the
+   compositor with no paint per frame. Reduced motion leaves the plain block. */
+@utility skeleton {
   position: relative;
   overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: rgb(var(--foreground) / 0.08);
 
   &::after {
     content: "";
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgb(var(--foreground) / 0.07), transparent);
-    animation: shimmer 1.4s ease-in-out infinite;
+    background: linear-gradient(100deg, transparent 15%, rgb(var(--foreground) / 0.1) 50%, transparent 85%);
+    animation: shimmer 1.6s ease-in-out infinite;
   }
+}
+
+.light-mode .skeleton::after {
+  background: linear-gradient(100deg, transparent 15%, rgb(255 255 255 / 0.8) 50%, transparent 85%);
 }
 
 @keyframes shimmer {
@@ -297,8 +303,7 @@
   pointer-events: none;
 }
 
-/* Circular theme reveal. Scoped to html.theme-reveal (set by ThemeProvider only while toggling)
-   so page transitions keep their own animations. */
+/* Circular theme reveal, used only by the theme toggle (ThemeProvider sets html.theme-reveal while it runs). */
 html.theme-reveal::view-transition-old(root),
 html.theme-reveal::view-transition-new(root) {
   animation: none;
@@ -311,194 +316,6 @@ html.theme-reveal::view-transition-old(root) {
 
 html.theme-reveal::view-transition-new(root) {
   z-index: 9999;
-}
-
-/* The header is anchored (its own transition group) during page navigation. While the theme reveals it
-   must join the page snapshot instead, or it would switch colors before the circle reaches it. */
-html.theme-reveal .site-header {
-  view-transition-name: none !important;
-}
-
-/* ==========================================================================
-   Page transitions (React <ViewTransition> + Next route navigation)
-   ========================================================================== */
-
-@keyframes vt-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes vt-rise {
-  from {
-    transform: translateY(8px);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes vt-slide {
-  from {
-    translate: var(--slide-offset);
-  }
-  to {
-    translate: 0;
-  }
-}
-
-/* The header stays put while content changes */
-::view-transition-group(site-header) {
-  animation: none;
-  z-index: 100;
-}
-
-::view-transition-old(site-header) {
-  display: none;
-}
-
-::view-transition-new(site-header) {
-  animation: none;
-}
-
-/* Page change. Old and new fade at the same time on mirrored linear curves and blend with plus-lighter,
-   so their opacities always sum to 1 and the content never dips while the page swaps. (Overriding
-   `animation` drops the browser's own plus-lighter animation, so the blend is set explicitly.) */
-::view-transition-old(.page-fade),
-::view-transition-new(.page-fade),
-::view-transition-old(.nav-forward),
-::view-transition-new(.nav-forward),
-::view-transition-old(.nav-back),
-::view-transition-new(.nav-back),
-::view-transition-old(.slide-down),
-::view-transition-new(.slide-up),
-::view-transition-old(.post-cover),
-::view-transition-new(.post-cover),
-::view-transition-old(.post-title),
-::view-transition-new(.post-title) {
-  mix-blend-mode: plus-lighter;
-}
-
-::view-transition-old(.page-fade) {
-  animation: 160ms linear both vt-fade reverse;
-}
-
-::view-transition-new(.page-fade) {
-  animation:
-    160ms linear both vt-fade,
-    320ms var(--ease-smooth) both vt-rise;
-}
-
-/* Directional navigation (older/newer article, back to list) */
-::view-transition-old(.nav-forward) {
-  --slide-offset: -20px;
-  animation:
-    160ms linear both vt-fade reverse,
-    320ms var(--ease-smooth) both vt-slide reverse;
-}
-
-::view-transition-new(.nav-forward) {
-  --slide-offset: 20px;
-  animation:
-    160ms linear both vt-fade,
-    320ms var(--ease-smooth) both vt-slide;
-}
-
-::view-transition-old(.nav-back) {
-  --slide-offset: 20px;
-  animation:
-    160ms linear both vt-fade reverse,
-    320ms var(--ease-smooth) both vt-slide reverse;
-}
-
-::view-transition-new(.nav-back) {
-  --slide-offset: -20px;
-  animation:
-    160ms linear both vt-fade,
-    320ms var(--ease-smooth) both vt-slide;
-}
-
-/* Suspense reveal: skeleton drops away as the content rises in */
-::view-transition-old(.slide-down) {
-  animation:
-    160ms linear both vt-fade reverse,
-    200ms ease-in both vt-rise reverse;
-}
-
-::view-transition-new(.slide-up) {
-  animation:
-    160ms linear both vt-fade,
-    300ms var(--ease-smooth) both vt-rise;
-}
-
-/* Shared elements. The cover and title move over 440ms on a soft curve. Both ends of the cover have the
-   same 16:9 shape, 16px corners and image file, so the morph is a pure move and scale with nothing to
-   re-crop; the snapshots only cross-fade early so the sharp new one takes over while it is still small. */
-::view-transition-group(.post-cover),
-::view-transition-group(.post-title) {
-  animation-duration: 440ms;
-  animation-timing-function: var(--ease-morph);
-}
-
-::view-transition-old(.post-cover),
-::view-transition-old(.post-title) {
-  animation: 240ms linear both vt-fade reverse;
-}
-
-::view-transition-new(.post-cover),
-::view-transition-new(.post-title) {
-  animation: 240ms linear both vt-fade;
-}
-
-::view-transition-old(.post-cover),
-::view-transition-new(.post-cover) {
-  height: 100%;
-  object-fit: cover;
-}
-
-/* The cover snapshot is a plain rectangle; the rounding is applied here at a fixed size for the whole morph */
-::view-transition-image-pair(.post-cover) {
-  overflow: clip;
-  border-radius: 1rem;
-}
-
-/* The featured card shows on the home and topic pages. It is shared between them and shown as-is,
-   so switching topics never fades or moves it. */
-::view-transition-old(.spotlight-stay) {
-  display: none;
-}
-
-::view-transition-new(.spotlight-stay) {
-  animation: none;
-}
-
-::view-transition-group(.spotlight-stay) {
-  animation-duration: 0s;
-}
-
-::view-transition-group(.pill-slide),
-::view-transition-group(.nav-underline-move) {
-  animation-duration: 320ms;
-  animation-timing-function: var(--ease-morph);
-}
-
-/* Snapshots keep their own aspect ratio by default, which made the old pill balloon to three times its
-   height while it slid. Solid shapes should simply fill the group; rounding is clipped at a fixed size. */
-::view-transition-old(.pill-slide),
-::view-transition-new(.pill-slide),
-::view-transition-old(.nav-underline-move),
-::view-transition-new(.nav-underline-move) {
-  height: 100%;
-  object-fit: fill;
-}
-
-::view-transition-image-pair(.pill-slide),
-::view-transition-image-pair(.nav-underline-move) {
-  overflow: clip;
-  border-radius: 9999px;
 }
 
 /* Link pending feedback (useLinkStatus): a gentle pulse that only appears if navigation takes >150ms */

@@ -11,12 +11,6 @@ const OPTIMIZABLE_HOSTS = new Set([
     "localhost",
 ]);
 
-/**
- * Both the home spotlight and the article cover use this, so they request the same optimized file.
- * The article cover is then already cached when the home-to-article morph starts.
- */
-export const COVER_IMAGE_SIZES = "(max-width: 1024px) 100vw, 768px";
-
 export function isOptimizableImage(src?: string | null): boolean {
     if (!src) return false;
     // Local assets (starting with /) are always optimizable by Next.js

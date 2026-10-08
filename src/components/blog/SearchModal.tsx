@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowRight, Search, X } from "lucide-react";
 import { clsx } from "clsx";
 import { CategoryBadge } from "@/components/blog/CategoryBadge";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { formatReadingTime } from "@/lib/format";
 import type { SearchEntry } from "@/types/blog";
 
@@ -137,8 +138,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <ul className="p-2 space-y-1" role="status" aria-label="Loading articles">
                         {[0, 1, 2].map((row) => (
                             <li key={row} className="p-3 space-y-2" aria-hidden="true">
-                                <div className="h-3 w-28 rounded bg-secondary animate-pulse" />
-                                <div className="h-4 w-3/4 rounded bg-secondary animate-pulse" />
+                                <Skeleton className="h-3 w-28" />
+                                <Skeleton className="h-4 w-3/4" />
                             </li>
                         ))}
                     </ul>
