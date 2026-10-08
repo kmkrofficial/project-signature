@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 export function ArticleSkeleton() {
     return (
-        <div className="relative pb-2 sm:pb-4 animate-in fade-in duration-300">
+        <div className="relative pb-2 sm:pb-4 animate-fade-in">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
                 {/* Back Link Placeholder */}
                 <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 mb-5">
