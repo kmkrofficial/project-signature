@@ -28,21 +28,21 @@ export async function GitHubRepos() {
                     href="https://github.com/kmkrofficial"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                     github.com/kmkrofficial
-                    <ExternalLink size={13} aria-hidden="true" />
+                    <ExternalLink size={13} aria-hidden="true" className="transition-transform duration-200 ease-smooth group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </a>
             </div>
 
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {repos.map((repo) => (
-                    <li key={repo.id}>
+                    <li key={repo.id} className="reveal">
                         <a
                             href={repo.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group h-full flex flex-col justify-between gap-4 p-5 rounded-2xl bg-card border border-border/80 hover:border-primary/50 transition-colors"
+                            className="group lift press h-full flex flex-col justify-between gap-4 p-5 rounded-2xl bg-card border border-border/80 hover:border-primary/50"
                         >
                             <div className="space-y-2">
                                 <h3 className="font-mono font-semibold text-foreground group-hover:text-primary transition-colors truncate">
@@ -65,7 +65,7 @@ export async function GitHubRepos() {
                                 )}
                                 <span className="flex items-center gap-3">
                                     <span className="flex items-center gap-1" aria-label={`${repo.stars} stars`}>
-                                        <Star size={12} aria-hidden="true" />
+                                        <Star size={12} aria-hidden="true" className="transition-transform duration-300 ease-spring group-hover:rotate-[72deg]" />
                                         {repo.stars}
                                     </span>
                                     <span className="flex items-center gap-1" aria-label={`${repo.forks} forks`}>

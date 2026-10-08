@@ -1,6 +1,6 @@
 import { ViewTransition } from "react";
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 import { CategoryBadge } from "@/components/blog/CategoryBadge";
 import { LinkPending } from "@/components/layout/LinkPending";
 import { formatDate, formatReadingTime } from "@/lib/format";
@@ -17,7 +17,7 @@ export function PostCard({ post, morph = false }: { post: PostSummary; morph?: b
     );
 
     return (
-        <article>
+        <article className="reveal">
             <Link
                 href={`/blog/${post.slug}`}
                 className="group press block -mx-4 sm:-mx-5 px-4 sm:px-5 py-5 rounded-2xl hover:bg-card"
@@ -28,6 +28,11 @@ export function PostCard({ post, morph = false }: { post: PostSummary; morph?: b
                     <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
                     <span aria-hidden="true">·</span>
                     <span>{formatReadingTime(post.readingTime)}</span>
+                    <ArrowRight
+                        size={15}
+                        aria-hidden="true"
+                        className="ml-auto text-muted-foreground opacity-0 -translate-x-2 transition-[opacity,translate,color] duration-200 ease-smooth group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-primary"
+                    />
                 </p>
                 {morph ? (
                     <ViewTransition name={`post-title-${post.slug}`} share="post-title" default="none">

@@ -35,7 +35,7 @@ export async function Footer() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Link href="/" className="text-primary hover:opacity-85 transition-opacity" aria-label="Signature home">
+                        <Link href="/" className="press text-primary hover:opacity-80" aria-label="Signature home">
                             <Wordmark className="h-3.5 sm:h-4" />
                         </Link>
                         <span className="text-muted-foreground/40" aria-hidden="true">•</span>
@@ -48,7 +48,7 @@ export async function Footer() {
                                 key={label}
                                 href={href}
                                 {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                                className="p-2 rounded-lg hover:text-foreground hover:bg-secondary/60 transition-colors"
+                                className="lift press p-2 rounded-lg hover:text-foreground hover:bg-secondary/60"
                                 title={label}
                                 aria-label={label}
                             >

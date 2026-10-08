@@ -13,7 +13,7 @@ export function CategoryBadge({ category, asText = false, className }: CategoryB
     const topic = getTopicByName(category);
     const content = (
         <>
-            <span className={clsx("w-1.5 h-1.5 rounded-full shrink-0", getCategoryDotClass(category))} aria-hidden="true" />
+            <span className={clsx("w-1.5 h-1.5 rounded-full shrink-0 transition-transform duration-200 ease-spring group-hover:scale-150", getCategoryDotClass(category))} aria-hidden="true" />
             {category}
         </>
     );

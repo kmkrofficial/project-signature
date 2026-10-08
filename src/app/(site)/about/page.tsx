@@ -102,27 +102,27 @@ export default async function AboutPage() {
                             href="https://github.com/kmkrofficial"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 transition-all duration-200"
+                            className="group lift press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40"
                         >
                             <GitHubIcon size={13} className="text-primary" />
                             <span>GitHub</span>
-                            <ArrowUpRight size={11} className="text-muted-foreground" />
+                            <ArrowUpRight size={11} className="text-muted-foreground transition-transform duration-200 ease-smooth group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                         </a>
 
                         <a
                             href="https://linkedin.com/in/keerthiraajan"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 transition-all duration-200"
+                            className="group lift press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40"
                         >
                             <LinkedInIcon size={13} className="text-primary" />
                             <span>LinkedIn</span>
-                            <ArrowUpRight size={11} className="text-muted-foreground" />
+                            <ArrowUpRight size={11} className="text-muted-foreground transition-transform duration-200 ease-smooth group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                         </a>
 
                         <a
                             href="mailto:kmkrworks@gmail.com"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 transition-all duration-200"
+                            className="group lift press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40"
                         >
                             <Mail size={14} className="text-primary" />
                             <span>Email</span>
@@ -130,7 +130,7 @@ export default async function AboutPage() {
 
                         <a
                             href="/feed.xml"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 transition-all duration-200 ml-auto"
+                            className="group lift press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40 ml-auto"
                         >
                             <Rss size={14} className="text-amber-500" />
                             <span>RSS Feed</span>
@@ -139,7 +139,7 @@ export default async function AboutPage() {
                 </section>
 
                 {/* 2. What this place is for */}
-                <section className="space-y-4 text-sm sm:text-base text-foreground/90 leading-relaxed">
+                <section className="reveal space-y-4 text-sm sm:text-base text-foreground/90 leading-relaxed">
                     <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                         Why this exists
                     </h2>
@@ -158,7 +158,7 @@ export default async function AboutPage() {
                 </section>
 
                 {/* 3. Topics Explored on Signature */}
-                <section className="space-y-4">
+                <section className="reveal space-y-4">
                     <div className="flex items-center gap-2">
                         <BookOpen size={18} className="text-primary" />
                         <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -175,10 +175,10 @@ export default async function AboutPage() {
                             return (
                                 <div
                                     key={topic.title}
-                                    className="p-5 rounded-xl bg-card border border-border/80 flex flex-col justify-between hover:border-primary/40 transition-colors"
+                                    className="group lift p-5 rounded-xl bg-card border border-border/80 flex flex-col justify-between hover:border-primary/40"
                                 >
                                     <div className="space-y-2.5">
-                                        <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
+                                        <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit transition-transform duration-300 ease-spring group-hover:-rotate-6 group-hover:scale-110">
                                             <Icon size={18} />
                                         </div>
                                         <h3 className="text-sm font-bold text-foreground">
@@ -198,7 +198,7 @@ export default async function AboutPage() {
                 <GitHubRepos />
 
                 {/* 5. How it is written */}
-                <section className="p-6 sm:p-7 rounded-2xl bg-secondary/30 border border-border/60 space-y-2.5">
+                <section className="reveal p-6 sm:p-7 rounded-2xl bg-secondary/30 border border-border/60 space-y-2.5">
                     <div className="flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-wider">
                         <Sparkles size={14} />
                         <span>How it is written</span>
