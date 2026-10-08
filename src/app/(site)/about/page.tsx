@@ -19,7 +19,7 @@ import { absoluteUrl } from "@/lib/site";
 export const metadata: Metadata = {
     title: "About",
     alternates: { canonical: "/about" },
-    description: "About Keerthi Raajan and Signature—a technical publication focused on software architecture, systems, and AI.",
+    description: "Signature is a notebook of how software actually behaves in production: the failures, trade-offs and small discoveries behind systems and AI.",
 };
 
 const CINZEL_S_PATH = "M20.36 32.83L20.83 33.19Q18.77 36.49 18.77 39.95L18.77 39.95Q18.77 43.71 21.50 46.81L21.50 46.81Q23 48.56 25.29 49.54Q27.59 50.52 30.32 50.52Q33.06 50.52 35.22 49.49L35.22 49.49Q39.56 47.38 39.56 42.58L39.56 42.58Q39.56 40.77 38.35 38.76Q37.13 36.75 34.71 35.15L34.71 35.15L25.94 29.27Q20.83 26.07 20.83 21.01L20.83 21.01Q20.83 20.49 20.88 19.98L20.88 19.98Q21.19 16 24.05 13.50Q26.92 11 31.72 11L31.72 11Q34.66 11 38.84 11.52L38.84 11.52L42.04 11.52L41.36 19.10L40.90 19.10Q40.85 16.42 38.84 14.79Q36.82 13.17 33.52 13.17L33.52 13.17Q29.50 13.17 27.69 15.59L27.69 15.59Q26.81 16.83 26.81 18.28Q26.81 19.72 27.69 20.73Q28.57 21.73 30.48 22.92L30.48 22.92L40.13 29.21Q43.07 31.12 44.72 33.70L44.72 33.70Q46.68 36.75 46.68 39.95L46.68 39.95Q46.68 42.01 45.83 44.31Q44.98 46.60 43.04 48.56Q41.11 50.52 38.06 51.76Q35.02 53 31.33 53Q27.64 53 24.65 51.71L24.65 51.71Q19.13 49.39 17.63 43.61L17.63 43.61Q17.32 42.37 17.32 41.03L17.32 41.03Q17.32 36.70 20.36 32.83L20.36 32.83Z";
@@ -27,18 +27,18 @@ const CINZEL_S_PATH = "M20.36 32.83L20.83 33.19Q18.77 36.49 18.77 39.95L18.77 39
 const TOPICS = [
     {
         icon: Server,
-        title: "Systems & Architecture",
-        description: "Deep dives on high-throughput backend services, distributed data pipelines, and protocol migrations.",
+        title: "Where systems bend",
+        description: "Caches that stampede, queues that back up, migrations that go quiet. What breaks under load, and why.",
     },
     {
         icon: Cpu,
-        title: "Artificial Intelligence",
-        description: "Practical engineering around LLM pipelines, autonomous agent workflows, and edge deployment.",
+        title: "AI, minus the hype",
+        description: "What changes when a model becomes one component among many, with timeouts, retries and a budget.",
     },
     {
         icon: Layers,
-        title: "Engineering Craft & Guides",
-        description: "Lessons learned while designing, debugging, and maintaining modern production software.",
+        title: "Field notes",
+        description: "Short, practical write-ups for the problem you are staring at right now.",
     },
 ];
 
@@ -89,7 +89,7 @@ export default async function AboutPage() {
                             Keerthi Raajan K M
                         </h1>
                         <p className="text-sm sm:text-base text-muted-foreground font-sans">
-                            Software Engineer & Systems Builder
+                            Notes on systems, AI and the code in between
                         </p>
                     </div>
                 </div>
@@ -136,19 +136,19 @@ export default async function AboutPage() {
                 </div>
             </section>
 
-            {/* 2. Personal Story & Background */}
+            {/* 2. What this place is for */}
             <section className="space-y-4 text-sm sm:text-base text-foreground/90 leading-relaxed">
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                    About Me
+                    Why this exists
                 </h2>
                 <p>
-                    I&apos;m Keerthi Raajan, a software engineer with a deep interest in backend architectures, distributed data systems, and modern AI engineering.
+                    Most software writing stops at the moment things work. The interesting part comes after: the 3 a.m. surprise, the assumption that quietly stopped being true, the fix that took one line and two days to find.
                 </p>
                 <p className="text-muted-foreground">
-                    Over the years, I&apos;ve enjoyed building resilient systems, working with cloud infrastructure, and exploring edge computing. When developing software, I gravitate toward understanding how things work under the hood—from packet transport and memory synchronization to cache invalidation and agentic workflows.
+                    Signature collects those moments. Each article starts from a concrete problem, shows the reasoning that got through it, and keeps the dead ends in, because they are usually where the learning is.
                 </p>
                 <p className="text-muted-foreground">
-                    Outside of building, writing is how I clarify my own thinking and share insights with other developers.
+                    If you leave with one idea you can use on Monday, an article did its job.
                 </p>
             </section>
 
@@ -157,11 +157,11 @@ export default async function AboutPage() {
                 <div className="flex items-center gap-2">
                     <BookOpen size={18} className="text-primary" />
                     <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                        What You&apos;ll Find on Signature
+                        What you&apos;ll find here
                     </h2>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                    This publication covers the technical areas I spend most of my time exploring:
+                    Three recurring threads, each written to be read in one sitting:
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
@@ -192,17 +192,17 @@ export default async function AboutPage() {
             {/* 4. Live Open Source Codebase Feed */}
             <GitHubRepos />
 
-            {/* 5. Publication Ethos */}
+            {/* 5. How it is written */}
             <section className="p-6 sm:p-7 rounded-2xl bg-secondary/30 border border-border/60 space-y-2.5">
                 <div className="flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-wider">
                     <Sparkles size={14} />
-                    <span>Publication Ethos</span>
+                    <span>How it is written</span>
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-foreground">
-                    An Independent Technical Journal
+                    Independent, unhurried, ad-free
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    Signature was created as an honest, unfiltered space for technical writing. There are no marketing funnels, sponsored placements, or shallow summaries. Every article is written with care, curiosity, and a focus on practical engineering insights.
+                    No sponsors, no funnels, no listicles. Articles are published when they are ready, corrected in the open when they are wrong, and written for a reader who is smart but short on time.
                 </p>
             </section>
         </div>
