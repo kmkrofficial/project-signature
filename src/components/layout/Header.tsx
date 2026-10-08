@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useState, useSyncExternalStore, ViewTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Search, X } from "lucide-react";
 import { clsx } from "clsx";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Wordmark } from "@/components/layout/Wordmark";
+import { LinkPending } from "@/components/layout/LinkPending";
 
 interface HeaderProps {
     onOpenSearch: () => void;
@@ -34,7 +35,10 @@ export function Header({ onOpenSearch }: HeaderProps) {
     ];
 
     return (
-        <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60">
+        <header
+            style={{ viewTransitionName: "site-header" }}
+            className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60"
+        >
             <a
                 href="#content"
                 className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:px-3 focus:py-2 focus:rounded-lg focus:bg-card focus:text-foreground focus:shadow-lg"
@@ -52,11 +56,10 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         <NavLink
                             key={link.name}
                             {...link}
+                            underline
                             className={clsx(
-                                "text-sm font-medium py-1 border-b-2 transition-colors",
-                                link.active
-                                    ? "text-foreground border-primary"
-                                    : "text-muted-foreground border-transparent hover:text-foreground"
+                                "group/nav relative overflow-hidden py-1.5 text-sm font-medium transition-colors",
+                                link.active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                             )}
                         />
                     ))}
@@ -113,20 +116,41 @@ interface NavLinkProps {
     active: boolean;
     /** Non-page routes (e.g. the RSS feed) use a plain anchor instead of client navigation. */
     plain?: boolean;
+    /** Desktop nav: animated underline (slides between pages, grows on hover). */
+    underline?: boolean;
     className: string;
 }
 
-function NavLink({ name, href, active, plain, className }: NavLinkProps) {
+function NavLink({ name, href, active, plain, underline, className }: NavLinkProps) {
     if (plain) {
         return (
             <a href={href} className={className}>
                 {name}
+                {underline && <HoverUnderline />}
             </a>
         );
     }
     return (
         <Link href={href} aria-current={active ? "page" : undefined} className={className}>
             {name}
+            {underline &&
+                (active ? (
+                    <ViewTransition name="nav-underline" share="nav-underline-move" default="none">
+                        <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary" />
+                    </ViewTransition>
+                ) : (
+                    <HoverUnderline />
+                ))}
+            <LinkPending />
         </Link>
+    );
+}
+
+function HoverUnderline() {
+    return (
+        <span
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-0.5 origin-left scale-x-0 rounded-full bg-foreground/35 transition-transform duration-200 ease-smooth group-hover/nav:scale-x-100"
+        />
     );
 }

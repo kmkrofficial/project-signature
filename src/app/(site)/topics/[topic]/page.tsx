@@ -4,6 +4,7 @@ import { getPublishedPosts } from "@/lib/posts";
 import { TOPICS, getTopicBySlug } from "@/lib/categoryUtils";
 import { PostList } from "@/components/blog/PostList";
 import { TopicNav } from "@/components/blog/TopicNav";
+import { PageTransition } from "@/components/layout/PageTransition";
 
 type Props = { params: Promise<{ topic: string }> };
 
@@ -28,12 +29,14 @@ export default async function TopicPage({ params }: Props) {
     const posts = (await getPublishedPosts()).filter((post) => post.category === topic.name);
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-8">
-            <div className="flex flex-col gap-4 mb-4">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{topic.name}</h1>
-                <TopicNav active={topic.slug} />
+        <PageTransition>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-8">
+                <div className="flex flex-col gap-4 mb-4">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">{topic.name}</h1>
+                    <TopicNav active={topic.slug} />
+                </div>
+                <PostList posts={posts} emptyMessage={`No articles about ${topic.name} yet.`} />
             </div>
-            <PostList posts={posts} emptyMessage={`No articles about ${topic.name} yet.`} />
-        </div>
+        </PageTransition>
     );
 }

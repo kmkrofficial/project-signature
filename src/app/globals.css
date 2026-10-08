@@ -269,19 +269,158 @@
   pointer-events: none;
 }
 
-/* View Transitions API: Hardware-Accelerated Circular Theme Reveal */
-::view-transition-old(root),
-::view-transition-new(root) {
+/* Circular theme reveal. Scoped to html.theme-reveal (set by ThemeProvider only while toggling)
+   so page transitions keep their own animations. */
+html.theme-reveal::view-transition-old(root),
+html.theme-reveal::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 
-::view-transition-old(root) {
+html.theme-reveal::view-transition-old(root) {
   z-index: 1;
 }
 
-::view-transition-new(root) {
+html.theme-reveal::view-transition-new(root) {
   z-index: 9999;
+}
+
+/* ==========================================================================
+   Page transitions (React <ViewTransition> + Next route navigation)
+   ========================================================================== */
+
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vt-rise {
+  from {
+    transform: translateY(8px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes vt-slide {
+  from {
+    translate: var(--slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+/* The header stays put while content changes */
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+/* Default page change: quick crossfade with a small rise */
+::view-transition-old(.page-fade) {
+  animation: 130ms ease-in both vt-fade reverse;
+}
+
+::view-transition-new(.page-fade) {
+  animation:
+    220ms var(--ease-smooth) 80ms both vt-fade,
+    280ms var(--ease-smooth) 80ms both vt-rise;
+}
+
+/* Directional navigation (older/newer article, back to list) */
+::view-transition-old(.nav-forward) {
+  --slide-offset: -24px;
+  animation:
+    120ms ease-in both vt-fade reverse,
+    240ms var(--ease-smooth) both vt-slide reverse;
+}
+
+::view-transition-new(.nav-forward) {
+  --slide-offset: 24px;
+  animation:
+    200ms ease-out 100ms both vt-fade,
+    260ms var(--ease-smooth) both vt-slide;
+}
+
+::view-transition-old(.nav-back) {
+  --slide-offset: 24px;
+  animation:
+    120ms ease-in both vt-fade reverse,
+    240ms var(--ease-smooth) both vt-slide reverse;
+}
+
+::view-transition-new(.nav-back) {
+  --slide-offset: -24px;
+  animation:
+    200ms ease-out 100ms both vt-fade,
+    260ms var(--ease-smooth) both vt-slide;
+}
+
+/* Suspense reveal: skeleton drops away, content rises in */
+::view-transition-old(.slide-down) {
+  animation:
+    120ms ease-in both vt-fade reverse,
+    160ms ease-in both vt-rise reverse;
+}
+
+::view-transition-new(.slide-up) {
+  animation:
+    200ms ease-out 120ms both vt-fade,
+    280ms var(--ease-smooth) 120ms both vt-rise;
+}
+
+/* Shared elements: cover and title morph from the list to the article; the active underline and pill slide */
+::view-transition-group(.post-cover),
+::view-transition-group(.post-title) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-smooth);
+}
+
+::view-transition-old(.post-cover),
+::view-transition-new(.post-cover) {
+  height: 100%;
+  object-fit: cover;
+}
+
+::view-transition-group(.pill-slide),
+::view-transition-group(.nav-underline-move) {
+  animation-duration: 260ms;
+  animation-timing-function: var(--ease-smooth);
+}
+
+/* Link pending feedback (useLinkStatus): a gentle pulse that only appears if navigation takes >150ms */
+@keyframes pending-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.link-pending {
+  display: none;
+}
+
+a:has(.link-pending[data-pending]) {
+  animation: pending-pulse 900ms ease-in-out 150ms infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a:has(.link-pending[data-pending]) {
+    opacity: 0.6;
+  }
 }
 
 /* ==========================================================================

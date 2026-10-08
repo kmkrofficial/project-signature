@@ -71,7 +71,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const y = coords?.clientY || window.innerHeight / 2;
         const endRadius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
 
+        const root = document.documentElement;
+        root.classList.add("theme-reveal");
         const transition = document.startViewTransition(() => applyTheme(nextTheme, true));
+        transition.finished.finally(() => root.classList.remove("theme-reveal"));
         transition.ready
             .then(() => {
                 document.documentElement.animate(

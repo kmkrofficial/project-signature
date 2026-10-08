@@ -1,15 +1,26 @@
+import { ViewTransition } from "react";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { CategoryBadge } from "@/components/blog/CategoryBadge";
+import { LinkPending } from "@/components/layout/LinkPending";
 import { formatDate, formatReadingTime } from "@/lib/format";
 import type { PostSummary } from "@/types/blog";
 
-export function PostCard({ post }: { post: PostSummary }) {
+/** Only the first rows get a shared-title morph, which keeps the transition snapshot small. */
+const MORPH_LIMIT = 12;
+
+export function PostCard({ post, morph = false }: { post: PostSummary; morph?: boolean }) {
+    const title = (
+        <h2 className="mt-2 text-lg sm:text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors text-balance">
+            {post.title}
+        </h2>
+    );
+
     return (
         <article>
             <Link
                 href={`/blog/${post.slug}`}
-                className="group block -mx-4 sm:-mx-5 px-4 sm:px-5 py-5 rounded-2xl hover:bg-card transition-colors"
+                className="group press block -mx-4 sm:-mx-5 px-4 sm:px-5 py-5 rounded-2xl hover:bg-card"
             >
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                     <CategoryBadge category={post.category} asText />
@@ -18,12 +29,17 @@ export function PostCard({ post }: { post: PostSummary }) {
                     <span aria-hidden="true">·</span>
                     <span>{formatReadingTime(post.readingTime)}</span>
                 </p>
-                <h2 className="mt-2 text-lg sm:text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors text-balance">
-                    {post.title}
-                </h2>
+                {morph ? (
+                    <ViewTransition name={`post-title-${post.slug}`} share="post-title" default="none">
+                        {title}
+                    </ViewTransition>
+                ) : (
+                    title
+                )}
                 {post.excerpt && (
                     <p className="mt-1.5 text-sm sm:text-base text-muted-foreground leading-relaxed line-clamp-2">{post.excerpt}</p>
                 )}
+                <LinkPending />
             </Link>
         </article>
     );
@@ -46,8 +62,8 @@ export function PostList({ posts, emptyMessage = "No articles published yet." }:
 
     return (
         <div className="divide-y divide-border/60">
-            {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
+            {posts.map((post, index) => (
+                <PostCard key={post.id} post={post} morph={index < MORPH_LIMIT} />
             ))}
         </div>
     );
