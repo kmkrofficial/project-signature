@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-background: rgb(var(--background));
   --color-foreground: rgb(var(--foreground));
@@ -24,94 +26,131 @@
   --color-input: rgb(var(--input));
   --color-ring: rgb(var(--ring));
 
-  --font-mono: var(--font-geist-mono), monospace;
-  --font-sans: var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-glitch: glitch 1s linear infinite;
+  /* Motion tokens: compositor-only properties (transform, opacity) and short durations */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  @keyframes glitch {
+  --animate-fade-in: fade-in 180ms ease-out backwards;
+  --animate-fade-up: fade-up 240ms var(--ease-smooth) backwards;
+  --animate-pop: pop 320ms var(--ease-spring) backwards;
+  --animate-spin-in: spin-in 360ms var(--ease-spring) backwards;
+  --animate-shake: shake 360ms ease-in-out;
+  --animate-alert: alert-in 420ms var(--ease-smooth);
 
-    2%,
-    64% {
-      transform: translate(2px, 0) skew(0deg);
+  @keyframes fade-in {
+    from {
+      opacity: 0;
     }
+  }
 
-    4%,
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
     60% {
-      transform: translate(-2px, 0) skew(0deg);
+      transform: scale(1.12);
     }
+  }
 
-    62% {
-      transform: translate(0, 0) skew(5deg);
+  @keyframes spin-in {
+    from {
+      opacity: 0;
+      transform: rotate(-90deg) scale(0.5);
+    }
+  }
+
+  @keyframes alert-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    35% {
+      opacity: 1;
+      transform: translateX(-4px);
+    }
+    55% {
+      transform: translateX(4px);
+    }
+    75% {
+      transform: translateX(-2px);
+    }
+  }
+
+  @keyframes shake {
+    20%,
+    60% {
+      transform: translateX(-4px);
+    }
+    40%,
+    80% {
+      transform: translateX(4px);
     }
   }
 }
 
-:root {
-  /* Deep System (Dark Mode - Default) */
-  --background: 10 10 10;
-  /* #0a0a0a */
-  --foreground: 240 240 240;
+:root,
+.dark {
+  /* Dark Mode by Default (Matte Graphite / Deep Slate with Burnished Gold Accent) */
+  --background: 13 15 18;
+  --foreground: 243 244 246;
 
-  --primary: 6 182 212;
-  /* Cyan-500 #06b6d4 */
-  --primary-foreground: 10 10 10;
+  --primary: 245 158 11;               /* Radiant Topaz / Burnished Gold (#f59e0b) */
+  --primary-foreground: 13 15 18;
 
-  --secondary: 30 41 59;
-  /* Slate-800 */
-  --secondary-foreground: 248 250 252;
+  --secondary: 25 28 35;
+  --secondary-foreground: 243 244 246;
 
-  --accent: 245 158 11;
-  /* Amber-500 */
-  --accent-foreground: 10 10 10;
+  --accent: 217 119 6;                 /* Warm Amber Citrine (#d97706) */
+  --accent-foreground: 13 15 18;
 
-  --muted: 30 41 59;
-  --muted-foreground: 148 163 184;
+  --muted: 22 25 32;
+  --muted-foreground: 156 163 175;
 
-  --card: 15 23 42;
-  /* Slate-950 */
-  --card-foreground: 240 240 240;
+  --card: 19 21 26;
+  --card-foreground: 243 244 246;
 
-  --border: 51 65 85;
-  --input: 51 65 85;
-  --ring: 6 182 212;
+  --border: 34 38 48;
+  --input: 34 38 48;
+  --ring: 245 158 11;
 
-  --radius: 0.25rem;
-
-  /* Grid Pattern for Technical Blueprint */
-  --grid-color: 30 41 59;
+  --radius: 0.5rem;
 }
 
-.light-mode {
-  /* Technical Blueprint (Light Mode) */
-  --background: 240 249 255;
-  /* Sky-50 */
-  --foreground: 15 23 42;
+.light-mode,
+:root:not(.dark) {
+  /* Architectural Editorial Light Mode */
+  --background: 248 250 252;          /* Clean, crisp off-white canvas (slate-50) */
+  --foreground: 15 23 42;             /* High-contrast deep slate-900 */
 
-  --primary: 3 105 161;
-  /* Sky-700 */
+  --primary: 180 83 9;                /* Deep Burnished Gold / Amber 700 (#b45309) - High Contrast WCAG AAA */
   --primary-foreground: 255 255 255;
 
-  --secondary: 226 232 240;
-  /* Slate-200 */
-  --secondary-foreground: 15 23 42;
+  --secondary: 241 245 249;           /* Slate 100 surface for chips, pills, inputs */
+  --secondary-foreground: 15 23 42;   /* Slate 900 */
 
-  --accent: 220 38 38;
-  /* Red-600 */
+  --accent: 180 83 9;                 /* Amber 700 */
   --accent-foreground: 255 255 255;
 
-  --muted: 241 245 249;
-  --muted-foreground: 100 116 139;
+  --muted: 241 245 249;               /* Slate 100 */
+  --muted-foreground: 71 85 105;      /* Slate 600 - high contrast, crisp legibility */
 
-  --card: 255 255 255;
-  --card-foreground: 15 23 42;
+  --card: 255 255 255;                /* Pure white card elevation */
+  --card-foreground: 15 23 42;        /* Slate 900 */
 
-  --border: 203 213 225;
-  --input: 203 213 225;
-  --ring: 3 105 161;
-
-  --grid-color: 203 213 225;
+  --border: 226 232 240;              /* Slate 200 - structural definition */
+  --input: 226 232 240;               /* Slate 200 */
+  --ring: 180 83 9;
 }
 
 @layer base {
@@ -119,29 +158,743 @@
     @apply border-border;
   }
 
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
   html {
-    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-background text-foreground font-mono antialiased transition-colors duration-500;
-    background-image:
-      linear-gradient(to right, rgba(var(--grid-color), 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(var(--grid-color), 0.1) 1px, transparent 1px);
-    background-size: 40px 40px;
+    @apply bg-background text-foreground font-sans min-h-screen;
+  }
+
+  /* Custom Clean Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(var(--border), 0.8);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--muted-foreground), 0.5);
   }
 }
 
 @layer utilities {
-  .text-glow {
-    text-shadow: 0 0 10px rgba(var(--primary), 0.5);
+  .no-scrollbar {
+    scrollbar-width: none;
   }
 
-  .border-glow {
-    box-shadow: 0 0 10px rgba(var(--primary), 0.3);
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
-  .glass-panel {
-    @apply bg-card/80 backdrop-blur-md border border-white/10;
+  .search-dialog input[type="search"]::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .kbd {
+    @apply px-1.5 py-0.5 rounded border border-border bg-background font-mono text-[10px] text-muted-foreground;
+  }
+
+}
+
+/* ==========================================================================
+   Motion utilities. `scale` and `translate` are separate properties, so
+   press and lift compose without overwriting each other's transform.
+   ========================================================================== */
+
+@utility press {
+  transition-property: color, background-color, border-color, opacity, box-shadow, scale, translate;
+  transition-duration: 140ms;
+  transition-timing-function: var(--ease-smooth);
+
+  &:active {
+    scale: 0.97;
+  }
+}
+
+@utility lift {
+  transition-property: color, background-color, border-color, opacity, box-shadow, scale, translate;
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease-smooth);
+
+  @media (hover: hover) {
+    &:hover {
+      translate: 0 -2px;
+    }
+  }
+}
+
+/* Staggered entrance: set --i on each item (capped at 8 steps) next to animate-fade-up */
+@utility stagger {
+  animation-delay: calc(min(var(--i, 0), 8) * 40ms);
+}
+
+/* Loading placeholder with a light sweep. The sweep is a transform-only pseudo-element, so it runs on the
+   compositor with no paint per frame. Reduced motion leaves the plain block. */
+@utility skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: rgb(var(--foreground) / 0.08);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(100deg, transparent 15%, rgb(var(--foreground) / 0.1) 50%, transparent 85%);
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+.light-mode .skeleton::after {
+  background: linear-gradient(100deg, transparent 15%, rgb(255 255 255 / 0.8) 50%, transparent 85%);
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Reveal on scroll via scroll-driven animation. Unsupported browsers just show the content. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 30%;
+    }
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/* Keep clicks working while a view transition runs */
+::view-transition {
+  pointer-events: none;
+}
+
+/* Circular theme reveal, used only by the theme toggle (ThemeProvider sets html.theme-reveal while it runs). */
+html.theme-reveal::view-transition-old(root),
+html.theme-reveal::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html.theme-reveal::view-transition-old(root) {
+  z-index: 1;
+}
+
+html.theme-reveal::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* Link pending feedback (useLinkStatus): a gentle pulse that only appears if navigation takes >150ms */
+@keyframes pending-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.link-pending {
+  display: none;
+}
+
+a:has(.link-pending[data-pending]) {
+  animation: pending-pulse 900ms ease-in-out 150ms infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a:has(.link-pending[data-pending]) {
+    opacity: 0.6;
+  }
+}
+
+/* ==========================================================================
+   Background: one static warm glow at the top (no animation, no blend modes)
+   ========================================================================== */
+
+body {
+  background-image: radial-gradient(ellipse 70% 420px at 50% -120px, rgb(245 158 11 / 0.1), transparent);
+  background-repeat: no-repeat;
+}
+
+.light-mode body {
+  background-image: radial-gradient(ellipse 70% 420px at 50% -120px, rgb(180 83 9 / 0.07), transparent);
+}
+
+.top-hairline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 50;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 0%, rgba(245, 158, 11, 0.40) 50%, transparent 100%);
+}
+
+.light-mode .top-hairline {
+  background: linear-gradient(90deg, transparent 0%, rgba(180, 83, 9, 0.35) 50%, transparent 100%);
+}
+
+/* ==========================================================================
+   Article Reading Experience
+   ========================================================================== */
+
+/* Reading progress: CSS scroll-driven animation, no JavaScript */
+.reading-progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    display: block;
+    position: fixed;
+    top: 4rem;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 30;
+    pointer-events: none;
+    background: rgb(var(--primary));
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    animation: reading-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes reading-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.article-prose {
+  --tw-prose-body: rgb(var(--foreground) / 0.88);
+  --tw-prose-invert-body: rgb(var(--foreground) / 0.88);
+  --tw-prose-links: rgb(var(--primary));
+  --tw-prose-invert-links: rgb(var(--primary));
+  line-height: 1.75;
+}
+
+.article-prose :where(h2, h3) {
+  scroll-margin-top: 6rem;
+  letter-spacing: -0.015em;
+}
+
+.article-prose :where(a) {
+  text-underline-offset: 4px;
+}
+
+.article-prose :where(blockquote) {
+  font-style: normal;
+  border-left-color: rgb(var(--primary));
+  color: rgb(var(--foreground) / 0.9);
+}
+
+.article-prose :where(:not(pre) > code) {
+  padding: 0.15em 0.4em;
+  border-radius: 0.375rem;
+  background: rgb(var(--secondary));
+  font-weight: 500;
+}
+
+.article-prose :where(:not(pre) > code)::before,
+.article-prose :where(:not(pre) > code)::after {
+  content: none;
+}
+
+.article-prose :where(img) {
+  border-radius: 0.75rem;
+  border: 1px solid rgb(var(--border));
+  margin-inline: auto;
+}
+
+.article-prose[data-enhanced] :where(img) {
+  cursor: zoom-in;
+}
+
+.article-prose :where(figure) {
+  margin-block: 2em;
+}
+
+.article-prose :where(figcaption) {
+  text-align: center;
+  font-style: italic;
+}
+
+.article-prose :where(table) {
+  display: block;
+  overflow-x: auto;
+}
+
+/* Code blocks (Shiki dual themes: light colors inline, dark via CSS variables) */
+.article-prose .code-block {
+  margin-block: 1.75em;
+  border: 1px solid rgb(var(--border));
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: rgb(var(--card));
+}
+
+.article-prose .code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.375rem 0.75rem 0.375rem 1rem;
+  border-bottom: 1px solid rgb(var(--border));
+  background: rgb(var(--secondary) / 0.6);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgb(var(--muted-foreground));
+  text-transform: lowercase;
+}
+
+.article-prose .copy-code {
+  visibility: hidden;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.375rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: rgb(var(--muted-foreground));
+  cursor: pointer;
+}
+
+.article-prose[data-enhanced] .copy-code {
+  visibility: visible;
+}
+
+.article-prose .copy-code {
+  transition:
+    color 150ms ease-out,
+    background-color 150ms ease-out,
+    scale 120ms var(--ease-smooth);
+}
+
+.article-prose .copy-code:hover {
+  color: rgb(var(--foreground));
+  background: rgb(var(--secondary));
+}
+
+.article-prose .copy-code:active {
+  scale: 0.94;
+}
+
+.article-prose .copy-code[data-state="copied"] {
+  color: rgb(16 185 129);
+  animation: pop 320ms var(--ease-spring);
+}
+
+.article-prose .copy-code[data-state="copied"]::before {
+  content: "\2713\00a0";
+}
+
+.article-prose .code-block {
+  transition: border-color 250ms ease-out;
+}
+
+.article-prose .code-block[data-copied] {
+  border-color: rgb(16 185 129 / 0.55);
+}
+
+/* Following a TOC or hash link flashes the target heading so the eye finds it */
+.article-prose :where(h2, h3):target {
+  animation: target-flash 1.4s ease-out;
+}
+
+@keyframes target-flash {
+  from {
+    background-color: rgb(var(--primary) / 0.2);
+    box-shadow: 0 0 0 0.4rem rgb(var(--primary) / 0.2);
+    border-radius: 0.375rem;
+  }
+  to {
+    background-color: transparent;
+    box-shadow: 0 0 0 0.4rem transparent;
+  }
+}
+
+@media (hover: hover) {
+  .article-prose[data-enhanced] :where(img) {
+    transition: scale 300ms var(--ease-smooth);
+  }
+
+  .article-prose[data-enhanced] :where(img):hover {
+    scale: 1.015;
+  }
+}
+
+.article-prose .code-block pre {
+  margin: 0;
+  border-radius: 0;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  background-color: transparent !important;
+}
+
+.dark .article-prose .shiki,
+.dark .article-prose .shiki span {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* Native dialogs: animate open AND close. @starting-style sets the entry state and the discrete
+   display/overlay transitions keep the dialog (and its top-layer backdrop) alive during the exit. */
+@media (prefers-reduced-motion: no-preference) {
+  .search-dialog,
+  .lightbox {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+    transition:
+      opacity 160ms var(--ease-smooth),
+      transform 200ms var(--ease-smooth),
+      overlay 200ms allow-discrete,
+      display 200ms allow-discrete;
+  }
+
+  .search-dialog[open],
+  .lightbox[open] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .search-dialog::backdrop,
+  .lightbox::backdrop {
+    opacity: 0;
+    transition:
+      opacity 200ms ease-out,
+      overlay 200ms allow-discrete,
+      display 200ms allow-discrete;
+  }
+
+  .search-dialog[open]::backdrop,
+  .lightbox[open]::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .search-dialog[open],
+    .lightbox[open] {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+
+    .search-dialog[open]::backdrop,
+    .lightbox[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}
+
+/* Lightbox zooms out of the image that was clicked (--lb-x/--lb-y are set from its position) */
+@media (prefers-reduced-motion: no-preference) {
+  .lightbox {
+    transform: scale(0.6);
+    transform-origin: var(--lb-x, 50%) var(--lb-y, 50%);
+    transition-duration: 220ms, 280ms, 280ms, 280ms;
+  }
+
+  .lightbox[open] {
+    transform: none;
+  }
+
+  @starting-style {
+    .lightbox[open] {
+      transform: scale(0.6);
+    }
+  }
+}
+
+/* Mobile menu: always rendered, toggled by data-open so it can animate out as well as in */
+.mobile-menu {
+  display: none;
+}
+
+.mobile-menu[data-open] {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .mobile-menu,
+  .mobile-menu[data-open] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-menu {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 160ms ease-out,
+      transform 200ms var(--ease-smooth),
+      display 200ms allow-discrete;
+  }
+
+  .mobile-menu[data-open] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .mobile-menu li {
+    opacity: 0;
+    translate: 0 -4px;
+    transition:
+      opacity 160ms ease-out,
+      translate 220ms var(--ease-smooth);
+  }
+
+  .mobile-menu[data-open] li {
+    opacity: 1;
+    translate: 0;
+    transition-delay: calc(var(--i, 0) * 30ms + 50ms);
+  }
+
+  @starting-style {
+    .mobile-menu[data-open] {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+
+    .mobile-menu[data-open] li {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+
+  .toast-in {
+    animation: toast-in 220ms var(--ease-smooth);
+  }
+
+  .toast-row {
+    animation: toast-expand 240ms var(--ease-smooth);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Toast rows grow in and collapse out so neighbours glide instead of jumping */
+.toast-row {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.toast-inner {
+  min-height: 0;
+}
+
+.toast-leave {
+  animation: toast-collapse 240ms var(--ease-smooth) forwards;
+}
+
+.toast-leave .toast-inner {
+  overflow: hidden;
+}
+
+.toast-leave .toast-card {
+  animation: toast-slide-out 200ms ease-in forwards;
+}
+
+@keyframes toast-expand {
+  from {
+    grid-template-rows: 0fr;
+  }
+}
+
+@keyframes toast-collapse {
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@keyframes toast-slide-out {
+  to {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+/* Generic list row that collapses out (admin article list); reuses the toast collapse keyframes */
+.collapse-row {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.collapse-row > * {
+  min-height: 0;
+}
+
+.collapse-row[data-leaving] {
+  animation: toast-collapse 240ms var(--ease-smooth) forwards;
+}
+
+.collapse-row[data-leaving] > * {
+  overflow: hidden;
+}
+
+/* The timer bar drives auto-dismiss, so hovering or focusing a toast pauses both */
+.toast-timer {
+  animation: toast-timer 5s linear forwards;
+}
+
+.toast-row:hover .toast-timer,
+.toast-row:focus-within .toast-timer {
+  animation-play-state: paused;
+}
+
+@keyframes toast-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Header edge: the divider and soft shadow fade in over the first 48px of scroll (no JS) */
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgb(var(--border) / 0.7);
+  box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.25);
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .site-header::after {
+      opacity: 0;
+      animation: header-edge linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 48px;
+    }
+  }
+}
+
+@keyframes header-edge {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Like button: heart pop, expanding ring and a rolling count */
+@keyframes heart-pop {
+  35% {
+    transform: scale(1.4);
+  }
+  65% {
+    transform: scale(0.92);
+  }
+}
+
+@keyframes like-ring {
+  from {
+    opacity: 0.55;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+@keyframes roll-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--roll));
+  }
+}
+
+@keyframes roll-out {
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--roll) * -1));
+  }
+}
+
+.heart-pop {
+  animation: heart-pop 420ms var(--ease-spring);
+}
+
+.like-ring {
+  animation: like-ring 520ms ease-out forwards;
+}
+
+.roll-in {
+  animation: roll-in 220ms var(--ease-smooth) backwards;
+}
+
+.roll-out {
+  animation: roll-out 220ms var(--ease-smooth) forwards;
+}
+
+/* Table of contents: one indicator slides to the active section (JS only sets --toc-y/--toc-h) */
+.toc-indicator {
+  transform: translateY(var(--toc-y, 0px)) scaleY(var(--toc-h, 0));
+  transition: transform 280ms var(--ease-smooth);
+}
+
+/* Reduced motion: no movement or timed effects anywhere. State changes stay instant and fully usable. */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.reading-progress):not(.toast-timer),
+  *:not(.reading-progress):not(.toast-timer)::before,
+  *:not(.reading-progress):not(.toast-timer)::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+
+  /* Still times the toast, but without the moving bar */
+  .toast-timer {
+    opacity: 0;
   }
 }

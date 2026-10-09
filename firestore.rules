@@ -1,51 +1,33 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
-    }
 
-    // Helper to check for specific admin email (Optional: harder security)
+    // Admin access is granted only via the `admin` custom claim
+    // (set with scripts/set-admin-claim.mjs). Signing in alone grants nothing.
     function isAdmin() {
-      return isAuthenticated(); 
+      return request.auth != null && request.auth.token.admin == true;
     }
 
-    // Public Collections: Readable by everyone, Writable only by Admin
-    match /blog/{document=**} {
-      allow read: if true;
-      // Allow admin to do anything
-      allow create, delete: if isAdmin();
-      // Allow public to update only 'views' and 'likes' fields
-      allow update: if isAdmin() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'likes'])
-      );
-    }
-    
-    match /portfolio/{document=**} { // Projects
-      allow read: if true;
-      allow write: if isAdmin();
+    function isValidPost(data) {
+      return data.title is string
+        && data.slug is string
+        && data.slug.matches('^[a-z0-9-]+$')
+        && data.published is bool
+        && data.featured is bool
+        && data.category in ['Artificial Intelligence', 'Web & Software', 'Cloud & Data', 'Guides & Tips'];
     }
 
-    match /skills/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
+    // Articles: published posts are public; drafts are admin-only.
+    // Likes are counted server-side via the Admin SDK, so there are no public writes.
+    match /blog/{postId} {
+      allow get, list: if resource.data.published == true || isAdmin();
+      allow create, update: if isAdmin() && isValidPost(request.resource.data);
+      allow delete: if isAdmin();
 
-    match /papers/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /experience/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /education/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      // Per-reader like markers, written only by the Admin SDK
+      match /likers/{likerId} {
+        allow read, write: if false;
+      }
     }
 
     match /config/{document=**} {

@@ -3,58 +3,81 @@
 import React, { useState } from "react";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { Terminal, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { Sparkles, AlertCircle, ArrowLeft } from "lucide-react";
+import { GoogleAuthProvider, browserSessionPersistence, setPersistence, signInWithPopup } from "firebase/auth";
+import Link from "next/link";
 
 export default function LoginPage() {
     const [error, setError] = useState("");
+    const [attempt, setAttempt] = useState(0);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleGoogleLogin = async () => {
+        setLoading(true);
+        setError("");
         try {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
+            // Session persistence: admin sign-in ends when the browser closes
+            await setPersistence(auth, browserSessionPersistence);
+            await signInWithPopup(auth, new GoogleAuthProvider());
             router.push("/admin");
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Login error:", err);
-            setError(err.message || "Access Denied: Google Auth Failed");
+            setError("Sign-in failed. Please try again.");
+            setAttempt((count) => count + 1);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-md bg-card border border-border p-8 rounded-lg shadow-2xl relative overflow-hidden"
-            >
-                {/* Decorative header line */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12">
+            {/* Top Back Navigation Button */}
+            <div className="w-full max-w-md mb-3">
+                <Link
+                    href="/"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
+                >
+                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform text-primary" />
+                    <span>Back to Articles</span>
+                </Link>
+            </div>
 
-                <div className="flex items-center gap-3 mb-8 text-primary">
-                    <Terminal size={24} />
-                    <h1 className="text-xl font-bold tracking-wider">SYSTEM ADMIN // LOGIN</h1>
+            <div className="animate-fade-up w-full max-w-md bg-card border border-border/80 p-8 rounded-2xl shadow-xl relative">
+                {/* Header Badge */}
+                <div className="flex items-center justify-between mb-6">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-mono">
+                        <Sparkles size={13} />
+                        <span>Admin Studio</span>
+                    </div>
+                    <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">
+                        Authentication
+                    </span>
                 </div>
 
+                <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
+                    Studio Sign In
+                </h1>
+                <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                    Sign in with your authorized Google account to manage articles and site settings.
+                </p>
+
                 {error && (
-                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/50 text-red-500 flex items-center gap-2 rounded text-sm">
-                        <AlertCircle size={16} />
-                        {error}
+                    <div key={attempt} role="alert" className="animate-alert mb-6 p-3 bg-red-500/10 border border-red-500/30 text-red-400 flex items-start gap-2.5 rounded-xl text-xs leading-relaxed">
+                        <AlertCircle size={15} className="shrink-0 mt-0.5" />
+                        <span>{error}</span>
                     </div>
                 )}
 
                 <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground text-center mb-6">
-                        Authenticate with your authorized Google account to access the system.
-                    </p>
-
+                    {/* Google Login Button */}
                     <button
                         type="button"
                         onClick={handleGoogleLogin}
-                        className="w-full bg-primary text-primary-foreground font-bold py-4 rounded hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-3 text-sm shadow-lg hover:shadow-primary/20"
+                        disabled={loading}
+                        className="press w-full bg-primary text-primary-foreground font-semibold py-3 px-4 rounded-xl hover:opacity-90 flex items-center justify-center gap-3 text-sm shadow-md hover:shadow-primary/20 disabled:opacity-50 cursor-pointer"
                     >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24">
                             <path
                                 fill="currentColor"
                                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -72,16 +95,10 @@ export default function LoginPage() {
                                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                             />
                         </svg>
-                        AUTHENTICATE WITH GOOGLE
+                        <span>{loading ? "Authenticating..." : "Continue with Google"}</span>
                     </button>
                 </div>
-
-                <div className="mt-8 pt-6 border-t border-border">
-                    <p className="text-xs text-muted-foreground text-center">
-                        Only authorized personnel may access this portal.
-                    </p>
-                </div>
-            </motion.div>
+            </div>
         </div>
     );
 }

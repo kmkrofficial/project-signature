@@ -1,29 +1,46 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getStorage, connectStorageEmulator } from "firebase/storage";
 import { firebaseConfig } from "./firebase-config";
 
 export { firebaseConfig };
-
-import { getStorage } from "firebase/storage";
 
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const analytics = typeof window !== 'undefined' ?
-    import("firebase/analytics").then(({ getAnalytics, isSupported }) =>
-        isSupported().then(yes => yes ? getAnalytics(app) : null)
-    ) : null;
 
-// Disable offline persistence for faster performance
-// This prevents Firestore from syncing with IndexedDB which can slow down queries
-if (typeof window !== 'undefined') {
-    // Only run in browser
-    try {
-        // We explicitly do NOT enable persistence to avoid the overhead
-        // This ensures all queries go directly to the network with no caching delays
-    } catch (err) {
-        console.log('Firestore configuration already applied');
+// Firebase Local Emulator Suite integration
+const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
+
+if (useEmulator) {
+    const globalContext = globalThis as unknown as Record<string, boolean | undefined>;
+    const EMULATOR_INITIALIZED_KEY = "__FIREBASE_EMULATORS_INITIALIZED__";
+
+    if (!globalContext[EMULATOR_INITIALIZED_KEY]) {
+        globalContext[EMULATOR_INITIALIZED_KEY] = true;
+
+        try {
+            connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+        } catch {
+            // Already connected or disabled
+        }
+
+        try {
+            connectFirestoreEmulator(db, "127.0.0.1", 8080);
+        } catch {
+            // Already connected or disabled
+        }
+
+        try {
+            connectStorageEmulator(storage, "127.0.0.1", 9199);
+        } catch {
+            // Already connected or disabled
+        }
+
+        if (typeof window !== "undefined") {
+            console.log("⚡ [Firebase Emulator] Connected to Auth (9099), Firestore (8080), Storage (9199)");
+        }
     }
 }
