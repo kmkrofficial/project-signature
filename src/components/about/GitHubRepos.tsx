@@ -1,4 +1,5 @@
 import { ExternalLink, GitFork, Star } from "lucide-react";
+import { formatDate } from "@/lib/format";
 import { getRecentRepos } from "@/lib/github";
 
 const LANGUAGE_COLORS: Record<string, string> = {
@@ -22,7 +23,7 @@ export async function GitHubRepos() {
         <section aria-labelledby="github-heading" className="space-y-5">
             <div className="flex flex-wrap items-end justify-between gap-3">
                 <h2 id="github-heading" className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                    Recent open source
+                    Recently updated
                 </h2>
                 <a
                     href="https://github.com/kmkrofficial"
@@ -51,18 +52,23 @@ export async function GitHubRepos() {
                                 <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{repo.description}</p>
                             </div>
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                {repo.language ? (
-                                    <span className="flex items-center gap-1.5">
-                                        <span
-                                            className="w-2.5 h-2.5 rounded-full"
-                                            style={{ backgroundColor: LANGUAGE_COLORS[repo.language] ?? "rgb(var(--primary))" }}
-                                            aria-hidden="true"
-                                        />
-                                        {repo.language}
-                                    </span>
-                                ) : (
-                                    <span />
-                                )}
+                                <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+                                    {repo.language && (
+                                        <span className="flex items-center gap-1.5">
+                                            <span
+                                                className="w-2.5 h-2.5 rounded-full"
+                                                style={{ backgroundColor: LANGUAGE_COLORS[repo.language] ?? "rgb(var(--primary))" }}
+                                                aria-hidden="true"
+                                            />
+                                            {repo.language}
+                                        </span>
+                                    )}
+                                    {repo.pushedAt && (
+                                        <span>
+                                            Updated <time dateTime={repo.pushedAt}>{formatDate(repo.pushedAt)}</time>
+                                        </span>
+                                    )}
+                                </span>
                                 <span className="flex items-center gap-3">
                                     <span className="flex items-center gap-1" aria-label={`${repo.stars} stars`}>
                                         <Star size={12} aria-hidden="true" className="transition-transform duration-300 ease-spring group-hover:rotate-[72deg]" />
