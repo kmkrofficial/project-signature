@@ -45,6 +45,7 @@ The public pages are cached (Cache Components). If you edit Firestore directly i
 npx tsc --noEmit
 npm run lint
 npm run test:rules       # starts its own emulators
+npm run test:admin-access # admin allowlist logic, starts the Auth emulator
 npm run build            # with emulators running and seeded
 ```
 
@@ -54,11 +55,11 @@ In the build summary, every public route should be marked static (○/●) or pa
 
 Do these in order:
 
-1. **Grant yourself the admin claim** before deploying the rules, or you'll lock yourself out. This needs a `service-account.json` (gitignored) in the project root:
+1. **Choose who can use the studio.** Set `ADMIN_EMAILS` (comma separated) in Vercel. The first time one of those Google accounts signs in at `/admin/login`, the server verifies it and grants the `admin` claim automatically. This needs the Admin SDK variables from step 2, and the email must be verified by Google. To grant the claim by hand instead (needs a `service-account.json`, gitignored, in the project root):
    ```bash
    node scripts/set-admin-claim.mjs you@example.com
    ```
-   Then sign out and back in.
+   then sign out and back in.
 2. **Vercel environment variables:**
    - all `NEXT_PUBLIC_FIREBASE_*` values
    - `NEXT_PUBLIC_SITE_URL`
@@ -81,4 +82,5 @@ Do these in order:
   ```powershell
   Get-Process -Id (Get-NetTCPConnection -LocalPort 8080).OwningProcess | Stop-Process
   ```
-- **Admin Studio redirects to `/unauthorized`:** your account doesn't have the `admin` claim. Run `set-admin-claim.mjs` (production) or `npm run seed:emulator` (local), then sign in again.
+- **Admin Studio redirects to `/unauthorized`:** your account doesn't have the `admin` claim. Check that `ADMIN_EMAILS` contains the exact email shown on that page, that the server has `FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY`, then reload. Or run `set-admin-claim.mjs` (production) or `npm run seed:emulator` (local) and sign in again.
+- **"Couldn't verify your access":** the server could not check your sign-in, almost always because the Admin SDK credentials are missing or belong to another project. Locally, also make sure the `*_EMULATOR_HOST` lines are removed from `.env.local` when you point the app at a real project.

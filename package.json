@@ -10,7 +10,8 @@
     "emulators": "npx --yes firebase-tools emulators:start",
     "emulators:export": "npx --yes firebase-tools emulators:start --export-on-exit=./emulator-data --import=./emulator-data",
     "seed:emulator": "node scripts/seed-emulator.mjs",
-    "test:rules": "npx --yes firebase-tools emulators:exec --only firestore,storage --project demo-signature-rules \"node --test scripts/test-rules.mjs\""
+    "test:rules": "npx --yes firebase-tools emulators:exec --only firestore,storage --project demo-signature-rules \"node --test scripts/test-rules.mjs\"",
+    "test:admin-access": "npx --yes firebase-tools emulators:exec --only auth --project demo-signature-admin \"node --test scripts/test-admin-access.mjs\""
   },
   "dependencies": {
     "@shikijs/rehype": "^4.5.0",

@@ -105,6 +105,7 @@ src/
   - Firestore and Storage rules require `request.auth.token.admin == true` for every write.
   - Published posts and site config are public; everything else is denied.
   - The studio's `AuthGuard` only controls what's shown; enforcement lives in the rules and on the server.
+  - **Who becomes an admin:** the server-side `ADMIN_EMAILS` list. On sign-in, `claimAdminAccess()` verifies the ID token, requires a Google account with a Google-verified email on that list, and only then sets the `admin` claim (`src/lib/admin-access.ts`, covered by `npm run test:admin-access`). The list never decides anything in the browser.
 - **Storage:** uploads must be raster images under 5 MB (no SVG or HTML). Files are publicly fetchable but not listable.
 - **Server routes:**
   - `/api/likes` is same-origin only, validates its input, deduplicates per reader, and runs in a transaction.
