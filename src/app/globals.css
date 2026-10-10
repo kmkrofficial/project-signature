@@ -576,6 +576,7 @@ body {
    display/overlay transitions keep the dialog (and its top-layer backdrop) alive during the exit. */
 @media (prefers-reduced-motion: no-preference) {
   .search-dialog,
+  .confirm-dialog,
   .lightbox {
     opacity: 0;
     transform: translateY(-8px) scale(0.98);
@@ -587,12 +588,16 @@ body {
   }
 
   .search-dialog[open],
+
+  .confirm-dialog[open],
   .lightbox[open] {
     opacity: 1;
     transform: none;
   }
 
   .search-dialog::backdrop,
+
+  .confirm-dialog::backdrop,
   .lightbox::backdrop {
     opacity: 0;
     transition:
@@ -602,18 +607,23 @@ body {
   }
 
   .search-dialog[open]::backdrop,
+
+  .confirm-dialog[open]::backdrop,
   .lightbox[open]::backdrop {
     opacity: 1;
   }
 
   @starting-style {
     .search-dialog[open],
+    .confirm-dialog[open],
     .lightbox[open] {
       opacity: 0;
       transform: translateY(-8px) scale(0.98);
     }
 
     .search-dialog[open]::backdrop,
+
+    .confirm-dialog[open]::backdrop,
     .lightbox[open]::backdrop {
       opacity: 0;
     }

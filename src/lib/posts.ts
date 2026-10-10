@@ -31,7 +31,7 @@ function toIsoDate(value: unknown): string | null {
 }
 
 function toPostSummary(id: string, data: DocumentData): PostSummary {
-    const publishedAt = toIsoDate(data.createdAt) ?? new Date(0).toISOString();
+    const publishedAt = toIsoDate(data.publishedAt) ?? toIsoDate(data.createdAt) ?? new Date(0).toISOString();
     const content = typeof data.content === "string" ? data.content : "";
 
     return {
@@ -83,6 +83,17 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 
     const { html, headings } = await renderMarkdown(typeof data.content === "string" ? data.content : "");
     return { ...toPostSummary(doc.id, data), html, headings };
+}
+
+/** The current slug of a published post that used to live at `slug`, for permanent redirects. */
+export async function getRedirectForSlug(slug: string): Promise<string | null> {
+    "use cache";
+    cacheLife("days");
+    cacheTag(POSTS_TAG);
+
+    const snap = await db.collection("blog").where("previousSlugs", "array-contains", slug).limit(5).get();
+    const current = snap.docs.map((doc) => doc.data()).find((data) => data.published === true && data.slug);
+    return current?.slug ?? null;
 }
 
 /** Chronological neighbours: `previous` is older, `next` is newer. */

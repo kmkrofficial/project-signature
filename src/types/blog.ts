@@ -16,6 +16,10 @@ export interface BlogPost {
     likes?: number;
     createdAt?: { seconds: number; nanoseconds: number } | null;
     updatedAt?: { seconds: number; nanoseconds: number } | null;
+    /** Set the first time the post goes live; the public date. Falls back to createdAt for older posts. */
+    publishedAt?: { seconds: number; nanoseconds: number } | null;
+    /** Former slugs of a published post; they redirect to the current one. */
+    previousSlugs?: string[];
 }
 
 /** Serializable post metadata used by public listings, feeds and search. */

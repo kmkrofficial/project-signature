@@ -5,17 +5,24 @@ import NextImage from "next/image";
 import { X } from "lucide-react";
 import { clsx } from "clsx";
 import { CATEGORIES, type DraftPost } from "../types";
+import type { SlugStatus } from "../hooks/useSlugCheck";
 
 interface Props {
     post: DraftPost;
     setPost: React.Dispatch<React.SetStateAction<DraftPost>>;
     manualSlug: boolean;
     setManualSlug: (manual: boolean) => void;
+    /** The post has been live, so its URL is linked to elsewhere and changing it needs a deliberate unlock. */
+    slugLocked: boolean;
+    slugStatus: SlugStatus;
 }
 
 /** Title, slug, category, excerpt, tags and cover image for the post being edited. */
-export function MetadataPanel({ post, setPost, manualSlug, setManualSlug }: Props) {
+export function MetadataPanel({ post, setPost, manualSlug, setManualSlug, slugLocked, slugStatus }: Props) {
     const [tagInput, setTagInput] = useState("");
+    const [slugUnlocked, setSlugUnlocked] = useState(false);
+
+    const slugEditable = slugLocked ? slugUnlocked : manualSlug;
 
     // Auto-generate the slug from the title unless it is being edited by hand
     const handleTitleChange = (title: string) => {
@@ -65,13 +72,23 @@ export function MetadataPanel({ post, setPost, manualSlug, setManualSlug }: Prop
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         URL Slug *
                     </label>
-                    <button
-                        type="button"
-                        onClick={() => setManualSlug(!manualSlug)}
-                        className="text-[11px] text-primary hover:underline font-mono"
-                    >
-                        {manualSlug ? "Auto-generate" : "Manual Edit"}
-                    </button>
+                    {slugLocked ? (
+                        <button
+                            type="button"
+                            onClick={() => setSlugUnlocked(!slugUnlocked)}
+                            className="text-[11px] text-primary hover:underline font-mono cursor-pointer"
+                        >
+                            {slugUnlocked ? "Lock" : "Edit slug"}
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => setManualSlug(!manualSlug)}
+                            className="text-[11px] text-primary hover:underline font-mono cursor-pointer"
+                        >
+                            {manualSlug ? "Auto-generate" : "Manual Edit"}
+                        </button>
+                    )}
                 </div>
                 <div className="flex items-center">
                     <span className="px-3 py-2 bg-secondary/80 border border-r-0 border-border rounded-l-xl text-xs font-mono text-muted-foreground">
@@ -80,7 +97,8 @@ export function MetadataPanel({ post, setPost, manualSlug, setManualSlug }: Prop
                     <input
                         type="text"
                         value={post.slug || ""}
-                        readOnly={!manualSlug}
+                        readOnly={!slugEditable}
+                        aria-invalid={slugStatus === "taken"}
                         onChange={(e) =>
                             setPost((prev) => ({
                                 ...prev,
@@ -89,10 +107,26 @@ export function MetadataPanel({ post, setPost, manualSlug, setManualSlug }: Prop
                         }
                         placeholder="distributed-consensus"
                         className={clsx(
-                            "w-full px-3.5 py-2 bg-secondary/40 border border-border rounded-r-xl text-xs font-mono text-foreground focus:outline-none focus:border-primary transition-colors",
-                            !manualSlug && "opacity-80"
+                            "w-full px-3.5 py-2 bg-secondary/40 border rounded-r-xl text-xs font-mono text-foreground focus:outline-none transition-colors",
+                            slugStatus === "taken" ? "border-red-500/70 focus:border-red-400" : "border-border focus:border-primary",
+                            !slugEditable && "opacity-80"
                         )}
                     />
+                </div>
+                <div className="min-h-4 text-[11px]" aria-live="polite">
+                    {slugStatus === "taken" && (
+                        <span className="text-red-400">Another article already uses this URL.</span>
+                    )}
+                    {slugStatus === "checking" && <span className="text-muted-foreground">Checking availability…</span>}
+                    {slugStatus === "ok" && <span className="text-emerald-400">✓ Available</span>}
+                    {slugLocked && slugUnlocked && slugStatus !== "taken" && (
+                        <span className="block text-amber-400">
+                            This article has been live. The old link will keep working and redirect here.
+                        </span>
+                    )}
+                    {slugLocked && !slugUnlocked && (
+                        <span className="text-muted-foreground">Locked because this article has been published.</span>
+                    )}
                 </div>
             </div>
 

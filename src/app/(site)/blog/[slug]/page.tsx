@@ -2,10 +2,10 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ArrowLeft, ArrowRight, Rss } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/ui/BrandIcons";
-import { getAdjacentPosts, getPostBySlug, getPublishedPosts, getSiteConfig } from "@/lib/posts";
+import { getAdjacentPosts, getPostBySlug, getPublishedPosts, getRedirectForSlug, getSiteConfig } from "@/lib/posts";
 import { formatDate, formatReadingTime } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image-utils";
 import { ArticleEnhancer } from "@/components/blog/ArticleEnhancer";
@@ -71,7 +71,12 @@ export default function BlogPostPage({ params }: Props) {
 async function Article({ params }: Props) {
     const { slug } = await params;
     const post = await getPostBySlug(slug);
-    if (!post) notFound();
+    if (!post) {
+        // A renamed article: send old links to its current address
+        const currentSlug = await getRedirectForSlug(slug);
+        if (currentSlug) permanentRedirect(`/blog/${currentSlug}`);
+        notFound();
+    }
 
     const [{ previous, next }, config] = await Promise.all([getAdjacentPosts(slug), getSiteConfig()]);
     const wasUpdated = Date.parse(post.updatedAt) - Date.parse(post.publishedAt) > ONE_DAY_MS;
