@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { clsx } from "clsx";
 import { deriveExcerpt, estimateReadingTime, formatReadingTime } from "@/lib/format";
 import { CoverField } from "./CoverField";
+import { LinksField } from "./LinksField";
 import { withTitle } from "../slug";
 import { CATEGORIES, type DraftPost } from "../types";
 import type { SlugStatus } from "../hooks/useSlugCheck";
@@ -21,7 +22,7 @@ interface Props {
     layout?: "grid" | "stack";
 }
 
-/** Title, slug, category, excerpt, tags and cover image for the post being edited. */
+/** Title, slug, category, excerpt, tags, cover image and related links for the post being edited. */
 export function MetadataPanel({
     post,
     setPost,
@@ -230,6 +231,11 @@ export function MetadataPanel({
             {/* Cover Image */}
             <div className={span}>
                 <CoverField post={post} setPost={setPost} />
+            </div>
+
+            {/* Related links */}
+            <div className={span}>
+                <LinksField post={post} setPost={setPost} />
             </div>
         </div>
     );

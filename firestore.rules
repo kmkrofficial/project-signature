@@ -14,7 +14,8 @@ service cloud.firestore {
         && data.slug.matches('^[a-z0-9-]+$')
         && data.published is bool
         && data.featured is bool
-        && data.category in ['Artificial Intelligence', 'Web & Software', 'Cloud & Data', 'Guides & Tips'];
+        && data.category in ['Artificial Intelligence', 'Web & Software', 'Cloud & Data', 'Guides & Tips']
+        && (!('links' in data) || (data.links is list && data.links.size() <= 8));
     }
 
     // Articles: published posts are public; drafts are admin-only.

@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { estimateReadingTime } from "@/lib/format";
+import { toPostLinks } from "@/lib/post-links";
 import { CATEGORIES, type DraftPost } from "./types";
 import type { BlogPost } from "@/types/blog";
 
@@ -141,6 +142,7 @@ export async function persistPost(
         content,
         category: post.category || CATEGORIES[0],
         tags: post.tags || [],
+        links: toPostLinks(post.links),
         published,
         featured: Boolean(post.featured),
         readingTime: estimateReadingTime(content),

@@ -5,6 +5,7 @@ import { db } from "@/lib/firebase-admin";
 import { toFriendlyCategory } from "@/lib/categoryUtils";
 import { deriveExcerpt, estimateReadingTime } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
+import { toPostLinks } from "@/lib/post-links";
 import type { AdjacentPosts, Post, PostSummary, SiteConfig } from "@/types/blog";
 
 /** Cache tags invalidated by the Admin Studio after edits (see app/admin/actions.ts). */
@@ -83,7 +84,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     if (!doc || !data) return null;
 
     const { html, headings } = await renderMarkdown(typeof data.content === "string" ? data.content : "");
-    return { ...toPostSummary(doc.id, data), html, headings };
+    return { ...toPostSummary(doc.id, data), html, headings, links: toPostLinks(data.links) };
 }
 
 /**
@@ -98,10 +99,10 @@ export async function getPostForPreview(postId: string): Promise<{ post: Post; p
     const summary = toPostSummary(snap.id, data);
     const published = data.published === true;
     // A live post is shown at its public address, so there is nothing to render here
-    if (published) return { post: { ...summary, html: "", headings: [] }, published };
+    if (published) return { post: { ...summary, html: "", headings: [], links: [] }, published };
 
     const { html, headings } = await renderMarkdown(typeof data.content === "string" ? data.content : "");
-    return { post: { ...summary, html, headings }, published };
+    return { post: { ...summary, html, headings, links: toPostLinks(data.links) }, published };
 }
 
 /** The current slug of a published post that used to live at `slug`, for permanent redirects. */

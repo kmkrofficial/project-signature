@@ -24,6 +24,18 @@ export interface BlogPost {
     deletedAt?: { seconds: number; nanoseconds: number } | null;
     /** Whether the post was live when it was trashed, so Undo can bring it back as it was. */
     publishedBeforeTrash?: boolean;
+    /** Related links shown beside the article: source code, posts, dashboards, references. */
+    links?: PostLink[];
+}
+
+/** An outside resource that goes with an article. */
+export interface PostLink {
+    /** Absolute http(s) URL. */
+    url: string;
+    /** Shown instead of the URL; empty means the URL is shown. */
+    label: string;
+    /** Optional one-liner, e.g. "Source code" or "p95 latency down 40%". */
+    note: string;
 }
 
 /** Serializable post metadata used by public listings, feeds and search. */
@@ -54,6 +66,7 @@ export interface PostHeading {
 export interface Post extends PostSummary {
     html: string;
     headings: PostHeading[];
+    links: PostLink[];
 }
 
 export interface AdjacentPosts {

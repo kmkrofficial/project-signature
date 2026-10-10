@@ -6,6 +6,7 @@ import { GitHubIcon, LinkedInIcon } from "@/components/ui/BrandIcons";
 import { formatDate, formatReadingTime } from "@/lib/format";
 import { isOptimizableImage } from "@/lib/image-utils";
 import { ArticleEnhancer } from "@/components/blog/ArticleEnhancer";
+import { ArticleLinks } from "@/components/blog/ArticleLinks";
 import { CategoryBadge } from "@/components/blog/CategoryBadge";
 import { LikeButton } from "@/components/blog/LikeButton";
 import { ReadingProgressBar } from "@/components/blog/ReadingProgressBar";
@@ -37,6 +38,8 @@ export function ArticleView(props: Props) {
     const { post } = props;
     const isPublished = props.mode === "published";
     const wasUpdated = Date.parse(post.updatedAt) - Date.parse(post.publishedAt) > ONE_DAY_MS;
+    const hasToc = post.headings.length > 0;
+    const hasLinks = post.links.length > 0;
 
     return (
         <>
@@ -110,6 +113,9 @@ export function ArticleView(props: Props) {
                             </ul>
                         )}
 
+                        {/* The side rail is hidden below lg, so the links move to the end of the article there */}
+                        {hasLinks && <ArticleLinks links={post.links} layout="cards" className="mt-10 lg:hidden" />}
+
                         {props.mode === "published" && (
                             <>
                                 <footer className="mt-10 pt-8 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -149,10 +155,17 @@ export function ArticleView(props: Props) {
                         )}
                     </article>
 
-                    {post.headings.length > 0 && (
+                    {(hasToc || hasLinks) && (
                         <aside className="hidden lg:block">
-                            <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
-                                <TableOfContents headings={post.headings} />
+                            <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto overscroll-contain">
+                                {hasToc && <TableOfContents headings={post.headings} />}
+                                {hasLinks && (
+                                    <ArticleLinks
+                                        links={post.links}
+                                        layout="rail"
+                                        className={hasToc ? "mt-8 pt-6 border-t border-border/70" : undefined}
+                                    />
+                                )}
                             </div>
                         </aside>
                     )}

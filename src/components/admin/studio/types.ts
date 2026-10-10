@@ -26,6 +26,7 @@ export function emptyPost(): DraftPost {
         content: "",
         category: CATEGORIES[0],
         tags: [],
+        links: [],
         // New posts start as drafts; going live is an explicit Publish
         published: false,
         featured: false,

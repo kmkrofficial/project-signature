@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { toPostLinks } from "@/lib/post-links";
 import { storedInfoOf, type StoredInfo } from "../posts-client";
 import { emptyPost, type DraftPost } from "../types";
 
@@ -7,7 +8,7 @@ const BACKUP_DELAY_MS = 1000;
 
 type EditableFields = Pick<
     DraftPost,
-    "title" | "slug" | "excerpt" | "coverImage" | "content" | "category" | "tags" | "featured"
+    "title" | "slug" | "excerpt" | "coverImage" | "content" | "category" | "tags" | "links" | "featured"
 >;
 
 /** The fields the writer edits. Visibility changes only through explicit save actions, so it isn't "dirty". */
@@ -19,6 +20,8 @@ const editable = (post: DraftPost): EditableFields => ({
     content: post.content ?? "",
     category: post.category,
     tags: post.tags ?? [],
+    // Compared as saved, so blank rows still being filled in are not "unsaved changes"
+    links: toPostLinks(post.links),
     featured: Boolean(post.featured),
 });
 
