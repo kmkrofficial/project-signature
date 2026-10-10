@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { auth, db, storage } from "@/lib/firebase";
+import { useEmulator as isUsingEmulator } from "@/lib/firebase-config";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import {
@@ -107,8 +108,6 @@ export default function AdminStudio() {
     const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
-
-    const isUsingEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
     // Stats
     const stats = {

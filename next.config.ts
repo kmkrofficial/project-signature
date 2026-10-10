@@ -3,8 +3,8 @@ import { TOPICS } from "./src/lib/categoryUtils";
 
 const isDev = process.env.NODE_ENV === "development";
 
-// Local Firebase Emulator Suite endpoints (development only)
-const emulatorHosts = isDev ? " http://127.0.0.1:9099 http://127.0.0.1:8080 http://127.0.0.1:9199 http://localhost:9199" : "";
+// Local Firebase Emulator Suite endpoints, only when NEXT_PUBLIC_DEPLOYMENT=development
+const emulatorHosts = process.env.NEXT_PUBLIC_DEPLOYMENT === "development" ?" http://127.0.0.1:9099 http://127.0.0.1:8080 http://127.0.0.1:9199 http://localhost:9199" : "";
 
 // Static (nonce-free) CSP so pages remain prerenderable and CDN-cacheable.
 // apis.google.com + *.firebaseapp.com are required by the Firebase Auth sign-in popup.

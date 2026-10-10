@@ -2,7 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage, connectStorageEmulator } from "firebase/storage";
-import { firebaseConfig } from "./firebase-config";
+import { firebaseConfig, useEmulator } from "./firebase-config";
 
 export { firebaseConfig };
 
@@ -11,9 +11,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-// Firebase Local Emulator Suite integration
-const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
-
+// Firebase Local Emulator Suite integration (NEXT_PUBLIC_DEPLOYMENT=development)
 if (useEmulator) {
     const globalContext = globalThis as unknown as Record<string, boolean | undefined>;
     const EMULATOR_INITIALIZED_KEY = "__FIREBASE_EMULATORS_INITIALIZED__";

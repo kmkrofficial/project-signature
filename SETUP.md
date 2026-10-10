@@ -20,11 +20,12 @@ Copy `env.example` to `.env.local`. For local development against the emulators 
 
 ```env
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=project-signature-2d8f9
-NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true
+NEXT_PUBLIC_DEPLOYMENT=development
 ```
 
-The other `NEXT_PUBLIC_FIREBASE_*` values can stay as placeholders in emulator mode. `LIKE_HASH_SALT` falls back to a development value when `NODE_ENV` isn't `production`.
+`NEXT_PUBLIC_DEPLOYMENT` picks the backend. `development` uses the local emulators, and the emulator project and any `*_EMULATOR_HOST` values are handled for you. Any other value (`staging`, `production`, or unset) uses the real project from the `NEXT_PUBLIC_FIREBASE_*` keys plus the Admin SDK variables, and ignores emulator settings. Set it to `staging` on your staging deployment, or in `.env.local` to run locally against staging.
+
+The `NEXT_PUBLIC_FIREBASE_*` values can stay as placeholders in emulator mode. `LIKE_HASH_SALT` falls back to a development value when `NODE_ENV` isn't `production`.
 
 ## 3. Run locally
 
@@ -83,4 +84,4 @@ Do these in order:
   Get-Process -Id (Get-NetTCPConnection -LocalPort 8080).OwningProcess | Stop-Process
   ```
 - **Admin Studio redirects to `/unauthorized`:** your account doesn't have the `admin` claim. Check that `ADMIN_EMAILS` contains the exact email shown on that page, that the server has `FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY`, then reload. Or run `set-admin-claim.mjs` (production) or `npm run seed:emulator` (local) and sign in again.
-- **"Couldn't verify your access":** the server could not check your sign-in, almost always because the Admin SDK credentials are missing or belong to another project. Locally, also make sure the `*_EMULATOR_HOST` lines are removed from `.env.local` when you point the app at a real project.
+- **"Couldn't verify your access":** the server could not check your sign-in, almost always because the Admin SDK credentials are missing or belong to another project. Locally, check that `NEXT_PUBLIC_DEPLOYMENT` is not `development` when you point the app at a real project, because `development` uses the emulators.
