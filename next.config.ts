@@ -32,6 +32,13 @@ const securityHeaders = [
     { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
 ];
 
+// Draft previews: never indexed, cached, or leaked through the Referer header when a link is followed
+const previewHeaders = [
+    { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+    { key: "Referrer-Policy", value: "no-referrer" },
+    { key: "Cache-Control", value: "private, no-store, max-age=0" },
+];
+
 const nextConfig: NextConfig = {
     cacheComponents: true,
     images: {
@@ -75,7 +82,11 @@ const nextConfig: NextConfig = {
         return [...categoryRedirects, { source: "/blog", destination: "/", permanent: true }];
     },
     async headers() {
-        return [{ source: "/(.*)", headers: securityHeaders }];
+        // Later entries override earlier ones for the same header, so the preview rules come last
+        return [
+            { source: "/(.*)", headers: securityHeaders },
+            { source: "/preview/:path*", headers: previewHeaders },
+        ];
     },
 };
 

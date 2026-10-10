@@ -99,6 +99,29 @@ describe("firestore: config and unknown collections", () => {
     });
 });
 
+describe("firestore: draft preview links", () => {
+    // Links are created and resolved by the server (Admin SDK) only; no client may read or write them,
+    // not even an admin, so a leaked web config can never enumerate or forge review links.
+    const link = { postId: "draft", kind: "share", revoked: false, views: 0, sessionHashes: [] };
+
+    beforeEach(async () => {
+        await env.withSecurityRulesDisabled((ctx) => ctx.firestore().doc("previews/abc").set(link));
+    });
+
+    test("anonymous cannot read a link", () => assertFails(anonCtx().doc("previews/abc").get()));
+    test("signed-in non-admin cannot read a link", () => assertFails(userCtx().doc("previews/abc").get()));
+    test("admin cannot read a link from the browser", () => assertFails(adminCtx().doc("previews/abc").get()));
+    test("nobody can list links", async () => {
+        await assertFails(anonCtx().collection("previews").get());
+        await assertFails(adminCtx().collection("previews").get());
+    });
+    test("admin cannot create or revive a link from the browser", async () => {
+        await assertFails(adminCtx().doc("previews/new").set(link));
+        await assertFails(adminCtx().doc("previews/abc").update({ revoked: false, expiresAt: new Date() }));
+    });
+    test("a draft stays unreadable without a link", () => assertFails(anonCtx().doc("blog/draft").get()));
+});
+
 describe("storage", () => {
     test("anyone can fetch a file", () => assertSucceeds(anonStorage().ref("media/existing.png").getMetadata()));
     test("anonymous cannot list files", () => assertFails(anonStorage().ref("media").listAll()));

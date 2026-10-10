@@ -21,8 +21,11 @@ import { auth } from "@/lib/firebase";
 import { useEmulator as isUsingEmulator } from "@/lib/firebase-config";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { createPreviewLink } from "@/app/admin/actions";
+import { useToast } from "@/context/ToastContext";
 import { ArticlesTab } from "./studio/ArticlesTab";
 import { EditorTab } from "./studio/editor/EditorTab";
+import { ShareDialog } from "./studio/editor/ShareDialog";
 import { MediaTab } from "./studio/MediaTab";
 import { SettingsTab } from "./studio/SettingsTab";
 import { usePosts } from "./studio/hooks/usePosts";
@@ -30,13 +33,15 @@ import { usePostDraft } from "./studio/hooks/usePostDraft";
 import { useSlugCheck } from "./studio/hooks/useSlugCheck";
 import { useStudioActions } from "./studio/hooks/useStudioActions";
 import type { SaveIntent } from "./studio/posts-client";
-import { emptyPost, type StudioTab } from "./studio/types";
+import { emptyPost, type DraftPost, type StudioTab } from "./studio/types";
 import type { BlogPost } from "@/types/blog";
 
 const AUTOSAVE_MS = 30_000;
 
 export default function AdminStudio() {
     const router = useRouter();
+    const { addToast } = useToast();
+    const [shareOpen, setShareOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<StudioTab>("articles");
     const [manualSlug, setManualSlug] = useState(false);
     /** An action that was blocked by unsaved changes, waiting for the writer's decision. */
@@ -60,15 +65,44 @@ export default function AdminStudio() {
     );
 
     const save = useCallback(
-        async (intent: SaveIntent): Promise<boolean> => {
+        async (intent: SaveIntent): Promise<DraftPost | null> => {
             const previousId = post.id;
             const saved = await persist(post, intent, stored);
-            if (!saved) return false;
-            markSaved(saved, previousId);
-            return true;
+            if (saved) markSaved(saved, previousId);
+            return saved;
         },
         [persist, post, stored, markSaved]
     );
+
+    /** The stored id of the current draft, saving it first when there are unsaved edits. */
+    const ensureSavedId = useCallback(async (): Promise<string | null> => {
+        if (post.id && !dirty) return post.id;
+        return (await save("draft"))?.id ?? null;
+    }, [post.id, dirty, save]);
+
+    const handlePreview = async () => {
+        // Opened synchronously so the browser treats it as a direct result of the click
+        const tab = window.open("", "_blank");
+        try {
+            const id = await ensureSavedId();
+            const token = await auth.currentUser?.getIdToken();
+            if (!id || !token) throw new Error("not saved");
+            const { path } = await createPreviewLink(token, id, { kind: "self" });
+            if (tab) {
+                tab.opener = null;
+                tab.location.href = path;
+            } else {
+                window.open(path, "_blank", "noopener");
+            }
+        } catch {
+            tab?.close();
+            addToast("Could not open the preview. Save the draft and try again.", "error");
+        }
+    };
+
+    const handleShare = async () => {
+        if (await ensureSavedId()) setShareOpen(true);
+    };
 
     // Autosave drafts to Firestore while writing. Live articles only change on an explicit Update.
     const autosave = useRef<() => void>(() => {});
@@ -257,10 +291,14 @@ export default function AdminStudio() {
                     onDismissBackup={draft.dismissRestore}
                     onSave={save}
                     onBack={() => guarded(() => setActiveTab("articles"))}
+                    onPreview={handlePreview}
+                    onShare={handleShare}
                 />
             )}
 
             {activeTab === "media" && <MediaTab />}
+
+            <ShareDialog open={shareOpen} postId={post.id} onClose={() => setShareOpen(false)} />
 
             {activeTab === "settings" && <SettingsTab postCount={posts.length} />}
 
@@ -287,8 +325,8 @@ export default function AdminStudio() {
                         onClick: async () => {
                             const proceed = pendingLeave;
                             closePrompt();
-                            const ok = await save(post.published === true ? "update" : "draft");
-                            if (ok) proceed?.();
+                            const saved = await save(post.published === true ? "update" : "draft");
+                            if (saved) proceed?.();
                         },
                     },
                 ]}

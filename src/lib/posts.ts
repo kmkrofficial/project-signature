@@ -85,6 +85,24 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     return { ...toPostSummary(doc.id, data), html, headings };
 }
 
+/**
+ * Any post by id (drafts included), rendered fresh on every call. Callers must have authorized access
+ * themselves (see lib/previews.ts); this is never cached so unpublished content cannot leak into the cache.
+ */
+export async function getPostForPreview(postId: string): Promise<{ post: Post; published: boolean } | null> {
+    const snap = await db.collection("blog").doc(postId).get();
+    const data = snap.data();
+    if (!data || data.deletedAt) return null;
+
+    const summary = toPostSummary(snap.id, data);
+    const published = data.published === true;
+    // A live post is shown at its public address, so there is nothing to render here
+    if (published) return { post: { ...summary, html: "", headings: [] }, published };
+
+    const { html, headings } = await renderMarkdown(typeof data.content === "string" ? data.content : "");
+    return { post: { ...summary, html, headings }, published };
+}
+
 /** The current slug of a published post that used to live at `slug`, for permanent redirects. */
 export async function getRedirectForSlug(slug: string): Promise<string | null> {
     "use cache";

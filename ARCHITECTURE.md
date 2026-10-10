@@ -76,12 +76,16 @@ src/
 | `category` | string | One of the four topics in `TOPICS` |
 | `tags` | string[] | |
 | `coverImage` | string | Required when `featured` |
-| `published`, `featured` | boolean | Drafts are readable only by admins |
+| `published`, `featured` | boolean | Drafts are readable only by admins. New posts start as drafts |
 | `readingTime` | number | Minutes, stored on save |
 | `likes` | number | Written only by `/api/likes` |
 | `createdAt`, `updatedAt` | Timestamp | |
+| `publishedAt` | Timestamp | Set once, the first time the post goes live. It is the public date; older posts fall back to `createdAt` |
+| `previousSlugs` | string[] | Former slugs of a post that has been live; they redirect to the current one |
 
 **`blog/{postId}/likers/{hash}`**: one document per reader per post. The ID is `sha256(ip:postId:LIKE_HASH_SALT)`, so raw IPs are never stored. Only the Admin SDK can access these.
+
+**`previews/{sha256(token)}`**: one document per draft preview link: `postId`, `kind` (`self` or `share`), `label`, `lockedEmail`, `expiresAt`, `revoked`, `views`, `sessionHashes`. Only the hash of the token is stored. The rules deny every client access, so these are readable and writable only through the Admin SDK.
 
 **`config/site`**: `siteTitle`, `siteDescription`, `author`, `email`, `github`, `linkedin`, `twitter`. Public read, admin write.
 
@@ -106,6 +110,12 @@ src/
   - Published posts and site config are public; everything else is denied.
   - The studio's `AuthGuard` only controls what's shown; enforcement lives in the rules and on the server.
   - **Who becomes an admin:** the server-side `ADMIN_EMAILS` list. On sign-in, `claimAdminAccess()` verifies the ID token, requires a Google account with a Google-verified email on that list, and only then sets the `admin` claim (`src/lib/admin-access.ts`, covered by `npm run test:admin-access`). The list never decides anything in the browser.
+- **Draft previews:**
+  - A review link is `/preview/<token>`, where the token is 32 random bytes. Only its SHA-256 is stored, so a database leak cannot reproduce a working link.
+  - Every link expires (1, 7 or 30 days; the author's own preview lasts 1 hour) and can be revoked. Publishing the post turns its links into redirects to the live article; deleting it kills them.
+  - A link can be locked to one Google account. The reviewer signs in, the server checks the verified email, and sets an httpOnly cookie scoped to that link's path. Nothing else about the reviewer is kept.
+  - Responses carry `X-Robots-Tag: noindex`, `Referrer-Policy: no-referrer` and `Cache-Control: no-store`. `/preview` is in `robots.txt`, and previews never appear in the sitemap, feed or search index.
+  - Creating, listing and revoking links are Server Actions that require the admin claim (`src/app/admin/actions.ts`, `src/lib/previews.ts`).
 - **Storage:** uploads must be raster images under 5 MB (no SVG or HTML). Files are publicly fetchable but not listable.
 - **Server routes:**
   - `/api/likes` is same-origin only, validates its input, deduplicates per reader, and runs in a transaction.
