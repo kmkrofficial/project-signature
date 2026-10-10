@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getDownloadURL, listAll, ref } from "firebase/storage";
+import { deleteObject, getDownloadURL, listAll, ref } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 import { useToast } from "@/context/ToastContext";
 import { uploadImage } from "@/lib/upload-image";
@@ -59,6 +59,21 @@ export function useMedia(active: boolean) {
         [addToast]
     );
 
+    const remove = useCallback(
+        async (fullPath: string) => {
+            try {
+                await deleteObject(ref(storage, fullPath));
+                setImages((prev) => prev.filter((image) => image.fullPath !== fullPath));
+                addToast("Image deleted", "success");
+            } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : String(err);
+                console.error("Delete image error:", msg);
+                addToast("Failed to delete image: " + msg, "error");
+            }
+        },
+        [addToast]
+    );
+
     const copySnippet = useCallback(
         (url: string, name: string) => {
             navigator.clipboard.writeText(`![${name.replace(/\.[^/.]+$/, "")}](${url})`);
@@ -69,5 +84,5 @@ export function useMedia(active: boolean) {
         [addToast]
     );
 
-    return { images, loading, uploading, progress, copiedUrl, upload, copySnippet, refresh: fetchImages };
+    return { images, loading, uploading, progress, copiedUrl, upload, copySnippet, remove, refresh: fetchImages };
 }

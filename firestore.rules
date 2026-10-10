@@ -28,6 +28,11 @@ service cloud.firestore {
       match /likers/{likerId} {
         allow read, write: if false;
       }
+
+      // Saved versions of an article, for the studio's history view
+      match /revisions/{revisionId} {
+        allow read, write: if isAdmin();
+      }
     }
 
     match /config/{document=**} {

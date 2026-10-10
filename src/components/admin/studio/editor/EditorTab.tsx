@@ -9,6 +9,7 @@ import {
     ExternalLink,
     Eye,
     EyeOff,
+    History,
     Loader2,
     Maximize2,
     Minimize2,
@@ -24,12 +25,13 @@ import { useToast } from "@/context/ToastContext";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { estimateReadingTime } from "@/lib/format";
+import { HistoryDialog } from "./HistoryDialog";
 import { LivePreview } from "./LivePreview";
 import { MetadataPanel } from "./MetadataPanel";
 import { useImageDrop } from "../hooks/useImageDrop";
 import { withTitle } from "../slug";
 import type { SlugStatus } from "../hooks/useSlugCheck";
-import type { SaveIntent } from "../posts-client";
+import type { Revision, SaveIntent } from "../posts-client";
 import type { DraftPost } from "../types";
 import type { BlogPost } from "@/types/blog";
 
@@ -69,6 +71,8 @@ interface Props {
     onPreview: () => void;
     /** Opens the review-link dialog. */
     onShare: () => void;
+    /** Loads an older saved version into the editor (left unsaved). */
+    onRestoreRevision: (revision: Revision) => void;
 }
 
 export function EditorTab({
@@ -89,12 +93,14 @@ export function EditorTab({
     onBack,
     onPreview,
     onShare,
+    onRestoreRevision,
 }: Props) {
     const { addToast } = useToast();
     const { theme } = useTheme();
     const [view, setView] = useState<EditorView>("split");
     const [focus, setFocus] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false);
+    const [historyOpen, setHistoryOpen] = useState(false);
     const imageDrop = useImageDrop(setPost);
 
     const isLive = post.published === true;
@@ -348,6 +354,17 @@ export function EditorTab({
                     </label>
 
                     <div className="flex items-center gap-2">
+                        {post.id && (
+                            <button
+                                type="button"
+                                onClick={() => setHistoryOpen(true)}
+                                title="Earlier saved versions"
+                                className="press inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-xs font-semibold text-foreground cursor-pointer"
+                            >
+                                <History size={13} />
+                                <span>History</span>
+                            </button>
+                        )}
                         {isLive ? (
                             post.slug && (
                                 <Link
@@ -421,6 +438,13 @@ export function EditorTab({
                     {actions}
                 </div>
             </div>
+
+            <HistoryDialog
+                open={historyOpen}
+                postId={post.id}
+                onClose={() => setHistoryOpen(false)}
+                onRestore={onRestoreRevision}
+            />
         </div>
     );
 }

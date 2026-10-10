@@ -1,13 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import NextImage from "next/image";
-import { Check, Copy, Loader2, Plus, UploadCloud } from "lucide-react";
+import { Check, Copy, FileText, Loader2, Plus, Trash2, UploadCloud } from "lucide-react";
 import { clsx } from "clsx";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useMedia } from "./hooks/useMedia";
+import type { StoredImage } from "./types";
+import type { BlogPost } from "@/types/blog";
 
-export function MediaTab() {
-    const { images, loading, uploading, progress, copiedUrl, upload, copySnippet } = useMedia(true);
+/** Articles that embed this image in their text or use it as the cover. */
+function articlesUsing(image: StoredImage, posts: BlogPost[]): BlogPost[] {
+    // The download URL carries a token that can differ, so match on the stored path as well as the full URL
+    const needles = [image.url, image.fullPath ? encodeURIComponent(image.fullPath) : ""].filter(Boolean);
+    return posts.filter((post) =>
+        needles.some((needle) => post.coverImage?.includes(needle) || post.content?.includes(needle))
+    );
+}
+
+export function MediaTab({ posts }: { posts: BlogPost[] }) {
+    const { images, loading, uploading, progress, copiedUrl, upload, copySnippet, remove } = useMedia(true);
+    const [pendingDelete, setPendingDelete] = useState<StoredImage | null>(null);
 
     const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target;
@@ -15,6 +28,8 @@ export function MediaTab() {
         if (file) await upload(file);
         input.value = "";
     };
+
+    const pendingUsers = pendingDelete ? articlesUsing(pendingDelete, posts) : [];
 
     return (
         <div className="animate-fade-up space-y-6">
@@ -61,55 +76,104 @@ export function MediaTab() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {images.map((img, i) => (
-                        <div
-                            key={img.fullPath ?? i}
-                            className={clsx(
-                                "rounded-xl border border-border bg-card overflow-hidden group hover:border-primary/40 transition-colors flex flex-col justify-between",
-                                img.fresh && "animate-pop"
-                            )}
-                        >
-                            <div className="h-44 w-full bg-secondary/50 relative overflow-hidden flex items-center justify-center">
-                                <NextImage
-                                    src={img.url}
-                                    alt={img.name}
-                                    fill
-                                    unoptimized
-                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                                {img.size && (
-                                    <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] font-mono text-white backdrop-blur-sm">
-                                        {img.size}
-                                    </span>
+                    {images.map((img, i) => {
+                        const users = articlesUsing(img, posts);
+                        return (
+                            <div
+                                key={img.fullPath ?? i}
+                                className={clsx(
+                                    "rounded-xl border border-border bg-card overflow-hidden group hover:border-primary/40 transition-colors flex flex-col justify-between",
+                                    img.fresh && "animate-pop"
                                 )}
-                            </div>
-                            <div className="p-3.5 space-y-2">
-                                <p className="text-xs font-medium text-foreground truncate" title={img.name}>
-                                    {img.name}
-                                </p>
-                                <button
-                                    type="button"
-                                    onClick={() => copySnippet(img.url, img.name)}
-                                    className="press w-full inline-flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-border bg-secondary/40 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-medium text-foreground cursor-pointer"
-                                >
-                                    {copiedUrl === img.url ? (
-                                        <>
-                                            <Check size={13} className="animate-pop text-emerald-400" />
-                                            <span>Copied Snippet!</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy size={13} />
-                                            <span>Copy Markdown Snippet</span>
-                                        </>
+                            >
+                                <div className="h-44 w-full bg-secondary/50 relative overflow-hidden flex items-center justify-center">
+                                    <NextImage
+                                        src={img.url}
+                                        alt={img.name}
+                                        fill
+                                        unoptimized
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    {img.size && (
+                                        <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] font-mono text-white backdrop-blur-sm">
+                                            {img.size}
+                                        </span>
                                     )}
-                                </button>
+                                </div>
+                                <div className="p-3.5 space-y-2">
+                                    <p className="text-xs font-medium text-foreground truncate" title={img.name}>
+                                        {img.name}
+                                    </p>
+                                    <p
+                                        className={clsx(
+                                            "flex items-center gap-1 text-[11px] font-mono",
+                                            users.length > 0 ? "text-emerald-400" : "text-muted-foreground"
+                                        )}
+                                        title={users.map((post) => post.title).join("\n")}
+                                    >
+                                        <FileText size={11} aria-hidden="true" />
+                                        {users.length > 0
+                                            ? `Used in ${users.length} article${users.length === 1 ? "" : "s"}`
+                                            : "Not used anywhere"}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => copySnippet(img.url, img.name)}
+                                            className="press flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-border bg-secondary/40 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-medium text-foreground cursor-pointer"
+                                        >
+                                            {copiedUrl === img.url ? (
+                                                <>
+                                                    <Check size={13} className="animate-pop text-emerald-400" />
+                                                    <span>Copied</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Copy size={13} />
+                                                    <span>Copy Markdown</span>
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPendingDelete(img)}
+                                            aria-label={`Delete ${img.name}`}
+                                            title="Delete image"
+                                            className="press p-2 rounded-lg border border-border hover:border-red-500/30 bg-secondary/40 hover:bg-red-500/10 text-muted-foreground hover:text-red-400 cursor-pointer"
+                                        >
+                                            <Trash2 size={13} />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
+
+            <ConfirmDialog
+                open={pendingDelete !== null}
+                title={pendingUsers.length > 0 ? "This image is in use" : "Delete this image?"}
+                description={
+                    pendingUsers.length > 0
+                        ? `It appears in ${pendingUsers.map((post) => `“${post.title}”`).join(", ")}. Deleting it will leave a broken image there.`
+                        : "It will be removed from storage. This cannot be undone."
+                }
+                onClose={() => setPendingDelete(null)}
+                actions={[
+                    { label: "Cancel", onClick: () => setPendingDelete(null) },
+                    {
+                        label: pendingUsers.length > 0 ? "Delete anyway" : "Delete",
+                        tone: "danger",
+                        onClick: () => {
+                            const target = pendingDelete;
+                            setPendingDelete(null);
+                            if (target?.fullPath) void remove(target.fullPath);
+                        },
+                    },
+                ]}
+            />
         </div>
     );
 }

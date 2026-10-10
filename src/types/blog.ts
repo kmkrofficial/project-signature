@@ -20,6 +20,10 @@ export interface BlogPost {
     publishedAt?: { seconds: number; nanoseconds: number } | null;
     /** Former slugs of a published post; they redirect to the current one. */
     previousSlugs?: string[];
+    /** Set while the post is in the studio's trash; it is removed for good after 30 days. */
+    deletedAt?: { seconds: number; nanoseconds: number } | null;
+    /** Whether the post was live when it was trashed, so Undo can bring it back as it was. */
+    publishedBeforeTrash?: boolean;
 }
 
 /** Serializable post metadata used by public listings, feeds and search. */

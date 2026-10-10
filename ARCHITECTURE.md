@@ -81,9 +81,13 @@ src/
 | `likes` | number | Written only by `/api/likes` |
 | `createdAt`, `updatedAt` | Timestamp | |
 | `publishedAt` | Timestamp | Set once, the first time the post goes live. It is the public date; older posts fall back to `createdAt` |
+| `deletedAt` | Timestamp | Present while the post is in the studio's trash; removed for good after 30 days |
+| `publishedBeforeTrash` | boolean | Whether it was live when trashed, so Undo restores it as it was |
 | `previousSlugs` | string[] | Former slugs of a post that has been live; they redirect to the current one |
 
 **`blog/{postId}/likers/{hash}`**: one document per reader per post. The ID is `sha256(ip:postId:LIKE_HASH_SALT)`, so raw IPs are never stored. Only the Admin SDK can access these.
+
+**`blog/{postId}/revisions/{id}`**: the last 20 explicit saves (title, excerpt, content, cover, category, tags, reason, `savedAt`) for the studio's History view. Admin only; autosaves do not create revisions.
 
 **`previews/{sha256(token)}`**: one document per draft preview link: `postId`, `kind` (`self` or `share`), `label`, `lockedEmail`, `expiresAt`, `revoked`, `views`, `sessionHashes`. Only the hash of the token is stored. The rules deny every client access, so these are readable and writable only through the Admin SDK.
 

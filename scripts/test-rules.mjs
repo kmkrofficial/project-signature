@@ -99,6 +99,31 @@ describe("firestore: config and unknown collections", () => {
     });
 });
 
+describe("firestore: version history", () => {
+    // Saved versions are the studio's own safety net: admin only, and never readable alongside a public post.
+    const revision = { title: "Hello", content: "Older text", reason: "draft" };
+
+    beforeEach(async () => {
+        await env.withSecurityRulesDisabled((ctx) =>
+            ctx.firestore().doc("blog/published/revisions/r1").set(revision)
+        );
+    });
+
+    test("anonymous cannot read a revision of a published post", () =>
+        assertFails(anonCtx().doc("blog/published/revisions/r1").get()));
+    test("signed-in non-admin cannot read or list revisions", async () => {
+        await assertFails(userCtx().doc("blog/published/revisions/r1").get());
+        await assertFails(userCtx().collection("blog/published/revisions").get());
+    });
+    test("signed-in non-admin cannot write a revision", () =>
+        assertFails(userCtx().doc("blog/published/revisions/r2").set(revision)));
+    test("admin can read, write and delete revisions", async () => {
+        await assertSucceeds(adminCtx().doc("blog/published/revisions/r1").get());
+        await assertSucceeds(adminCtx().doc("blog/published/revisions/r2").set(revision));
+        await assertSucceeds(adminCtx().doc("blog/published/revisions/r2").delete());
+    });
+});
+
 describe("firestore: draft preview links", () => {
     // Links are created and resolved by the server (Admin SDK) only; no client may read or write them,
     // not even an admin, so a leaked web config can never enumerate or forge review links.

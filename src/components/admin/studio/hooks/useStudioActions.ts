@@ -1,9 +1,16 @@
 import { useCallback, useRef, useState } from "react";
-import { deleteDoc, doc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { useToast } from "@/context/ToastContext";
-import { revalidateContent } from "@/app/admin/actions";
-import { isSlugTaken, persistPost, type SaveIntent, type StoredInfo } from "../posts-client";
+import { revalidateContent, revokePostPreviewLinks } from "@/app/admin/actions";
+import {
+    deletePostForever,
+    isSlugTaken,
+    persistPost,
+    restorePost,
+    trashPost,
+    type SaveIntent,
+    type StoredInfo,
+} from "../posts-client";
 import type { DraftPost } from "../types";
 import type { BlogPost } from "@/types/blog";
 
@@ -18,14 +25,17 @@ const SUCCESS_MESSAGE: Record<SaveIntent, string> = {
 
 interface Options {
     posts: BlogPost[];
-    fetchPosts: () => Promise<void>;
-    removePost: (id: string) => void;
+    fetchPosts: (silent?: boolean) => Promise<void>;
+    /** Resolves when the row's collapse animation has finished. */
+    removePost: (id: string) => Promise<void>;
 }
 
 interface PersistOptions {
-    /** Autosave: no toasts and no validation errors, just skip when the post isn't savable yet. */
+    /** Autosave: no toasts, no validation errors and no history entry; it just skips when the post isn't savable yet. */
     silent?: boolean;
 }
+
+const messageOf = (err: unknown) => (err instanceof Error ? err.message : String(err));
 
 /** Firestore writes for the studio, each followed by a public-cache refresh when readers can see the change. */
 export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
@@ -34,15 +44,18 @@ export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
     const inFlight = useRef(false);
 
     // Expire the cached public pages so the edit is visible immediately
-    const refreshPublicSite = useCallback(async () => {
-        try {
-            const token = await auth.currentUser?.getIdToken();
-            if (token) await revalidateContent(token, "posts");
-        } catch (err) {
-            console.error("Revalidation failed:", err);
-            addToast("Saved, but the public site may take a while to update", "error");
-        }
-    }, [addToast]);
+    const refreshPublicSite = useCallback(
+        async (scope: "posts" | "config" = "posts") => {
+            try {
+                const token = await auth.currentUser?.getIdToken();
+                if (token) await revalidateContent(token, scope);
+            } catch (err) {
+                console.error("Revalidation failed:", err);
+                addToast("Saved, but the public site may take a while to update", "error");
+            }
+        },
+        [addToast]
+    );
 
     /** Saves the post. Returns the stored post, or null when nothing was written. */
     const persist = useCallback(
@@ -82,7 +95,7 @@ export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
                     return fail("That URL is already used by another article");
                 }
 
-                const saved = await persistPost(post, intent, stored);
+                const saved = await persistPost(post, intent, stored, { revision: !silent });
 
                 const becameVisible = intent === "publish" || intent === "unpublish" || saved.published === true;
                 if (becameVisible) await refreshPublicSite();
@@ -90,9 +103,8 @@ export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
                 if (!silent) addToast(SUCCESS_MESSAGE[intent], "success");
                 return saved;
             } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : String(err);
-                console.error("Save error:", msg);
-                return fail("Failed to save article: " + msg);
+                console.error("Save error:", messageOf(err));
+                return fail("Failed to save article: " + messageOf(err));
             } finally {
                 inFlight.current = false;
                 if (!silent) setSaving(false);
@@ -101,25 +113,60 @@ export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
         [addToast, fetchPosts, posts, refreshPublicSite]
     );
 
-    const deletePost = useCallback(
-        async (id: string) => {
-            if (!confirm("Are you sure you want to delete this article?")) return false;
-
+    /** Brings an article back from the trash: as a draft, or live again when `publish` is set. */
+    const restore = useCallback(
+        async (id: string, publish: boolean) => {
             try {
-                await deleteDoc(doc(db, "blog", id));
-                removePost(id);
-                await refreshPublicSite();
-                addToast("Article deleted successfully", "success");
-                return true;
+                await restorePost(id, publish);
+                if (publish) await refreshPublicSite();
+                await fetchPosts(true);
+                addToast(publish ? "Restored and live again" : "Restored as a draft", "success");
             } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : String(err);
-                console.error("Delete error:", msg);
-                addToast("Failed to delete article: " + msg, "error");
-                return false;
+                console.error("Restore error:", messageOf(err));
+                addToast("Failed to restore article: " + messageOf(err), "error");
             }
         },
-        [addToast, refreshPublicSite, removePost]
+        [addToast, fetchPosts, refreshPublicSite]
     );
 
-    return { saving, persist, deletePost, refreshPublicSite };
+    /** Moves an article to the trash. The toast offers Undo, which brings it back exactly as it was. */
+    const trash = useCallback(
+        async (post: BlogPost) => {
+            try {
+                await trashPost(post);
+                // Let the row finish collapsing before the list is refreshed, or the refresh would be undone
+                await removePost(post.id);
+
+                const token = await auth.currentUser?.getIdToken();
+                if (token) await revokePostPreviewLinks(token, post.id).catch(() => undefined);
+                if (post.published !== false) await refreshPublicSite();
+                await fetchPosts(true);
+
+                addToast("Moved to trash", "success", {
+                    label: "Undo",
+                    onClick: () => void restore(post.id, post.published !== false),
+                });
+            } catch (err: unknown) {
+                console.error("Trash error:", messageOf(err));
+                addToast("Failed to delete article: " + messageOf(err), "error");
+            }
+        },
+        [addToast, fetchPosts, refreshPublicSite, removePost, restore]
+    );
+
+    const deleteForever = useCallback(
+        async (id: string) => {
+            try {
+                await deletePostForever(id);
+                await removePost(id);
+                addToast("Article deleted permanently", "success");
+            } catch (err: unknown) {
+                console.error("Delete error:", messageOf(err));
+                addToast("Failed to delete article: " + messageOf(err), "error");
+            }
+        },
+        [addToast, removePost]
+    );
+
+    return { saving, persist, trash, restore, deleteForever, refreshPublicSite };
 }

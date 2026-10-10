@@ -13,6 +13,7 @@ import {
     listPreviewLinks as listLinks,
     openLockedPreview,
     revokePreviewLink as revokeLink,
+    revokePreviewLinksForPost,
     type PreviewLinkSummary,
 } from "@/lib/previews";
 
@@ -92,6 +93,12 @@ export async function listPreviewLinks(idToken: string, postId: string): Promise
 export async function revokePreviewLink(idToken: string, id: string): Promise<void> {
     await requireAdmin(idToken);
     await revokeLink(id);
+}
+
+/** Kills every preview link of an article, e.g. when it is moved to the trash. */
+export async function revokePostPreviewLinks(idToken: string, postId: string): Promise<void> {
+    await requireAdmin(idToken);
+    await revokePreviewLinksForPost(postId);
 }
 
 /**

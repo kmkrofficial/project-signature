@@ -6,10 +6,17 @@ import { clsx } from "clsx";
 
 export type ToastType = "success" | "error" | "info";
 
+/** An optional button on the toast, e.g. "Undo". */
+export interface ToastAction {
+    label: string;
+    onClick: () => void;
+}
+
 export interface ToastProps {
     id: string;
     message: string;
     type: ToastType;
+    action?: ToastAction;
     onClose: (id: string) => void;
 }
 
@@ -17,7 +24,7 @@ export interface ToastProps {
 const MAX_LIFETIME_MS = 15000;
 const LEAVE_FALLBACK_MS = 450;
 
-export function Toast({ id, message, type, onClose }: ToastProps) {
+export function Toast({ id, message, type, action, onClose }: ToastProps) {
     const [leaving, setLeaving] = useState(false);
 
     useEffect(() => {
@@ -62,6 +69,19 @@ export function Toast({ id, message, type, onClose }: ToastProps) {
                             <p className="text-sm leading-snug break-words">{message}</p>
                         </div>
 
+                        {action && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    action.onClick();
+                                    setLeaving(true);
+                                }}
+                                className="press shrink-0 rounded-lg px-2 py-0.5 text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer"
+                            >
+                                {action.label}
+                            </button>
+                        )}
+
                         <button
                             type="button"
                             onClick={() => setLeaving(true)}
@@ -92,7 +112,7 @@ export function Toast({ id, message, type, onClose }: ToastProps) {
 }
 
 interface ToastContainerProps {
-    toasts: Array<{ id: string; message: string; type: ToastType }>;
+    toasts: Array<{ id: string; message: string; type: ToastType; action?: ToastAction }>;
     removeToast: (id: string) => void;
 }
 
@@ -100,7 +120,14 @@ export function ToastContainer({ toasts, removeToast }: ToastContainerProps) {
     return (
         <div className="fixed bottom-1 right-4 left-4 sm:left-auto sm:bottom-3 sm:right-6 z-[100] flex flex-col sm:w-full max-w-sm pointer-events-none">
             {toasts.map((toast) => (
-                <Toast key={toast.id} id={toast.id} message={toast.message} type={toast.type} onClose={removeToast} />
+                <Toast
+                    key={toast.id}
+                    id={toast.id}
+                    message={toast.message}
+                    type={toast.type}
+                    action={toast.action}
+                    onClose={removeToast}
+                />
             ))}
         </div>
     );

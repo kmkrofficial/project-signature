@@ -32,7 +32,7 @@ import { usePosts } from "./studio/hooks/usePosts";
 import { usePostDraft } from "./studio/hooks/usePostDraft";
 import { useSlugCheck } from "./studio/hooks/useSlugCheck";
 import { useStudioActions } from "./studio/hooks/useStudioActions";
-import type { SaveIntent } from "./studio/posts-client";
+import type { Revision, SaveIntent } from "./studio/posts-client";
 import { emptyPost, type DraftPost, type StudioTab } from "./studio/types";
 import type { BlogPost } from "@/types/blog";
 
@@ -47,8 +47,12 @@ export default function AdminStudio() {
     /** An action that was blocked by unsaved changes, waiting for the writer's decision. */
     const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
 
-    const { posts, loading, removingIds, fetchPosts, removePost } = usePosts();
-    const { saving, persist, deletePost } = useStudioActions({ posts, fetchPosts, removePost });
+    const { posts, trashed, loading, loadedAt, removingIds, fetchPosts, removePost } = usePosts();
+    const { saving, persist, trash, restore, deleteForever, refreshPublicSite } = useStudioActions({
+        posts,
+        fetchPosts,
+        removePost,
+    });
     const draft = usePostDraft();
     const { post, stored, dirty, markSaved } = draft;
 
@@ -143,9 +147,23 @@ export default function AdminStudio() {
         setActiveTab("editor");
     };
 
-    const handleDelete = async (id: string) => {
-        const deleted = await deletePost(id);
-        if (deleted && post.id === id) draft.load(emptyPost());
+    /** Puts an older version's text into the editor; it stays unsaved until the writer saves. */
+    const handleRestoreRevision = (revision: Revision) => {
+        draft.setPost((prev) => ({
+            ...prev,
+            title: revision.title,
+            excerpt: revision.excerpt,
+            content: revision.content,
+            coverImage: revision.coverImage,
+            category: revision.category,
+            tags: revision.tags,
+        }));
+        addToast("Version loaded. Save to keep it.", "info");
+    };
+
+    const handleTrash = async (target: BlogPost) => {
+        await trash(target);
+        if (post.id === target.id) draft.load(emptyPost());
     };
 
     const tabs: { id: StudioTab; label: string; icon: React.ReactNode; badge?: number }[] = [
@@ -270,7 +288,11 @@ export default function AdminStudio() {
                     removingIds={removingIds}
                     onCreate={handleCreateNew}
                     onEdit={handleEditPost}
-                    onDelete={handleDelete}
+                    trashed={trashed}
+                    loadedAt={loadedAt}
+                    onTrash={handleTrash}
+                    onRestore={(id) => void restore(id, false)}
+                    onDeleteForever={(id) => void deleteForever(id)}
                 />
             )}
 
@@ -293,14 +315,17 @@ export default function AdminStudio() {
                     onBack={() => guarded(() => setActiveTab("articles"))}
                     onPreview={handlePreview}
                     onShare={handleShare}
+                    onRestoreRevision={handleRestoreRevision}
                 />
             )}
 
-            {activeTab === "media" && <MediaTab />}
+            {activeTab === "media" && <MediaTab posts={posts} />}
 
             <ShareDialog open={shareOpen} postId={post.id} onClose={() => setShareOpen(false)} />
 
-            {activeTab === "settings" && <SettingsTab postCount={posts.length} />}
+            {activeTab === "settings" && (
+                <SettingsTab postCount={posts.length} onSaved={() => refreshPublicSite("config")} />
+            )}
 
             <ConfirmDialog
                 open={pendingLeave !== null}

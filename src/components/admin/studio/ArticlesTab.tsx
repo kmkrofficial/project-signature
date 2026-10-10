@@ -2,19 +2,35 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BarChart3, CheckCircle2, Edit3, Eye, FileText, Layers, PenLine, Plus, Search, Trash2 } from "lucide-react";
+import {
+    ArrowRight,
+    BarChart3,
+    CheckCircle2,
+    Edit3,
+    Eye,
+    FileText,
+    Layers,
+    PenLine,
+    Plus,
+    RotateCcw,
+    Search,
+    Trash2,
+} from "lucide-react";
 import { clsx } from "clsx";
 import { CollapseRow } from "@/components/ui/CollapseRow";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { TRASH_RETENTION_DAYS } from "./posts-client";
 import { CATEGORIES } from "./types";
 import type { BlogPost } from "@/types/blog";
 
-type StatusFilter = "all" | "published" | "drafts";
+type StatusFilter = "all" | "published" | "drafts" | "trash";
 
 const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
     { id: "all", label: "All" },
     { id: "published", label: "Published" },
     { id: "drafts", label: "Drafts" },
+    { id: "trash", label: "Trash" },
 ];
 
 /** Last edit time in seconds, falling back to creation time for older posts. */
@@ -37,13 +53,32 @@ interface Props {
     removingIds: string[];
     onCreate: () => void;
     onEdit: (post: BlogPost) => void;
-    onDelete: (id: string) => void;
+    /** Trashed articles, shown under the Trash filter. */
+    trashed: BlogPost[];
+    onTrash: (post: BlogPost) => void;
+    /** When the list was loaded (epoch seconds); used to count down the trash retention. */
+    loadedAt: number;
+    /** Brings an article back from the trash as a draft. */
+    onRestore: (id: string) => void;
+    onDeleteForever: (id: string) => void;
 }
 
-export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onDelete }: Props) {
+export function ArticlesTab({
+    posts,
+    loading,
+    removingIds,
+    onCreate,
+    onEdit,
+    trashed,
+    onTrash,
+    loadedAt,
+    onRestore,
+    onDeleteForever,
+}: Props) {
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("All");
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+    const [confirmForeverId, setConfirmForeverId] = useState<string | null>(null);
 
     const stats = {
         total: posts.length,
@@ -53,7 +88,9 @@ export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onD
     };
 
     const needle = searchQuery.toLowerCase();
-    const filteredPosts = posts
+    const inTrash = statusFilter === "trash";
+
+    const filteredPosts = (inTrash ? trashed : posts)
         .filter((p) => {
             const isDraft = p.published === false;
             if (statusFilter === "drafts" && !isDraft) return false;
@@ -179,6 +216,9 @@ export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onD
                             )}
                         >
                             {option.label}
+                            {option.id === "trash" && trashed.length > 0 && (
+                                <span className="ml-1 font-mono opacity-70">{trashed.length}</span>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -273,16 +313,52 @@ export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onD
                                 <div className="flex items-center gap-4 text-[11px] font-mono text-muted-foreground">
                                     <span>/{post.slug}</span>
                                     <span>•</span>
-                                    <span>{post.likes || 0} likes</span>
-                                    <span>•</span>
-                                    <span>
-                                        {post.createdAt?.seconds
-                                            ? new Date(post.createdAt.seconds * 1000).toLocaleDateString()
-                                            : "Recent"}
-                                    </span>
+                                    {post.deletedAt ? (
+                                        <span>
+                                            Removed for good in{" "}
+                                            {Math.max(
+                                                0,
+                                                Math.ceil(
+                                                    TRASH_RETENTION_DAYS -
+                                                        (loadedAt - post.deletedAt.seconds) / 86400
+                                                )
+                                            )}{" "}
+                                            days
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <span>{post.likes || 0} likes</span>
+                                            <span>•</span>
+                                            <span>
+                                                {post.createdAt?.seconds
+                                                    ? new Date(post.createdAt.seconds * 1000).toLocaleDateString()
+                                                    : "Recent"}
+                                            </span>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
+                            {post.deletedAt ? (
+                                <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => onRestore(post.id)}
+                                        className="press inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-secondary/30 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-medium text-foreground cursor-pointer"
+                                    >
+                                        <RotateCcw size={13} />
+                                        <span>Restore</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfirmForeverId(post.id)}
+                                        className="press inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border hover:border-red-500/30 bg-secondary/30 hover:bg-red-500/10 text-xs font-medium text-muted-foreground hover:text-red-400 cursor-pointer"
+                                    >
+                                        <Trash2 size={13} />
+                                        <span>Delete forever</span>
+                                    </button>
+                                </div>
+                            ) : (
                             <div className="flex items-center gap-2 self-end md:self-center shrink-0">
                                 <Link
                                     href={`/blog/${post.slug}`}
@@ -304,17 +380,36 @@ export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onD
 
                                 <button
                                     type="button"
-                                    onClick={() => onDelete(post.id)}
+                                    onClick={() => onTrash(post)}
                                     className="press p-2 rounded-lg border border-border hover:border-red-500/30 bg-secondary/30 hover:bg-red-500/10 text-muted-foreground hover:text-red-400 cursor-pointer"
-                                    title="Delete Article"
+                                    title="Move to trash"
                                 >
                                     <Trash2 size={14} />
                                 </button>
                             </div>
+                            )}
                         </CollapseRow>
                     ))}
                 </div>
             )}
+
+            <ConfirmDialog
+                open={confirmForeverId !== null}
+                title="Delete this article forever?"
+                description="This removes the article and its saved versions. It cannot be undone."
+                onClose={() => setConfirmForeverId(null)}
+                actions={[
+                    { label: "Cancel", onClick: () => setConfirmForeverId(null) },
+                    {
+                        label: "Delete forever",
+                        tone: "danger",
+                        onClick: () => {
+                            if (confirmForeverId) onDeleteForever(confirmForeverId);
+                            setConfirmForeverId(null);
+                        },
+                    },
+                ]}
+            />
         </div>
     );
 }
