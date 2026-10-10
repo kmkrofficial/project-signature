@@ -13,13 +13,15 @@ interface Props {
     excerpt: string;
     content: string;
     className?: string;
+    /** CSS height of the scroll area, so it can match the editor next to it. */
+    height?: string;
 }
 
 /**
  * The article as readers will see it, rendered by the server with the same markdown pipeline
  * (sanitizing, syntax highlighting, figures) that the public site uses.
  */
-export function LivePreview({ title, excerpt, content, className }: Props) {
+export function LivePreview({ title, excerpt, content, className, height }: Props) {
     const [html, setHtml] = useState<string | null>(null);
     const [failed, setFailed] = useState(false);
 
@@ -45,7 +47,7 @@ export function LivePreview({ title, excerpt, content, className }: Props) {
     }, [content]);
 
     return (
-        <div className={className}>
+        <div className={className} style={height ? { height } : undefined}>
             <div className="mx-auto max-w-3xl p-6 sm:p-8">
                 {title && (
                     <h1 className="text-3xl font-extrabold tracking-tight text-foreground leading-tight text-balance">

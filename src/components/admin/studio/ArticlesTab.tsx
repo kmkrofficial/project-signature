@@ -2,12 +2,34 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { BarChart3, CheckCircle2, Edit3, Eye, FileText, Layers, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowRight, BarChart3, CheckCircle2, Edit3, Eye, FileText, Layers, PenLine, Plus, Search, Trash2 } from "lucide-react";
 import { clsx } from "clsx";
 import { CollapseRow } from "@/components/ui/CollapseRow";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { CATEGORIES } from "./types";
 import type { BlogPost } from "@/types/blog";
+
+type StatusFilter = "all" | "published" | "drafts";
+
+const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
+    { id: "all", label: "All" },
+    { id: "published", label: "Published" },
+    { id: "drafts", label: "Drafts" },
+];
+
+/** Last edit time in seconds, falling back to creation time for older posts. */
+const editedAt = (post: BlogPost) => post.updatedAt?.seconds ?? post.createdAt?.seconds ?? 0;
+
+function timeAgo(seconds: number): string {
+    if (!seconds) return "recently";
+    const minutes = Math.max(0, Math.round((Date.now() / 1000 - seconds) / 60));
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours} h ago`;
+    const days = Math.round(hours / 24);
+    return days < 30 ? `${days} d ago` : new Date(seconds * 1000).toLocaleDateString();
+}
 
 interface Props {
     posts: BlogPost[];
@@ -21,6 +43,7 @@ interface Props {
 export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onDelete }: Props) {
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("All");
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
     const stats = {
         total: posts.length,
@@ -30,14 +53,29 @@ export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onD
     };
 
     const needle = searchQuery.toLowerCase();
-    const filteredPosts = posts.filter((p) => {
-        const matchesCategory = categoryFilter === "All" || p.category === categoryFilter;
-        const matchesSearch =
-            p.title.toLowerCase().includes(needle) ||
-            (p.excerpt || "").toLowerCase().includes(needle) ||
-            p.tags?.some((t) => t.toLowerCase().includes(needle));
-        return matchesCategory && matchesSearch;
-    });
+    const filteredPosts = posts
+        .filter((p) => {
+            const isDraft = p.published === false;
+            if (statusFilter === "drafts" && !isDraft) return false;
+            if (statusFilter === "published" && isDraft) return false;
+
+            const matchesCategory = categoryFilter === "All" || p.category === categoryFilter;
+            const matchesSearch =
+                p.title.toLowerCase().includes(needle) ||
+                (p.excerpt || "").toLowerCase().includes(needle) ||
+                p.tags?.some((t) => t.toLowerCase().includes(needle));
+            return matchesCategory && matchesSearch;
+        })
+        .sort((a, b) => editedAt(b) - editedAt(a));
+
+    // Jump back into work in progress, unless the writer is searching or filtering
+    const filtering = searchQuery !== "" || categoryFilter !== "All" || statusFilter !== "all";
+    const recentDrafts = filtering
+        ? []
+        : posts
+              .filter((p) => p.published === false)
+              .sort((a, b) => editedAt(b) - editedAt(a))
+              .slice(0, 3);
 
     return (
         <div className="space-y-6">
@@ -80,6 +118,39 @@ export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onD
                 </div>
             </div>
 
+            {recentDrafts.length > 0 && (
+                <section aria-label="Continue writing" className="space-y-2">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Continue writing
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {recentDrafts.map((draft) => (
+                            <button
+                                key={draft.id}
+                                type="button"
+                                onClick={() => onEdit(draft)}
+                                className="press group flex items-start gap-3 rounded-xl border border-border/80 bg-card p-3.5 text-left hover:border-primary/50 cursor-pointer"
+                            >
+                                <PenLine size={15} className="mt-0.5 shrink-0 text-amber-400" aria-hidden="true" />
+                                <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                                        {draft.title || "Untitled draft"}
+                                    </span>
+                                    <span className="block text-[11px] font-mono text-muted-foreground">
+                                        Edited {timeAgo(editedAt(draft))}
+                                    </span>
+                                </span>
+                                <ArrowRight
+                                    size={14}
+                                    aria-hidden="true"
+                                    className="mt-1 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                                />
+                            </button>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* Filter & Search Bar */}
             <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card p-3 rounded-xl border border-border/80">
                 <div className="relative flex-1">
@@ -91,6 +162,25 @@ export function ArticlesTab({ posts, loading, removingIds, onCreate, onEdit, onD
                         placeholder="Search articles by title, tag, or topic..."
                         className="w-full pl-9 pr-4 py-2 bg-secondary/40 border border-border rounded-lg text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                     />
+                </div>
+
+                <div className="flex items-center gap-1 rounded-lg border border-border bg-secondary/30 p-0.5 self-start md:self-auto">
+                    {STATUS_FILTERS.map((option) => (
+                        <button
+                            key={option.id}
+                            type="button"
+                            aria-pressed={statusFilter === option.id}
+                            onClick={() => setStatusFilter(option.id)}
+                            className={clsx(
+                                "press px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer",
+                                statusFilter === option.id
+                                    ? "bg-primary text-primary-foreground"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            {option.label}
+                        </button>
+                    ))}
                 </div>
 
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">

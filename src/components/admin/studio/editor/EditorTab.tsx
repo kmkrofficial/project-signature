@@ -3,7 +3,22 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowLeft, Check, ExternalLink, Eye, EyeOff, Loader2, RotateCcw, Save, Send, Share2, Upload } from "lucide-react";
+import {
+    ArrowLeft,
+    Check,
+    ExternalLink,
+    Eye,
+    EyeOff,
+    Loader2,
+    Maximize2,
+    Minimize2,
+    PanelRight,
+    RotateCcw,
+    Save,
+    Send,
+    Share2,
+    Upload,
+} from "lucide-react";
 import { clsx } from "clsx";
 import { useToast } from "@/context/ToastContext";
 import { useTheme } from "@/components/layout/ThemeProvider";
@@ -11,6 +26,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { estimateReadingTime } from "@/lib/format";
 import { LivePreview } from "./LivePreview";
 import { MetadataPanel } from "./MetadataPanel";
+import { useImageDrop } from "../hooks/useImageDrop";
+import { withTitle } from "../slug";
 import type { SlugStatus } from "../hooks/useSlugCheck";
 import type { SaveIntent } from "../posts-client";
 import type { DraftPost } from "../types";
@@ -76,6 +93,9 @@ export function EditorTab({
     const { addToast } = useToast();
     const { theme } = useTheme();
     const [view, setView] = useState<EditorView>("split");
+    const [focus, setFocus] = useState(false);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const imageDrop = useImageDrop(setPost);
 
     const isLive = post.published === true;
     const wordCount = post.content ? post.content.trim().split(/\s+/).filter(Boolean).length : 0;
@@ -84,9 +104,13 @@ export function EditorTab({
     const otherFeaturedCount = posts.filter((p) => p.featured && p.id !== post.id).length;
     const isAtLimit = otherFeaturedCount >= MAX_SPOTLIGHT && !post.featured;
 
-    // Ctrl/Cmd+S saves, Ctrl/Cmd+Shift+P publishes
+    // Ctrl/Cmd+S saves, Ctrl/Cmd+Shift+P publishes, Ctrl/Cmd+. toggles focus mode, Esc leaves it
     useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape" && focus && !document.querySelector("dialog[open]")) {
+                setFocus(false);
+                return;
+            }
             if (!(event.ctrlKey || event.metaKey)) return;
             const key = event.key.toLowerCase();
             if (key === "s" && !event.shiftKey) {
@@ -95,11 +119,24 @@ export function EditorTab({
             } else if (key === "p" && event.shiftKey && !isLive) {
                 event.preventDefault();
                 onSave("publish");
+            } else if (key === ".") {
+                event.preventDefault();
+                setFocus((on) => !on);
             }
         };
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [isLive, onSave]);
+    }, [isLive, onSave, focus]);
+
+    // The page behind focus mode must not scroll
+    useEffect(() => {
+        if (!focus) return;
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = previous;
+        };
+    }, [focus]);
 
     const status = saving ? (
         <span className="inline-flex items-center gap-1 text-muted-foreground">
@@ -115,9 +152,99 @@ export function EditorTab({
         </span>
     ) : null;
 
-    const actions = (
-        <ActionButtons isLive={isLive} dirty={dirty} saving={saving} isNew={!post.id} onSave={onSave} />
+    const actions = <ActionButtons isLive={isLive} dirty={dirty} saving={saving} isNew={!post.id} onSave={onSave} />;
+
+    const canvas = (
+        <Canvas
+            view={view}
+            setView={setView}
+            post={post}
+            setPost={setPost}
+            dark={theme !== "light"}
+            height={focus ? "calc(100dvh - 12rem)" : 520}
+            imageDrop={imageDrop}
+        />
     );
+
+    if (focus) {
+        return (
+            <div
+                role="dialog"
+                aria-label="Focus mode"
+                className="animate-fade-in fixed inset-0 z-50 flex flex-col bg-background"
+            >
+                <div className="flex flex-wrap items-center gap-3 border-b border-border/80 px-4 py-3">
+                    <button
+                        type="button"
+                        onClick={() => setFocus(false)}
+                        title="Leave focus mode (Esc)"
+                        className="press inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-xs font-semibold text-foreground cursor-pointer"
+                    >
+                        <Minimize2 size={13} />
+                        <span>Exit focus</span>
+                    </button>
+
+                    <input
+                        type="text"
+                        value={post.title || ""}
+                        onChange={(e) => setPost((prev) => withTitle(prev, e.target.value, manualSlug))}
+                        placeholder="Article title"
+                        aria-label="Article title"
+                        className="min-w-[10rem] flex-1 bg-transparent text-base sm:text-lg font-bold text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    />
+
+                    <span className="hidden sm:inline text-[11px] font-mono text-muted-foreground">
+                        {wordCount} words · {readingTime} min
+                    </span>
+                    <span className="text-[11px] font-mono">{status}</span>
+
+                    <button
+                        type="button"
+                        onClick={() => setDetailsOpen((open) => !open)}
+                        aria-pressed={detailsOpen}
+                        className={clsx(
+                            "press inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold cursor-pointer",
+                            detailsOpen
+                                ? "border-primary/50 bg-primary/10 text-primary"
+                                : "border-border bg-secondary/30 hover:bg-secondary text-foreground"
+                        )}
+                    >
+                        <PanelRight size={13} />
+                        <span>Details</span>
+                    </button>
+
+                    {actions}
+                </div>
+
+                <div className="relative flex min-h-0 flex-1">
+                    <div className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">{canvas}</div>
+
+                    {detailsOpen && (
+                        <aside
+                            className={clsx(
+                                "animate-fade-in overflow-y-auto bg-background",
+                                "max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-10 max-md:max-h-[65dvh] max-md:rounded-t-2xl max-md:border-t max-md:border-border max-md:shadow-2xl",
+                                "md:w-[24rem] md:shrink-0 md:border-l md:border-border/80"
+                            )}
+                            aria-label="Article details"
+                        >
+                            <div className="p-4">
+                                <MetadataPanel
+                                    post={post}
+                                    setPost={setPost}
+                                    manualSlug={manualSlug}
+                                    setManualSlug={setManualSlug}
+                                    slugLocked={slugLocked}
+                                    slugStatus={slugStatus}
+                                    layout="stack"
+                                />
+                            </div>
+                        </aside>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="animate-fade-up space-y-6">
@@ -269,62 +396,7 @@ export function EditorTab({
                 slugStatus={slugStatus}
             />
 
-            {/* Markdown Canvas Editor */}
-            <div className="space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground px-1">
-                    <div
-                        role="tablist"
-                        aria-label="Editor view"
-                        className="inline-flex rounded-xl border border-border bg-secondary/30 p-0.5"
-                    >
-                        {VIEWS.map((option) => (
-                            <button
-                                key={option.id}
-                                type="button"
-                                role="tab"
-                                aria-selected={view === option.id}
-                                onClick={() => setView(option.id)}
-                                className={clsx(
-                                    "press px-3 py-1.5 rounded-lg text-[11px] font-semibold cursor-pointer",
-                                    view === option.id
-                                        ? "bg-primary text-primary-foreground"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                {option.label}
-                            </button>
-                        ))}
-                    </div>
-                    <span className="font-mono text-[11px]">Ctrl+S to save · Ctrl+Shift+P to publish</span>
-                </div>
-
-                <div className={clsx("grid gap-4", view === "split" ? "lg:grid-cols-2" : "grid-cols-1")}>
-                    {view !== "preview" && (
-                        <div
-                            data-color-mode={theme === "light" ? "light" : "dark"}
-                            className="min-w-0 rounded-xl overflow-hidden border border-border/80"
-                        >
-                            <MDEditor
-                                value={post.content || ""}
-                                onChange={(val) => setPost((prev) => ({ ...prev, content: val || "" }))}
-                                height={520}
-                                preview="edit"
-                            />
-                        </div>
-                    )}
-                    {view !== "write" && (
-                        <LivePreview
-                            title={post.title || ""}
-                            excerpt={post.excerpt || ""}
-                            content={post.content || ""}
-                            className={clsx(
-                                "min-w-0 overflow-y-auto rounded-xl border border-border/80 bg-card",
-                                view === "preview" ? "min-h-[520px]" : "h-[520px]"
-                            )}
-                        />
-                    )}
-                </div>
-            </div>
+            {canvas}
 
             {/* Bottom Action Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-card border border-border/80">
@@ -336,7 +408,104 @@ export function EditorTab({
                     Back to articles
                 </button>
 
-                {actions}
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setFocus(true)}
+                        title="Distraction-free writing (Ctrl+.)"
+                        className="press inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-secondary/30 hover:bg-secondary text-xs font-semibold text-foreground cursor-pointer"
+                    >
+                        <Maximize2 size={13} />
+                        <span>Focus</span>
+                    </button>
+                    {actions}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/** The write / split / preview area. Accepts pasted and dropped images. */
+function Canvas({
+    view,
+    setView,
+    post,
+    setPost,
+    dark,
+    height,
+    imageDrop,
+}: {
+    view: EditorView;
+    setView: (view: EditorView) => void;
+    post: DraftPost;
+    setPost: React.Dispatch<React.SetStateAction<DraftPost>>;
+    dark: boolean;
+    height: number | string;
+    imageDrop: ReturnType<typeof useImageDrop>;
+}) {
+    const { dragging, uploading, handlers } = imageDrop;
+    const fixedHeight = typeof height === "number" ? `${height}px` : height;
+
+    return (
+        <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground px-1">
+                <div
+                    role="tablist"
+                    aria-label="Editor view"
+                    className="inline-flex rounded-xl border border-border bg-secondary/30 p-0.5"
+                >
+                    {VIEWS.map((option) => (
+                        <button
+                            key={option.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={view === option.id}
+                            onClick={() => setView(option.id)}
+                            className={clsx(
+                                "press px-3 py-1.5 rounded-lg text-[11px] font-semibold cursor-pointer",
+                                view === option.id
+                                    ? "bg-primary text-primary-foreground"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            {option.label}
+                        </button>
+                    ))}
+                </div>
+                <span className="font-mono text-[11px]">
+                    {uploading > 0
+                        ? `Uploading ${uploading} image${uploading === 1 ? "" : "s"}…`
+                        : "Paste or drop images · Ctrl+S save · Ctrl+Shift+P publish · Ctrl+. focus"}
+                </span>
+            </div>
+
+            <div className={clsx("grid gap-4", view === "split" ? "lg:grid-cols-2" : "grid-cols-1")}>
+                {view !== "preview" && (
+                    <div
+                        data-color-mode={dark ? "dark" : "light"}
+                        {...handlers}
+                        className={clsx(
+                            "min-w-0 rounded-xl overflow-hidden border transition-colors",
+                            dragging ? "border-primary ring-2 ring-primary/30" : "border-border/80"
+                        )}
+                    >
+                        <MDEditor
+                            value={post.content || ""}
+                            onChange={(val) => setPost((prev) => ({ ...prev, content: val || "" }))}
+                            height={height}
+                            preview="edit"
+                        />
+                    </div>
+                )}
+                {view !== "write" && (
+                    <LivePreview
+                        title={post.title || ""}
+                        excerpt={post.excerpt || ""}
+                        content={post.content || ""}
+                        className="min-w-0 overflow-y-auto rounded-xl border border-border/80 bg-card"
+                        height={fixedHeight}
+                    />
+                )}
             </div>
         </div>
     );

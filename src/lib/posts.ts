@@ -3,7 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import type { DocumentData, DocumentSnapshot } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase-admin";
 import { toFriendlyCategory } from "@/lib/categoryUtils";
-import { estimateReadingTime } from "@/lib/format";
+import { deriveExcerpt, estimateReadingTime } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
 import type { AdjacentPosts, Post, PostSummary, SiteConfig } from "@/types/blog";
 
@@ -38,7 +38,8 @@ function toPostSummary(id: string, data: DocumentData): PostSummary {
         id,
         slug: data.slug || id,
         title: data.title || "Untitled Article",
-        excerpt: data.excerpt || "",
+        // No written excerpt: fall back to the opening paragraph so cards and feeds are never blank
+        excerpt: data.excerpt || deriveExcerpt(content),
         coverImage: data.coverImage || "",
         category: toFriendlyCategory(data.category || data.tags?.[0] || "Technology"),
         tags: Array.isArray(data.tags) ? data.tags : [],
