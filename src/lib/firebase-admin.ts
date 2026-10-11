@@ -26,7 +26,9 @@ if (!getApps().length) {
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-    if (clientEmail && privateKey && !useEmulator) {
+    if (useEmulator) {
+        app = initializeApp({ projectId });
+    } else if (clientEmail && privateKey) {
         app = initializeApp({
             credential: cert({
                 projectId,
@@ -35,9 +37,15 @@ if (!getApps().length) {
             }),
         });
     } else {
-        app = initializeApp({
-            projectId,
-        });
+        // Without a service account the SDK would fall back to Google's metadata server, which does not exist
+        // on Vercel and surfaces only as "Could not load the default credentials". Say what is actually wrong.
+        const missing = [!clientEmail && "FIREBASE_CLIENT_EMAIL", !privateKey && "FIREBASE_PRIVATE_KEY"].filter(Boolean);
+        throw new Error(
+            `Firebase Admin credentials are missing: ${missing.join(" and ")} ${missing.length > 1 ? "are" : "is"} not set ` +
+                `(project "${projectId}", NEXT_PUBLIC_DEPLOYMENT="${process.env.NEXT_PUBLIC_DEPLOYMENT ?? ""}"). ` +
+                "Add them for this environment (on Vercel: Settings > Environment Variables, with Production or Preview " +
+                "ticked to match this build) and redeploy."
+        );
     }
 } else {
     app = getApps()[0];
