@@ -61,11 +61,17 @@ Do these in order:
    node scripts/set-admin-claim.mjs you@example.com
    ```
    then sign out and back in.
-2. **Vercel environment variables:**
-   - all `NEXT_PUBLIC_FIREBASE_*` values
-   - `NEXT_PUBLIC_SITE_URL`
-   - `FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY` (needed at build time to prerender pages)
-   - `LIKE_HASH_SALT` (a long random string)
+2. **Vercel environment variables.** Anything starting with `NEXT_PUBLIC_` is copied into the browser bundle, so those are public by design; everything else stays on the server. Tick the environment each value applies to (Production, and Preview if you build previews), and redeploy after changing them.
+
+   | Variable | Type on Vercel | Notes |
+   | :--- | :--- | :--- |
+   | `NEXT_PUBLIC_DEPLOYMENT` | Normal | `production` (or `staging` for previews) |
+   | `NEXT_PUBLIC_FIREBASE_*` (7 values) | Normal | Web app config; public by design, protected by the rules |
+   | `NEXT_PUBLIC_SITE_URL` | Normal | Your public URL |
+   | `FIREBASE_CLIENT_EMAIL` | Normal or Sensitive | Needed at build time to prerender pages |
+   | `FIREBASE_PRIVATE_KEY` | **Sensitive** | Service-account private key |
+   | `LIKE_HASH_SALT` | **Sensitive** | A long random string |
+   | `ADMIN_EMAILS` | Sensitive | Comma-separated admin emails. Never prefix with `NEXT_PUBLIC_` |
 3. **Deploy the security rules:**
    ```bash
    npx firebase-tools deploy --only firestore:rules,storage
