@@ -509,6 +509,9 @@ function Canvas({
                             onChange={(val) => setPost((prev) => ({ ...prev, content: val || "" }))}
                             height={height}
                             preview="edit"
+                            // The Write / Split / Preview tabs and focus mode replace the editor's own view and
+                            // fullscreen buttons, which would otherwise fight with them (e.g. hide the text area)
+                            extraCommands={[]}
                         />
                     </div>
                 )}
