@@ -40,8 +40,6 @@ const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
     loading: () => <Skeleton className="h-[520px] rounded-xl" />,
 });
 
-const MAX_SPOTLIGHT = 3;
-
 type EditorView = "write" | "split" | "preview";
 
 const VIEWS: { id: EditorView; label: string }[] = [
@@ -107,8 +105,8 @@ export function EditorTab({
     const wordCount = post.content ? post.content.trim().split(/\s+/).filter(Boolean).length : 0;
     const readingTime = estimateReadingTime(post.content || "");
 
-    const otherFeaturedCount = posts.filter((p) => p.featured && p.id !== post.id).length;
-    const isAtLimit = otherFeaturedCount >= MAX_SPOTLIGHT && !post.featured;
+    // There is one spotlight; turning it on here replaces whichever live article has it now
+    const currentSpotlight = posts.find((p) => p.featured && p.published !== false && p.id !== post.id);
 
     // Ctrl/Cmd+S saves, Ctrl/Cmd+Shift+P publishes, Ctrl/Cmd+. toggles focus mode, Esc leaves it
     useEffect(() => {
@@ -320,38 +318,31 @@ export function EditorTab({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 self-stretch lg:self-auto justify-end">
-                    <label
-                        className={clsx(
-                            "flex items-center gap-2 text-xs select-none",
-                            isAtLimit ? "text-muted-foreground/50 cursor-not-allowed" : "text-muted-foreground cursor-pointer"
+                    <div className="flex flex-col items-end gap-0.5">
+                        <label
+                            className="flex items-center gap-2 text-xs select-none text-muted-foreground cursor-pointer"
+                            title="Show this story at the top of the home page. Only one article is the spotlight at a time."
+                        >
+                            <input
+                                type="checkbox"
+                                checked={Boolean(post.featured)}
+                                onChange={(e) => {
+                                    const isFeatured = e.target.checked;
+                                    setPost((prev) => ({ ...prev, featured: isFeatured }));
+                                    if (isFeatured && !post.coverImage?.trim()) {
+                                        addToast("The spotlight needs a cover image. Add one below.", "info");
+                                    }
+                                }}
+                                className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                            />
+                            <span className={post.featured ? "text-primary font-medium" : ""}>Spotlight story</span>
+                        </label>
+                        {post.featured && currentSpotlight && (
+                            <span className="text-[11px] text-amber-400">
+                                {isLive ? "Saving replaces" : "Publishing replaces"} &ldquo;{currentSpotlight.title}&rdquo;
+                            </span>
                         )}
-                        title={
-                            isAtLimit
-                                ? "Maximum of 3 Spotlight articles reached. Unfeature an existing article first."
-                                : "Feature this story in the Spotlight Carousel (up to 3)"
-                        }
-                    >
-                        <input
-                            type="checkbox"
-                            disabled={isAtLimit}
-                            checked={Boolean(post.featured)}
-                            onChange={(e) => {
-                                const isFeatured = e.target.checked;
-                                if (isFeatured && otherFeaturedCount >= MAX_SPOTLIGHT) {
-                                    addToast("Maximum of 3 articles can be marked as Spotlight. Unfeature an existing article first.", "error");
-                                    return;
-                                }
-                                setPost((prev) => ({ ...prev, featured: isFeatured }));
-                                if (isFeatured && (!post.coverImage || !post.coverImage.trim())) {
-                                    addToast("Spotlight enabled: Please ensure a cover image is uploaded for this article.", "info");
-                                }
-                            }}
-                            className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer disabled:cursor-not-allowed"
-                        />
-                        <span className={post.featured ? "text-primary font-medium" : ""}>
-                            Spotlight Story ({otherFeaturedCount + (post.featured ? 1 : 0)}/3)
-                        </span>
-                    </label>
+                    </div>
 
                     <div className="flex items-center gap-2">
                         {post.id && (

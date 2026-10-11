@@ -168,6 +168,13 @@ export async function persistPost(
     return saved;
 }
 
+// ---------------------------------------------------------------- spotlight
+
+/** Takes an article off the spotlight without changing anything else about it. */
+export async function unfeaturePost(id: string): Promise<void> {
+    await updateDoc(doc(db, "blog", id), { featured: false });
+}
+
 // ---------------------------------------------------------------- trash
 
 /** Days a trashed article is kept before it is removed for good. */

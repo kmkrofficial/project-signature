@@ -8,13 +8,12 @@ import {
     persistPost,
     restorePost,
     trashPost,
+    unfeaturePost,
     type SaveIntent,
     type StoredInfo,
 } from "../posts-client";
 import type { DraftPost } from "../types";
 import type { BlogPost } from "@/types/blog";
-
-const MAX_SPOTLIGHT = 3;
 
 const SUCCESS_MESSAGE: Record<SaveIntent, string> = {
     draft: "Draft saved",
@@ -78,14 +77,8 @@ export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
                 return fail("Write something before publishing");
             }
 
-            if (post.featured) {
-                if (!post.coverImage?.trim()) {
-                    return fail("A cover image is mandatory for Spotlight articles. Please upload or link a cover image.");
-                }
-                const otherFeatured = posts.filter((p) => p.featured && p.id !== post.id).length;
-                if (otherFeatured >= MAX_SPOTLIGHT) {
-                    return fail("A maximum of 3 articles can be marked as Spotlight. Please unfeature an existing Spotlight article first.");
-                }
+            if (post.featured && !post.coverImage?.trim()) {
+                return fail("The spotlight needs a cover image. Please upload or link one.");
             }
 
             inFlight.current = true;
@@ -96,6 +89,17 @@ export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
                 }
 
                 const saved = await persistPost(post, intent, stored, { revision: !silent });
+
+                // There is one spotlight. A live article that takes it replaces the current one; a draft only
+                // does so when it is published, so saving a draft never empties the home page's spotlight.
+                if (saved.featured && saved.published === true) {
+                    const replaced = posts.filter((p) => p.featured && p.published !== false && p.id !== saved.id);
+                    await Promise.all(replaced.map((other) => unfeaturePost(other.id)));
+                    if (replaced.length > 0 && !silent) {
+                        const names = replaced.map((other) => `\u201c${other.title}\u201d`).join(", ");
+                        addToast(`${names} ${replaced.length === 1 ? "is" : "are"} no longer the spotlight`, "info");
+                    }
+                }
 
                 const becameVisible = intent === "publish" || intent === "unpublish" || saved.published === true;
                 if (becameVisible) await refreshPublicSite();
