@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import NextImage from "next/image";
-import { Check, Copy, FileText, Loader2, Plus, Trash2, UploadCloud } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Copy, FileText, Loader2, Plus, Trash2, UploadCloud } from "lucide-react";
 import { clsx } from "clsx";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useMedia } from "./hooks/useMedia";
@@ -19,47 +19,128 @@ function articlesUsing(image: StoredImage, posts: BlogPost[]): BlogPost[] {
 }
 
 export function MediaTab({ posts }: { posts: BlogPost[] }) {
-    const { images, loading, uploading, progress, copiedUrl, upload, copySnippet, remove } = useMedia(true);
+    const { images, loading, uploads, uploading, copiedUrl, uploadFiles, dismissUploads, copySnippet, remove } =
+        useMedia(true);
     const [pendingDelete, setPendingDelete] = useState<StoredImage | null>(null);
+    const [dragging, setDragging] = useState(false);
 
-    const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target;
-        const file = input.files?.[0];
-        if (file) await upload(file);
+        const files = [...(input.files ?? [])];
         input.value = "";
+        if (files.length > 0) void uploadFiles(files);
     };
 
     const pendingUsers = pendingDelete ? articlesUsing(pendingDelete, posts) : [];
 
+    const finished = uploads.filter((item) => item.status === "done" || item.status === "error").length;
+    const overall = uploads.length > 0 ? uploads.reduce((sum, item) => sum + item.progress, 0) / uploads.length : 0;
+    const hasErrors = uploads.some((item) => item.status === "error");
+
     return (
         <div className="animate-fade-up space-y-6">
             {/* Media Upload Banner */}
-            <div className="p-6 rounded-2xl bg-card border border-dashed border-border/80 text-center hover:border-primary/50 transition-colors">
+            <div
+                onDragOver={(e) => {
+                    if (!e.dataTransfer.types.includes("Files")) return;
+                    e.preventDefault();
+                    setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => {
+                    e.preventDefault();
+                    setDragging(false);
+                    const files = [...e.dataTransfer.files];
+                    if (files.length > 0) void uploadFiles(files);
+                }}
+                className={clsx(
+                    "p-6 rounded-2xl bg-card border border-dashed text-center transition-colors",
+                    dragging ? "border-primary bg-primary/5" : "border-border/80 hover:border-primary/50"
+                )}
+            >
                 <UploadCloud size={32} className="mx-auto text-primary mb-3" />
-                <h3 className="text-sm font-semibold text-foreground mb-1">Upload Media to Publication Bucket</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Upload images</h3>
                 <p className="text-xs text-muted-foreground max-w-md mx-auto mb-4">
-                    Images are automatically pre-compressed via client canvas (max 1600px, 82% WebP) before upload to conserve bandwidth.
+                    Select as many images as you like, or drop them here. Each one is compressed in your browser
+                    (max 1600px, 82% WebP) before it is uploaded.
                 </p>
 
                 <label className="press inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 cursor-pointer shadow-md">
                     {uploading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                    <span>{uploading ? "Compressing & Uploading..." : "Select Image from Disk"}</span>
-                    <input type="file" accept="image/*" onChange={handleFile} disabled={uploading} className="hidden" />
+                    <span>
+                        {uploading ? `Uploading ${finished} of ${uploads.length}…` : "Select images from disk"}
+                    </span>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFiles}
+                        disabled={uploading}
+                        className="hidden"
+                    />
                 </label>
 
-                {uploading && (
-                    <div
-                        role="progressbar"
-                        aria-label="Upload progress"
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={Math.round(progress * 100)}
-                        className="animate-fade-in mx-auto mt-4 h-1 w-48 overflow-hidden rounded-full bg-secondary"
-                    >
+                {uploads.length > 0 && (
+                    <div className="animate-fade-in mx-auto mt-5 max-w-lg space-y-3 text-left">
                         <div
-                            className="h-full origin-left bg-primary transition-transform duration-200 ease-out"
-                            style={{ transform: `scaleX(${Math.max(progress, 0.04)})` }}
-                        />
+                            role="progressbar"
+                            aria-label="Overall upload progress"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={Math.round(overall * 100)}
+                            className="h-1 w-full overflow-hidden rounded-full bg-secondary"
+                        >
+                            <div
+                                className="h-full origin-left bg-primary transition-transform duration-200 ease-out"
+                                style={{ transform: `scaleX(${Math.max(overall, 0.03)})` }}
+                            />
+                        </div>
+
+                        <ul className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                            {uploads.map((item) => (
+                                <li
+                                    key={item.id}
+                                    className="flex items-center gap-2.5 rounded-lg border border-border/70 bg-background/50 px-3 py-2 text-xs"
+                                >
+                                    {item.status === "done" ? (
+                                        <CheckCircle2 size={14} className="shrink-0 text-emerald-400" aria-label="Uploaded" />
+                                    ) : item.status === "error" ? (
+                                        <AlertCircle size={14} className="shrink-0 text-red-400" aria-label="Failed" />
+                                    ) : item.status === "uploading" ? (
+                                        <Loader2 size={14} className="shrink-0 animate-spin text-primary" aria-label="Uploading" />
+                                    ) : (
+                                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/50" aria-label="Waiting" />
+                                    )}
+                                    <span className="min-w-0 flex-1 truncate text-foreground" title={item.name}>
+                                        {item.name}
+                                    </span>
+                                    <span
+                                        className={clsx(
+                                            "shrink-0 font-mono text-[11px]",
+                                            item.status === "error" ? "text-red-400" : "text-muted-foreground"
+                                        )}
+                                    >
+                                        {item.status === "error"
+                                            ? "failed"
+                                            : item.status === "done"
+                                              ? "done"
+                                              : item.status === "uploading"
+                                                ? `${Math.round(item.progress * 100)}%`
+                                                : "waiting"}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+
+                        {!uploading && hasErrors && (
+                            <button
+                                type="button"
+                                onClick={dismissUploads}
+                                className="press text-[11px] font-mono text-primary hover:underline cursor-pointer"
+                            >
+                                Clear list
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

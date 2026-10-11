@@ -59,7 +59,8 @@ export async function uploadImage(file: File, onProgress?: (fraction: number) =>
     const blob = await compressImage(file);
 
     const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const fullPath = `media/${Date.now()}_${cleanName}`;
+    const unique = Math.random().toString(36).slice(2, 6);
+    const fullPath = `media/${Date.now()}_${unique}_${cleanName}`;
     const fileRef = ref(storage, fullPath);
 
     const task = uploadBytesResumable(fileRef, blob);
