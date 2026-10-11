@@ -4,7 +4,7 @@
 
 | Tool | Version | Purpose |
 | :--- | :--- | :--- |
-| Node.js | 20+ (24 LTS recommended) | Runtime |
+| Node.js | 24 LTS (22.12+ also works; 20 does not) | Runtime. `firebase-admin` needs `require()` of ES modules, which Node 20 lacks. `package.json` pins `24.x` so Vercel uses it |
 | Java | 21+ (e.g. Eclipse Temurin) | Firebase emulators |
 | Firebase CLI | via `npx firebase-tools` | Emulators and rules deployment |
 
