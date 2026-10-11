@@ -132,6 +132,13 @@ src/
   - HSTS, `nosniff`, `X-Frame-Options: DENY`, Referrer-Policy and Permissions-Policy.
 - **Tests:** `npm run test:rules` runs the rules suite against the emulators.
 
+### The article editor
+
+- **Two modes over one format.** Articles are always stored as markdown. The studio edits them in a **visual editor** (Tiptap, the default) or a **Markdown source editor**; switching only changes the view, and the choice is remembered per browser.
+- **Visual editor:** a floating toolbar for selected text, a `/` menu (headings, lists, checklist, quote, code, table, divider, image), inline images with an editable caption (the alt text is the published caption), and paste or drop upload with an instant local preview.
+- **Fidelity:** the editor supports the GFM subset the site renders. Block-level HTML (`<details>`, `<iframe>`, comments) is kept verbatim as an opaque block. If an article uses something the visual editor would change (footnotes, or inline HTML such as `<kbd>`), the studio says so and offers Markdown mode, so nothing is altered silently. Loading never rewrites an article; only editing does.
+- **Loading:** the editor is a dynamic import in `src/components/admin/studio/editor/rich/`, so it ships only to `/admin` (about 175 KB gzipped); readers never download it.
+
 ## 7. Client JavaScript
 
 Pages are Server Components. The only client islands are:

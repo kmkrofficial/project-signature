@@ -908,3 +908,126 @@ body {
     opacity: 0;
   }
 }
+
+/* ---------------------------------------------------------------------------------------------
+   Visual article editor (Tiptap). It is styled by .article-prose like the published page, so what
+   is written looks like what is published; these rules only add the editing affordances.
+   --------------------------------------------------------------------------------------------- */
+.rich-editor .ProseMirror {
+  outline: none;
+  min-height: 100%;
+}
+
+.rich-editor .ProseMirror > :first-child {
+  margin-top: 0;
+}
+
+.rich-editor .ProseMirror p.is-editor-empty:first-child::before,
+.rich-editor .ProseMirror p.is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: rgb(var(--muted-foreground) / 0.7);
+  pointer-events: none;
+}
+
+.rich-editor .ProseMirror img {
+  cursor: default;
+  border-radius: 0.75rem;
+}
+
+.rich-editor .ProseMirror img.ProseMirror-selectednode,
+.rich-editor .ProseMirror .html-block.ProseMirror-selectednode {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: 2px;
+}
+
+.rich-editor .ProseMirror a {
+  cursor: text;
+}
+
+/* Raw HTML kept verbatim */
+.rich-editor .html-block {
+  margin: 1.25rem 0;
+  border: 1px dashed rgb(var(--border));
+  border-radius: 0.75rem;
+  background: rgb(var(--muted) / 0.6);
+  overflow: hidden;
+}
+
+.rich-editor .html-block-label {
+  display: block;
+  padding: 0.3rem 0.75rem;
+  border-bottom: 1px dashed rgb(var(--border));
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(var(--muted-foreground));
+}
+
+.rich-editor .html-block pre {
+  margin: 0;
+  padding: 0.75rem;
+  background: transparent;
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Task lists: checkbox beside the text */
+.rich-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.25rem;
+}
+
+.rich-editor ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.rich-editor ul[data-type="taskList"] li > label {
+  margin-top: 0.3em;
+  flex: none;
+}
+
+.rich-editor ul[data-type="taskList"] li > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.rich-editor ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: rgb(var(--muted-foreground));
+  text-decoration: line-through;
+}
+
+/* Tables */
+.rich-editor table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin: 1.25rem 0;
+}
+
+.rich-editor th,
+.rich-editor td {
+  position: relative;
+  min-width: 3rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgb(var(--border));
+  vertical-align: top;
+}
+
+.rich-editor th {
+  background: rgb(var(--muted));
+  text-align: left;
+}
+
+.rich-editor .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--primary) / 0.12);
+  pointer-events: none;
+}

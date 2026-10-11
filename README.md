@@ -9,7 +9,7 @@ A fast, minimal personal technical blog by Keerthi Raajan, built with Next.js 16
 - **Secure by default:** all writes require an `admin` custom claim enforced by Firestore/Storage rules and server checks. Post HTML is sanitized, and the site sends a strict set of security headers.
 - **Calm reading experience:** one featured post, a chronological list, static topic pages, Cmd/Ctrl+K search, and light and dark themes.
 - **Discoverable:** a full-content RSS feed, sitemap, canonical URLs, JSON-LD, and a branded Open Graph card for every article.
-- **Admin Studio** (`/admin`): drafts by default with autosave and an unsaved-changes guard, a live preview rendered by the real site pipeline, private review links for unpublished articles (expiring, revocable, optionally locked to a Google account), slug protection with redirects, version history, a trash with Undo, a site settings form, a media library with bulk upload that groups images by article and shows where each is used, an Insert image picker, and a folder per article for its images; published edits go live immediately.
+- **Admin Studio** (`/admin`): a visual editor with a `/` menu and inline images (or raw markdown if you prefer), drafts by default with autosave and an unsaved-changes guard, a live preview rendered by the real site pipeline, private review links for unpublished articles (expiring, revocable, optionally locked to a Google account), slug protection with redirects, version history, a trash with Undo, a site settings form, a media library with bulk upload that groups images by article and shows where each is used, an Insert image picker, and a folder per article for its images; published edits go live immediately.
 
 ## Docs
 

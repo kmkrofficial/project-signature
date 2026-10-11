@@ -30,9 +30,10 @@ import { articleFolder } from "@/lib/upload-image";
 import { HistoryDialog } from "./HistoryDialog";
 import { LivePreview } from "./LivePreview";
 import { MediaPicker } from "./MediaPicker";
+import type { RichEditorHandle } from "./rich/RichEditor";
 import { MetadataPanel } from "./MetadataPanel";
 import { useImageDrop } from "../hooks/useImageDrop";
-import { imageMarkdown } from "../image-markdown";
+import { altTextFor, imageMarkdown } from "../image-markdown";
 import { withTitle } from "../slug";
 import type { SlugStatus } from "../hooks/useSlugCheck";
 import type { Revision, SaveIntent } from "../posts-client";
@@ -43,6 +44,25 @@ const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
     ssr: false,
     loading: () => <Skeleton className="h-[520px] rounded-xl" />,
 });
+
+// The visual editor (Tiptap) loads only here, in the admin, so readers never download it
+const RichEditor = dynamic(() => import("./rich/RichEditor").then((module) => module.RichEditor), {
+    ssr: false,
+    loading: () => <Skeleton className="h-[520px] rounded-xl" />,
+});
+
+type EditorMode = "visual" | "markdown";
+const MODE_KEY = "studio:editor-mode";
+
+// Remembered per browser; unavailable storage just means the default
+function readMode(): EditorMode {
+    if (typeof window === "undefined") return "visual";
+    try {
+        return window.localStorage.getItem(MODE_KEY) === "markdown" ? "markdown" : "visual";
+    } catch {
+        return "visual";
+    }
+}
 
 type EditorView = "write" | "split" | "preview";
 
@@ -102,7 +122,7 @@ export function EditorTab({
 }: Props) {
     const { addToast } = useToast();
     const { theme } = useTheme();
-    const [view, setView] = useState<EditorView>("split");
+    const [view, setView] = useState<EditorView>("write");
     const [focus, setFocus] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [historyOpen, setHistoryOpen] = useState(false);
@@ -473,10 +493,29 @@ function Canvas({
     const { dragging, uploading, handlers } = imageDrop;
     const fixedHeight = typeof height === "number" ? `${height}px` : height;
     const [pickerOpen, setPickerOpen] = useState(false);
+    const [mode, setModeState] = useState<EditorMode>(readMode);
+    /** null until the visual editor has looked at the article. */
+    const [visualSafe, setVisualSafe] = useState<boolean | null>(null);
+    const [dismissedWarning, setDismissedWarning] = useState(false);
     const editorRef = useRef<HTMLDivElement>(null);
+    const richRef = useRef<RichEditorHandle>(null);
+
+    const setMode = (next: EditorMode) => {
+        setModeState(next);
+        try {
+            window.localStorage.setItem(MODE_KEY, next);
+        } catch {
+            // ignore
+        }
+    };
 
     /** Puts the picked image into the text at the caret (or replaces the selection), on its own paragraph. */
     const insertImage = (image: { name: string; url: string }) => {
+        if (mode === "visual") {
+            richRef.current?.insertImage({ src: image.url, alt: altTextFor(image.name) });
+            return;
+        }
+
         const area = editorRef.current?.querySelector("textarea") ?? null;
         const start = area?.selectionStart ?? Number.MAX_SAFE_INTEGER;
         const end = area?.selectionEnd ?? start;
@@ -501,32 +540,65 @@ function Canvas({
         }, 0);
     };
 
+    const warn = mode === "visual" && visualSafe === false && !dismissedWarning && view !== "preview";
+
     return (
         <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground px-1">
-                <div
-                    role="tablist"
-                    aria-label="Editor view"
-                    className="inline-flex rounded-xl border border-border bg-secondary/30 p-0.5"
-                >
-                    {VIEWS.map((option) => (
-                        <button
-                            key={option.id}
-                            type="button"
-                            role="tab"
-                            aria-selected={view === option.id}
-                            onClick={() => setView(option.id)}
-                            className={clsx(
-                                "press px-3 py-1.5 rounded-lg text-[11px] font-semibold cursor-pointer",
-                                view === option.id
-                                    ? "bg-primary text-primary-foreground"
-                                    : "text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            {option.label}
-                        </button>
-                    ))}
+                <div className="flex flex-wrap items-center gap-2">
+                    <div
+                        role="tablist"
+                        aria-label="Editor view"
+                        className="inline-flex rounded-xl border border-border bg-secondary/30 p-0.5"
+                    >
+                        {VIEWS.map((option) => (
+                            <button
+                                key={option.id}
+                                type="button"
+                                role="tab"
+                                aria-selected={view === option.id}
+                                onClick={() => setView(option.id)}
+                                className={clsx(
+                                    "press px-3 py-1.5 rounded-lg text-[11px] font-semibold cursor-pointer",
+                                    view === option.id
+                                        ? "bg-primary text-primary-foreground"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div
+                        role="group"
+                        aria-label="Editing mode"
+                        className="inline-flex rounded-xl border border-border bg-secondary/30 p-0.5"
+                    >
+                        {(["visual", "markdown"] as const).map((option) => (
+                            <button
+                                key={option}
+                                type="button"
+                                aria-pressed={mode === option}
+                                onClick={() => setMode(option)}
+                                title={
+                                    option === "visual"
+                                        ? "Edit with formatting, like the published page"
+                                        : "Edit the raw markdown source"
+                                }
+                                className={clsx(
+                                    "press px-3 py-1.5 rounded-lg text-[11px] font-semibold cursor-pointer capitalize",
+                                    mode === option
+                                        ? "bg-secondary text-foreground shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                {option}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+
                 <button
                     type="button"
                     onClick={() => setPickerOpen(true)}
@@ -538,34 +610,78 @@ function Canvas({
                     <span>Insert image</span>
                 </button>
                 <span className="font-mono text-[11px] basis-full sm:basis-auto">
-                    {uploading > 0
+                    {mode === "markdown" && uploading > 0
                         ? `Uploading ${uploading} image${uploading === 1 ? "" : "s"}…`
-                        : "Paste or drop images · Ctrl+S save · Ctrl+Shift+P publish · Ctrl+. focus"}
+                        : mode === "visual"
+                          ? "Type / for commands · Paste or drop images · Ctrl+S save"
+                          : "Paste or drop images · Ctrl+S save · Ctrl+Shift+P publish · Ctrl+. focus"}
                 </span>
             </div>
 
-            <div className={clsx("grid gap-4", view === "split" ? "lg:grid-cols-2" : "grid-cols-1")}>
-                {view !== "preview" && (
-                    <div
-                        ref={editorRef}
-                        data-color-mode={dark ? "dark" : "light"}
-                        {...handlers}
-                        className={clsx(
-                            "min-w-0 rounded-xl overflow-hidden border transition-colors",
-                            dragging ? "border-primary ring-2 ring-primary/30" : "border-border/80"
-                        )}
-                    >
-                        <MDEditor
-                            value={post.content || ""}
-                            onChange={(val) => setPost((prev) => ({ ...prev, content: val || "" }))}
-                            height={height}
-                            preview="edit"
-                            // The Write / Split / Preview tabs and focus mode replace the editor's own view and
-                            // fullscreen buttons, which would otherwise fight with them (e.g. hide the text area)
-                            extraCommands={[]}
-                        />
+            {warn && (
+                <div
+                    role="status"
+                    className="animate-fade-in flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5"
+                >
+                    <p className="text-xs text-foreground leading-relaxed">
+                        <strong>This article uses formatting the visual editor can&apos;t keep exactly</strong>{" "}
+                        (such as footnotes or reference-style links). Editing here may change it. Markdown mode keeps
+                        it untouched.
+                    </p>
+                    <div className="flex shrink-0 gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setMode("markdown")}
+                            className="press rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground cursor-pointer"
+                        >
+                            Switch to Markdown
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setDismissedWarning(true)}
+                            className="press rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                        >
+                            Keep visual
+                        </button>
                     </div>
-                )}
+                </div>
+            )}
+
+            <div className={clsx("grid gap-4", view === "split" ? "lg:grid-cols-2" : "grid-cols-1")}>
+                {view !== "preview" &&
+                    (mode === "visual" ? (
+                        <div className="min-w-0">
+                            <RichEditor
+                                handleRef={richRef}
+                                value={post.content || ""}
+                                onChange={(markdown) => setPost((prev) => ({ ...prev, content: markdown }))}
+                                folder={articleFolder(articleId)}
+                                height={height}
+                                onRequestImage={() => setPickerOpen(true)}
+                                onCompatibility={setVisualSafe}
+                            />
+                        </div>
+                    ) : (
+                        <div
+                            ref={editorRef}
+                            data-color-mode={dark ? "dark" : "light"}
+                            {...handlers}
+                            className={clsx(
+                                "min-w-0 rounded-xl overflow-hidden border transition-colors",
+                                dragging ? "border-primary ring-2 ring-primary/30" : "border-border/80"
+                            )}
+                        >
+                            <MDEditor
+                                value={post.content || ""}
+                                onChange={(val) => setPost((prev) => ({ ...prev, content: val || "" }))}
+                                height={height}
+                                preview="edit"
+                                // The Write / Split / Preview tabs and focus mode replace the editor's own view and
+                                // fullscreen buttons, which would otherwise fight with them (e.g. hide the text area)
+                                extraCommands={[]}
+                            />
+                        </div>
+                    ))}
                 {view !== "write" && (
                     <LivePreview
                         title={post.title || ""}
