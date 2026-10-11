@@ -1,0 +1,94 @@
+/** Firestore document shape as edited in the Admin Studio. */
+export interface BlogPost {
+    id: string;
+    slug: string;
+    title: string;
+    excerpt?: string;
+    content?: string;
+    coverImage?: string;
+    date?: string;
+    readTime?: string;
+    readingTime?: number;
+    category?: string;
+    tags: string[];
+    published?: boolean;
+    featured?: boolean;
+    likes?: number;
+    createdAt?: { seconds: number; nanoseconds: number } | null;
+    updatedAt?: { seconds: number; nanoseconds: number } | null;
+    /** Set the first time the post goes live; the public date. Falls back to createdAt for older posts. */
+    publishedAt?: { seconds: number; nanoseconds: number } | null;
+    /** Former slugs of a published post; they redirect to the current one. */
+    previousSlugs?: string[];
+    /** Set while the post is in the studio's trash; it is removed for good after 30 days. */
+    deletedAt?: { seconds: number; nanoseconds: number } | null;
+    /** Whether the post was live when it was trashed, so Undo can bring it back as it was. */
+    publishedBeforeTrash?: boolean;
+    /** Related links shown beside the article: source code, posts, dashboards, references. */
+    links?: PostLink[];
+}
+
+/** An outside resource that goes with an article. */
+export interface PostLink {
+    /** Absolute http(s) URL. */
+    url: string;
+    /** Shown instead of the URL; empty means the URL is shown. */
+    label: string;
+    /** Optional one-liner, e.g. "Source code" or "p95 latency down 40%". */
+    note: string;
+}
+
+/** Serializable post metadata used by public listings, feeds and search. */
+export interface PostSummary {
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string;
+    coverImage: string;
+    category: string;
+    tags: string[];
+    featured: boolean;
+    likes: number;
+    readingTime: number;
+    /** ISO 8601 */
+    publishedAt: string;
+    /** ISO 8601 */
+    updatedAt: string;
+}
+
+export interface PostHeading {
+    id: string;
+    text: string;
+    level: 2 | 3;
+}
+
+/** A published post with its sanitized, pre-rendered HTML. */
+export interface Post extends PostSummary {
+    html: string;
+    headings: PostHeading[];
+    links: PostLink[];
+}
+
+export interface AdjacentPosts {
+    previous: PostSummary | null;
+    next: PostSummary | null;
+}
+
+export interface SiteConfig {
+    siteTitle: string;
+    siteDescription: string;
+    author: string;
+    email: string;
+    github: string;
+    linkedin: string;
+    twitter: string;
+}
+
+export interface SearchEntry {
+    slug: string;
+    title: string;
+    excerpt: string;
+    category: string;
+    tags: string[];
+    readingTime: number;
+}

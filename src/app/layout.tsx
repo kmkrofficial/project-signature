@@ -1,45 +1,50 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AppShell } from "@/components/layout/AppShell";
+import { getSiteConfig } from "@/lib/posts";
+import { SITE_URL } from "@/lib/site";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-geist-sans" });
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+const geistSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
+});
 
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
-import { ToastProvider } from "@/context/ToastContext";
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
 
 export async function generateMetadata(): Promise<Metadata> {
-  let config = {
-    siteTitle: "Keerthi Raajan K M | Full-Stack AI Engineer",
-    siteDescription: "Digital Nervous System of Keerthi Raajan K M - Architecting high-availability systems and AI integration.",
-    ogImageUrl: "",
-  };
-
-  try {
-    const docRef = doc(db, "config", "site");
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      config = {
-        siteTitle: data.siteTitle || config.siteTitle,
-        siteDescription: data.siteDescription || config.siteDescription,
-        ogImageUrl: data.ogImageUrl || "",
-      };
-    }
-  } catch (error) {
-    console.warn(`[Layout] Error fetching metadata from Firestore (config/site):`, error);
-  }
+  const config = await getSiteConfig();
 
   return {
-    title: config.siteTitle,
+    title: {
+      default: config.siteTitle,
+      template: "%s | Signature",
+    },
     description: config.siteDescription,
+    metadataBase: new URL(SITE_URL),
+    alternates: {
+      types: {
+        "application/rss+xml": "/feed.xml",
+      },
+    },
+    // Icons and the default social image come from app/ file conventions
     openGraph: {
       title: config.siteTitle,
       description: config.siteDescription,
-      images: config.ogImageUrl ? [{ url: config.ogImageUrl }] : [],
+      siteName: "Signature",
+      type: "website",
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
     },
   };
 }
@@ -50,13 +55,48 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${jetbrainsMono.variable} font-mono`}>
-        <ToastProvider>
-          <AppShell>
+    <html lang="en" className="dark" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('theme');
+                  var supportDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  if (saved === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light-mode');
+                  } else if (saved === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light-mode');
+                  } else if (supportDark) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light-mode');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light-mode');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+        {/* Article images load straight from Firebase Storage; resolve DNS early without holding a socket */}
+        <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground min-h-screen selection:bg-primary/20 selection:text-primary`}>
+        <AppShell>
+          <div className="top-hairline" aria-hidden="true" />
+
+          <div className="relative z-10 flex flex-col min-h-screen">
             {children}
-          </AppShell>
-        </ToastProvider>
+          </div>
+        </AppShell>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

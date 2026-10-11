@@ -1,107 +1,94 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from "react";
 
-type Theme = "deepSystem" | "technicalBlueprint";
+export type Theme = "dark" | "light";
+
+interface ToggleThemeCoordinates {
+    clientX?: number;
+    clientY?: number;
+}
 
 interface ThemeContextType {
     theme: Theme;
-    toggleTheme: () => void;
-    hasSelectedTheme: boolean;
-    selectTheme: (theme: Theme) => void;
+    toggleTheme: (coords?: ToggleThemeCoordinates) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>("deepSystem");
-    const [hasSelectedTheme, setHasSelectedTheme] = useState(false);
+/** The <html> class (set pre-paint by the inline script in app/layout.tsx) is the source of truth. */
+function readTheme(): Theme {
+    return document.documentElement.classList.contains("light-mode") ? "light" : "dark";
+}
 
+function applyTheme(theme: Theme, persist: boolean): void {
+    const root = document.documentElement;
+    root.classList.toggle("dark", theme === "dark");
+    root.classList.toggle("light-mode", theme === "light");
+    if (!persist) return;
+    try {
+        localStorage.setItem("theme", theme);
+    } catch {
+        // Storage unavailable; the theme still applies for this page view
+    }
+}
+
+function subscribe(onChange: () => void): () => void {
+    const observer = new MutationObserver(onChange);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+    const theme = useSyncExternalStore(subscribe, readTheme, () => "dark" as const);
+
+    // Keep tabs in sync when the theme changes elsewhere
     useEffect(() => {
-        const savedTheme = localStorage.getItem("theme") as Theme;
-        if (savedTheme) {
-            setTheme(savedTheme);
-            setHasSelectedTheme(true);
-        }
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === "theme" && (e.newValue === "light" || e.newValue === "dark")) {
+                applyTheme(e.newValue, false);
+            }
+        };
+        window.addEventListener("storage", handleStorage);
+        return () => window.removeEventListener("storage", handleStorage);
     }, []);
 
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (theme === "technicalBlueprint") {
-            root.classList.add("light-mode");
-        } else {
-            root.classList.remove("light-mode");
+    const toggleTheme = useCallback((coords?: ToggleThemeCoordinates) => {
+        const nextTheme: Theme = readTheme() === "dark" ? "light" : "dark";
+
+        // Hidden documents never paint, so a view transition there would never finish
+        const canAnimate =
+            "startViewTransition" in document &&
+            !document.hidden &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!canAnimate) {
+            applyTheme(nextTheme, true);
+            return;
         }
-        if (hasSelectedTheme) {
-            localStorage.setItem("theme", theme);
-        }
-    }, [theme, hasSelectedTheme]);
 
-    const toggleTheme = () => {
-        const newTheme = theme === "deepSystem" ? "technicalBlueprint" : "deepSystem";
+        // Circular reveal from the click point (viewport centre for keyboard activation)
+        const x = coords?.clientX || window.innerWidth / 2;
+        const y = coords?.clientY || window.innerHeight / 2;
+        const endRadius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
 
-        // Create transition overlay
-        const overlay = document.createElement("div");
-        overlay.style.position = "fixed";
-        overlay.style.inset = "0";
-        overlay.style.zIndex = "9999";
-        // The overlay color should be the NEW theme's background to "wipe" it in
-        overlay.style.backgroundColor = newTheme === "deepSystem" ? "#0a0a0a" : "#f0f9ff";
+        const root = document.documentElement;
+        root.classList.add("theme-reveal");
+        const transition = document.startViewTransition(() => applyTheme(nextTheme, true));
+        const cleanup = () => root.classList.remove("theme-reveal");
+        transition.finished.then(cleanup, cleanup);
+        transition.ready
+            .then(() => {
+                document.documentElement.animate(
+                    { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+                    { duration: 500, easing: "cubic-bezier(0.4, 0, 0.2, 1)", pseudoElement: "::view-transition-new(root)" }
+                );
+            })
+            .catch(() => {
+                // Transition skipped or unsupported pseudo-element animation; the theme is already applied
+            });
+    }, []);
 
-        // Start from right (off-screen)
-        overlay.style.transform = "translateX(100%)";
-        overlay.style.transition = "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
-
-        document.body.appendChild(overlay);
-
-        // Force reflow
-        overlay.getBoundingClientRect();
-
-        // Animate in (cover screen)
-        requestAnimationFrame(() => {
-            overlay.style.transform = "translateX(0%)";
-        });
-
-        // Wait for cover, then switch theme, then animate out?
-        // Actually, if we wipe IN the new color, we can just leave it there?
-        // No, because it's an overlay. We need to remove it.
-
-        // Better: Wipe IN, switch theme behind it, then fade out? 
-        // Or Wipe IN (cover), switch theme, Wipe OUT (reveal)?
-        // Let's do Wipe IN -> Switch -> Wipe OUT to the left.
-
-        setTimeout(() => {
-            setTheme(newTheme);
-            setHasSelectedTheme(true);
-
-            // Continue moving to the left (wipe away)
-            // But if we move to left, it reveals what's behind.
-            // Since we switched theme, what's behind is the NEW theme.
-            // So it will look like the overlay passes through.
-
-            // Wait a tiny bit for React to render the new theme
-            setTimeout(() => {
-                overlay.style.transform = "translateX(-100%)";
-
-                // Remove after animation
-                setTimeout(() => {
-                    document.body.removeChild(overlay);
-                }, 500);
-            }, 50);
-
-        }, 500); // Wait for first animation to finish
-    };
-
-    const selectTheme = (newTheme: Theme) => {
-        setTheme(newTheme);
-        setHasSelectedTheme(true);
-    };
-
-    return (
-        <ThemeContext.Provider value={{ theme, toggleTheme, hasSelectedTheme, selectTheme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
+    return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export const useTheme = () => {

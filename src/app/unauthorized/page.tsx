@@ -1,12 +1,16 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { ShieldX } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 
+const subscribe = (onChange: () => void) => auth.onAuthStateChanged(onChange);
+
 export default function UnauthorizedPage() {
     const router = useRouter();
+    const email = useSyncExternalStore(subscribe, () => auth.currentUser?.email ?? null, () => null);
 
     const handleLogout = async () => {
         await auth.signOut();
@@ -21,6 +25,12 @@ export default function UnauthorizedPage() {
                 <p className="text-muted-foreground text-lg">
                     You do not have administrator permissions to access this area.
                 </p>
+                {email && (
+                    <p className="text-sm text-muted-foreground">
+                        Signed in as <strong className="text-foreground">{email}</strong>. If that isn&apos;t the
+                        account you meant to use, sign out and choose another.
+                    </p>
+                )}
                 <p className="text-sm text-muted-foreground">
                     This section is restricted to authorized administrators only.
                     If you believe you should have access, please contact the site administrator.

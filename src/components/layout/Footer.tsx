@@ -1,105 +1,63 @@
-"use client";
+import React from "react";
+import Link from "next/link";
+import { cacheLife, cacheTag } from "next/cache";
+import type { ComponentType } from "react";
+import { Mail, Rss } from "lucide-react";
+import { GitHubIcon, LinkedInIcon, XIcon } from "@/components/ui/BrandIcons";
+import { CONFIG_TAG, getSiteConfig } from "@/lib/posts";
+import { Wordmark } from "@/components/layout/Wordmark";
 
-import { useState, useEffect } from "react";
-import { useTheme } from "@/components/layout/ThemeProvider";
-import { Terminal, Sparkles, Github, Linkedin, Twitter, Coffee, Mail } from "lucide-react";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
-import { SocialsModal } from "@/components/features/SocialsModal";
+interface FooterLink {
+    href: string;
+    label: string;
+    icon: ComponentType<{ size?: number }>;
+    external?: boolean;
+}
 
-export function Footer() {
-    const { theme } = useTheme();
-    const isDark = theme === "deepSystem";
+export async function Footer() {
+    "use cache";
+    cacheLife("days");
+    cacheTag(CONFIG_TAG);
+
+    const config = await getSiteConfig();
     const currentYear = new Date().getFullYear();
-    const [links, setLinks] = useState<any>({});
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-        const fetchLinks = async () => {
-            try {
-                const docRef = doc(db, "config", "site");
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setLinks(docSnap.data());
-                }
-            } catch (error) {
-                console.error("Error fetching links:", error);
-            }
-        };
-        fetchLinks();
-    }, []);
+    const links: FooterLink[] = [
+        { href: config.github, label: "GitHub", icon: GitHubIcon, external: true },
+        { href: config.linkedin, label: "LinkedIn", icon: LinkedInIcon, external: true },
+        { href: config.twitter, label: "X", icon: XIcon, external: true },
+        { href: config.email && `mailto:${config.email}`, label: "Email", icon: Mail },
+        { href: "/feed.xml", label: "RSS feed", icon: Rss },
+    ].filter((link) => Boolean(link.href));
 
     return (
-        <footer id="site-footer" className="py-8 border-t border-border bg-background transition-colors duration-300">
-            <div className="container mx-auto px-4">
-                <div className="flex flex-col items-center justify-center gap-5">
+        <footer className="border-t border-border bg-background/40 mt-6 sm:mt-8 py-5 sm:py-6">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Link href="/" className="press text-primary hover:opacity-80" aria-label="Signature home">
+                            <Wordmark className="h-3.5 sm:h-4" />
+                        </Link>
+                        <span className="text-muted-foreground/40" aria-hidden="true">•</span>
+                        <span>© {currentYear}</span>
+                    </div>
 
-                    {/* Connect With Me Section */}
-                    <div className="flex flex-col items-center gap-3 w-full">
-                        <div className="flex items-center gap-2 text-primary">
-                            <span className="font-mono text-xs tracking-wider uppercase">Connect With Me</span>
-                        </div>
-
-                        <div className="flex flex-wrap justify-center gap-4">
-                            {links.github && (
-                                <a href={links.github} target="_blank" rel="noopener noreferrer"
-                                    className="p-3 rounded-full bg-card border border-border hover:border-primary/50 hover:text-primary transition-all group" title="GitHub">
-                                    <Github size={20} />
-                                </a>
-                            )}
-
-                            {links.linkedin && (
-                                <a href={links.linkedin} target="_blank" rel="noopener noreferrer"
-                                    className="p-3 rounded-full bg-card border border-border hover:border-primary/50 hover:text-blue-500 transition-all group" title="LinkedIn">
-                                    <Linkedin size={20} />
-                                </a>
-                            )}
-
-                            {links.twitter && (
-                                <a href={links.twitter} target="_blank" rel="noopener noreferrer"
-                                    className="p-3 rounded-full bg-card border border-border hover:border-primary/50 hover:text-sky-500 transition-all group" title="Twitter">
-                                    <Twitter size={20} />
-                                </a>
-                            )}
-
-                            {links.buymeacoffee && (
-                                <a href={links.buymeacoffee} target="_blank" rel="noopener noreferrer"
-                                    className="p-3 rounded-full bg-card border border-yellow-500/20 hover:border-yellow-500/50 hover:text-yellow-500 hover:bg-yellow-500/5 transition-all group" title="Buy Me A Coffee">
-                                    <Coffee size={20} />
-                                </a>
-                            )}
-
-                            <button
-                                onClick={() => setIsModalOpen(true)}
-                                className="p-3 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-all shadow-lg hover:shadow-primary/20"
-                                title="Send Message"
+                    <nav aria-label="Social links" className="flex items-center gap-1.5 text-muted-foreground">
+                        {links.map(({ href, label, icon: Icon, external }) => (
+                            <a
+                                key={label}
+                                href={href}
+                                {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                                className="lift press p-2 rounded-lg hover:text-foreground hover:bg-secondary/60"
+                                title={label}
+                                aria-label={label}
                             >
-                                <Mail size={20} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="h-px w-full max-w-2xl bg-border/50" />
-
-                    {/* Existing Footer Content */}
-                    <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground text-center">
-                        <div className="flex items-center gap-2 justify-center">
-                            {isDark ? <Terminal size={16} /> : <Sparkles size={16} />}
-                            <p className="font-mono tracking-wider">
-                                {isDark
-                                    ? "SYSTEM STATUS: ONLINE // ALL SYSTEMS NOMINAL"
-                                    : "Thanks for visiting! Have a great day!"}
-                            </p>
-                        </div>
-                        <p className="opacity-50">
-                            © {currentYear} Keerthi Raajan K M. {isDark ? "Architected with Next.js & React Three Fiber." : "Crafted with Next.js & React Three Fiber."}
-                        </p>
-                    </div>
+                                <Icon size={16} />
+                            </a>
+                        ))}
+                    </nav>
                 </div>
             </div>
-
-            <SocialsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </footer>
     );
 }
