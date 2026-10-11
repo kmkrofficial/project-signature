@@ -4,6 +4,25 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { claimAdminAccess } from "@/app/admin/actions";
+import { diagnoseAdminSetup, type AdminSetupProblem } from "@/app/admin/diagnose";
+
+/** What to tell the signed-in person when the server could not check their access. */
+const PROBLEM_HELP: Record<AdminSetupProblem, string> = {
+    ok: "The server looks healthy now, so this was probably a one-off. Try again.",
+    "sdk-load":
+        "The server's Firebase Admin SDK failed to start. This is a runtime problem, most often the Node.js version " +
+        "(it needs 22.12 or newer; the project pins 24). Check Vercel > Settings > General > Node.js Version and redeploy.",
+    "credentials-missing":
+        "FIREBASE_CLIENT_EMAIL or FIREBASE_PRIVATE_KEY is not set for this deployment. Add them in Vercel for this " +
+        "environment (Production or Preview) and redeploy.",
+    "credentials-invalid":
+        "The service-account key was rejected. Check that it is the key of this Firebase project and that the private " +
+        "key was pasted whole, then redeploy.",
+    "wrong-project":
+        "The server's service account belongs to a different Firebase project than the web app config. Both must come " +
+        "from the same project.",
+    token: "Your sign-in could not be verified. Sign out and sign in again.",
+};
 
 // UX gate only: real enforcement lives in firestore.rules / storage.rules and the
 // server routes, which all require the `admin` custom claim. An allowlisted admin
@@ -15,6 +34,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(!isLoginPage);
     const [isAuthorized, setIsAuthorized] = useState(isLoginPage);
     const [unavailable, setUnavailable] = useState(false);
+    const [problem, setProblem] = useState<AdminSetupProblem | null>(null);
 
     useEffect(() => {
         if (isLoginPage) return;
@@ -29,8 +49,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             let { claims } = await user.getIdTokenResult();
 
             if (claims.admin !== true) {
-                const result = await claimAdminAccess(await user.getIdToken()).catch(() => "unavailable" as const);
+                const idToken = await user.getIdToken();
+                const result = await claimAdminAccess(idToken).catch(() => "unavailable" as const);
                 if (result === "unavailable") {
+                    // Ask a separate, always-loadable action why, so the panel can say something specific
+                    setProblem(await diagnoseAdminSetup(idToken).catch(() => null));
                     setUnavailable(true);
                     setLoading(false);
                     return;
@@ -81,6 +104,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                         The server couldn&apos;t check your account just now. This usually means its Firebase
                         credentials aren&apos;t set up for this environment. Try again, or sign out and back in.
                     </p>
+                    {problem && (
+                        <p className="rounded-lg border border-border bg-secondary/40 px-4 py-3 text-left text-sm text-foreground">
+                            <strong>Likely cause:</strong> {PROBLEM_HELP[problem]}
+                        </p>
+                    )}
                     <div className="flex gap-3">
                         <button
                             type="button"
