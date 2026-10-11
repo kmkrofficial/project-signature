@@ -98,7 +98,7 @@ export default async function AboutPage() {
                 {/* Social Connect Bar */}
                 <div className="flex flex-wrap items-center gap-2 pt-6 mt-6 border-t border-border/60">
                     <a
-                        href="https://github.com/kmkrofficial"
+                        href={config.github}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group lift press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40"
@@ -109,7 +109,7 @@ export default async function AboutPage() {
                     </a>
 
                     <a
-                        href="https://linkedin.com/in/keerthiraajan"
+                        href={config.linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group lift press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40"
@@ -120,7 +120,7 @@ export default async function AboutPage() {
                     </a>
 
                     <a
-                        href="mailto:kmkrworks@gmail.com"
+                        href={`mailto:${config.email}`}
                         className="group lift press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-secondary/40 hover:bg-secondary text-xs font-mono text-foreground hover:border-primary/40"
                     >
                         <Mail size={14} className="text-primary" />

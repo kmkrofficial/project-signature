@@ -13,12 +13,12 @@ export const POSTS_TAG = "posts";
 export const CONFIG_TAG = "config";
 
 const DEFAULT_SITE_CONFIG: SiteConfig = {
-    siteTitle: "Signature | Systems, AI & Software Architecture",
+    siteTitle: "Signature",
     siteDescription: "Articles on technology, building software, and practical ideas from real-world projects.",
     author: "Keerthi Raajan K M",
     email: "kmkrworks@gmail.com",
     github: "https://github.com/kmkrofficial",
-    linkedin: "https://linkedin.com/in/keerthiraajan",
+    linkedin: "https://linkedin.com/in/keerthiraajankm",
     twitter: "",
 };
 

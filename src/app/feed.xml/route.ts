@@ -8,9 +8,14 @@ function cdata(value: string): string {
     return `<![CDATA[${value.replaceAll("]]>", "]]]]><![CDATA[>")}]]>`;
 }
 
-/** Feed readers get the article body without the interactive code-block chrome. */
+/**
+ * Feed readers get the article body without the interactive code-block chrome, and with code colours as
+ * plain CSS: the dark-theme custom properties (`--shiki-dark: …`) make validators flag the style attribute.
+ */
 function feedHtml(html: string): string {
-    return html.replace(/<div class="code-block-header">[\s\S]*?<\/div>/g, "");
+    return html
+        .replace(/<div class="code-block-header">[\s\S]*?<\/div>/g, "")
+        .replace(/;?--shiki-[\w-]+:[^;"]*/g, "");
 }
 
 async function buildFeed(): Promise<string> {

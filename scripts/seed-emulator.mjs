@@ -123,7 +123,7 @@ async function seed() {
         tagline: "Technology, Software & Everyday Insights",
         bio: "Writing about modern tech, how software works behind the scenes, and practical lessons from building digital products.",
         github: "https://github.com/kmkrofficial",
-        linkedin: "https://linkedin.com/in/keerthiraajan",
+        linkedin: "https://linkedin.com/in/keerthiraajankm",
         updatedAt: Timestamp.now(),
     });
     console.log("  ✓ Created site configuration document (config/site)");
