@@ -11,6 +11,8 @@ export interface StoredImage {
     url: string;
     fullPath?: string;
     size?: string;
+    /** "library" for shared images, otherwise the id of the article it was uploaded for. */
+    group: string;
     /** Just uploaded in this session; animates in. */
     fresh?: boolean;
 }

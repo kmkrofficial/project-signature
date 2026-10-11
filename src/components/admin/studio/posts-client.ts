@@ -13,7 +13,9 @@ import {
     updateDoc,
     where,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { deleteObject, listAll, ref as storageRef } from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
+import { articleFolder } from "@/lib/upload-image";
 import { estimateReadingTime } from "@/lib/format";
 import { toPostLinks } from "@/lib/post-links";
 import { CATEGORIES, type DraftPost } from "./types";
@@ -39,6 +41,12 @@ export const storedInfoOf = (post: DraftPost): StoredInfo => ({
     slug: post.slug ?? "",
     wasPublic: post.published === true || Boolean(post.publishedAt),
 });
+
+/**
+ * An id for an article that has not been saved yet. Images added while writing are uploaded to a folder
+ * named after it, and the first save creates the document under the same id.
+ */
+export const newArticleId = (): string => doc(collection(db, "blog")).id;
 
 /** True if another article already uses `slug`, either as its current slug or as a former one. */
 export async function isSlugTaken(slug: string, excludeId?: string): Promise<boolean> {
@@ -115,7 +123,7 @@ export async function persistPost(
     post: DraftPost,
     intent: SaveIntent,
     stored: StoredInfo,
-    options: { revision?: boolean } = {}
+    options: { revision?: boolean; newId?: string } = {}
 ): Promise<DraftPost> {
     const now = Timestamp.now();
     const slug = (post.slug ?? "").trim();
@@ -156,7 +164,7 @@ export async function persistPost(
         await setDoc(doc(db, "blog", post.id), payload, { merge: true });
         saved = { ...post, ...payload, id: post.id };
     } else {
-        const ref = doc(collection(db, "blog"));
+        const ref = options.newId ? doc(db, "blog", options.newId) : doc(collection(db, "blog"));
         await setDoc(ref, { ...payload, id: ref.id, likes: 0, createdAt: now });
         saved = { ...post, ...payload, id: ref.id, likes: 0, createdAt: now };
     }
@@ -201,8 +209,20 @@ export async function restorePost(id: string, publish: boolean): Promise<void> {
     });
 }
 
-/** Removes an article and its saved versions. */
+/** Deletes the images that were uploaded while writing an article. Images in the library are untouched. */
+async function deleteArticleImages(id: string): Promise<void> {
+    try {
+        const images = await listAll(storageRef(storage, articleFolder(id)));
+        await Promise.all(images.items.map((image) => deleteObject(image)));
+    } catch (err) {
+        // Leftover images are harmless and still visible in the Media tab, so never block the delete
+        console.warn("Could not remove the article images:", err);
+    }
+}
+
+/** Removes an article, its saved versions and the images uploaded for it. */
 export async function deletePostForever(id: string): Promise<void> {
+    await deleteArticleImages(id);
     const revisions = await getDocs(revisionsOf(id));
     await Promise.all(revisions.docs.map((revision) => deleteDoc(revision.ref)));
     await deleteDoc(doc(db, "blog", id));

@@ -32,7 +32,7 @@ import { usePosts } from "./studio/hooks/usePosts";
 import { usePostDraft } from "./studio/hooks/usePostDraft";
 import { useSlugCheck } from "./studio/hooks/useSlugCheck";
 import { useStudioActions } from "./studio/hooks/useStudioActions";
-import type { Revision, SaveIntent } from "./studio/posts-client";
+import { newArticleId, type Revision, type SaveIntent } from "./studio/posts-client";
 import { emptyPost, type DraftPost, type StudioTab } from "./studio/types";
 import type { BlogPost } from "@/types/blog";
 
@@ -44,6 +44,8 @@ export default function AdminStudio() {
     const [shareOpen, setShareOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<StudioTab>("articles");
     const [manualSlug, setManualSlug] = useState(false);
+    /** Names the image folder of an article that has not been saved yet; the first save uses it as the article's id. */
+    const [newId, setNewId] = useState(newArticleId);
     /** An action that was blocked by unsaved changes, waiting for the writer's decision. */
     const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
 
@@ -55,6 +57,7 @@ export default function AdminStudio() {
     });
     const draft = usePostDraft();
     const { post, stored, dirty, markSaved } = draft;
+    const articleId = post.id ?? newId;
 
     const slugStatus = useSlugCheck((post.slug ?? "").trim(), post.id, (post.slug ?? "").trim() !== stored.slug);
     const inEditor = activeTab === "editor";
@@ -71,11 +74,11 @@ export default function AdminStudio() {
     const save = useCallback(
         async (intent: SaveIntent): Promise<DraftPost | null> => {
             const previousId = post.id;
-            const saved = await persist(post, intent, stored);
+            const saved = await persist(post, intent, stored, { newId });
             if (saved) markSaved(saved, previousId);
             return saved;
         },
-        [persist, post, stored, markSaved]
+        [persist, post, stored, markSaved, newId]
     );
 
     /** The stored id of the current draft, saving it first when there are unsaved edits. */
@@ -115,7 +118,7 @@ export default function AdminStudio() {
             if (!inEditor || !dirty || post.published === true || slugStatus === "taken") return;
             if (!post.title?.trim() || !post.slug?.trim()) return;
             const previousId = post.id;
-            const saved = await persist(post, "draft", stored, { silent: true });
+            const saved = await persist(post, "draft", stored, { silent: true, newId });
             if (saved) markSaved(saved, previousId);
         };
     });
@@ -135,6 +138,7 @@ export default function AdminStudio() {
     };
 
     const handleCreateNew = () => {
+        setNewId(newArticleId());
         draft.load(emptyPost());
         setManualSlug(false);
         setActiveTab("editor");
@@ -163,7 +167,10 @@ export default function AdminStudio() {
 
     const handleTrash = async (target: BlogPost) => {
         await trash(target);
-        if (post.id === target.id) draft.load(emptyPost());
+        if (post.id === target.id) {
+            setNewId(newArticleId());
+            draft.load(emptyPost());
+        }
     };
 
     const tabs: { id: StudioTab; label: string; icon: React.ReactNode; badge?: number }[] = [
@@ -308,6 +315,7 @@ export default function AdminStudio() {
                     savedAt={draft.savedAt}
                     slugLocked={stored.wasPublic}
                     slugStatus={slugStatus}
+                    articleId={articleId}
                     hasBackup={draft.restorable !== null}
                     onRestore={draft.restore}
                     onDismissBackup={draft.dismissRestore}

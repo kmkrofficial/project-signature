@@ -5,17 +5,19 @@ import NextImage from "next/image";
 import { ImageIcon, Loader2, Upload, X } from "lucide-react";
 import { clsx } from "clsx";
 import { useToast } from "@/context/ToastContext";
-import { uploadImage } from "@/lib/upload-image";
+import { articleFolder, uploadImage } from "@/lib/upload-image";
 import { MediaPicker } from "./MediaPicker";
 import type { DraftPost } from "../types";
 
 interface Props {
     post: DraftPost;
     setPost: React.Dispatch<React.SetStateAction<DraftPost>>;
+    /** Uploads go to this article's folder. */
+    articleId: string;
 }
 
 /** Cover image: upload, drop a file, pick from the library, or paste a URL. */
-export function CoverField({ post, setPost }: Props) {
+export function CoverField({ post, setPost, articleId }: Props) {
     const { addToast } = useToast();
     const [uploading, setUploading] = useState(false);
     const [dragging, setDragging] = useState(false);
@@ -31,7 +33,7 @@ export function CoverField({ post, setPost }: Props) {
         }
         setUploading(true);
         try {
-            setCover((await uploadImage(file)).url);
+            setCover((await uploadImage(file, undefined, articleFolder(articleId))).url);
         } catch (err: unknown) {
             addToast("Failed to upload image: " + (err instanceof Error ? err.message : String(err)), "error");
         } finally {
@@ -134,7 +136,12 @@ export function CoverField({ post, setPost }: Props) {
                 </div>
             )}
 
-            <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onPick={setCover} />
+            <MediaPicker
+                open={pickerOpen}
+                onClose={() => setPickerOpen(false)}
+                onPick={(image) => setCover(image.url)}
+                articleId={articleId}
+            />
         </div>
     );
 }

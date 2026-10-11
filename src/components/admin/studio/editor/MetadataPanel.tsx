@@ -18,6 +18,8 @@ interface Props {
     /** The post has been live, so its URL is linked to elsewhere and changing it needs a deliberate unlock. */
     slugLocked: boolean;
     slugStatus: SlugStatus;
+    /** The article's id (or the id it will get), which names its image folder. */
+    articleId: string;
     /** "stack" is a single narrow column for the focus-mode side panel; the title is edited elsewhere there. */
     layout?: "grid" | "stack";
 }
@@ -30,6 +32,7 @@ export function MetadataPanel({
     setManualSlug,
     slugLocked,
     slugStatus,
+    articleId,
     layout = "grid",
 }: Props) {
     const [tagInput, setTagInput] = useState("");
@@ -230,7 +233,7 @@ export function MetadataPanel({
 
             {/* Cover Image */}
             <div className={span}>
-                <CoverField post={post} setPost={setPost} />
+                <CoverField post={post} setPost={setPost} articleId={articleId} />
             </div>
 
             {/* Related links */}

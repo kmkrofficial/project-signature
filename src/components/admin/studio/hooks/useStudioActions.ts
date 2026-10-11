@@ -32,6 +32,8 @@ interface Options {
 interface PersistOptions {
     /** Autosave: no toasts, no validation errors and no history entry; it just skips when the post isn't savable yet. */
     silent?: boolean;
+    /** Id to give a post that is being saved for the first time (its images are already in a folder of that name). */
+    newId?: string;
 }
 
 const messageOf = (err: unknown) => (err instanceof Error ? err.message : String(err));
@@ -62,7 +64,7 @@ export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
             post: DraftPost,
             intent: SaveIntent,
             stored: StoredInfo,
-            { silent = false }: PersistOptions = {}
+            { silent = false, newId }: PersistOptions = {}
         ): Promise<DraftPost | null> => {
             if (inFlight.current) return null;
 
@@ -88,7 +90,7 @@ export function useStudioActions({ posts, fetchPosts, removePost }: Options) {
                     return fail("That URL is already used by another article");
                 }
 
-                const saved = await persistPost(post, intent, stored, { revision: !silent });
+                const saved = await persistPost(post, intent, stored, { revision: !silent, newId });
 
                 // There is one spotlight. A live article that takes it replaces the current one; a draft only
                 // does so when it is published, so saving a draft never empties the home page's spotlight.

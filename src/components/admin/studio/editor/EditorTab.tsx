@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import {
@@ -10,6 +10,7 @@ import {
     Eye,
     EyeOff,
     History,
+    Image as ImageIcon,
     Loader2,
     Maximize2,
     Minimize2,
@@ -25,10 +26,13 @@ import { useToast } from "@/context/ToastContext";
 import { useTheme } from "@/components/layout/ThemeProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { estimateReadingTime } from "@/lib/format";
+import { articleFolder } from "@/lib/upload-image";
 import { HistoryDialog } from "./HistoryDialog";
 import { LivePreview } from "./LivePreview";
+import { MediaPicker } from "./MediaPicker";
 import { MetadataPanel } from "./MetadataPanel";
 import { useImageDrop } from "../hooks/useImageDrop";
+import { imageMarkdown } from "../image-markdown";
 import { withTitle } from "../slug";
 import type { SlugStatus } from "../hooks/useSlugCheck";
 import type { Revision, SaveIntent } from "../posts-client";
@@ -59,6 +63,8 @@ interface Props {
     savedAt: Date | null;
     slugLocked: boolean;
     slugStatus: SlugStatus;
+    /** The article's id (or the id it will get on first save); its images are uploaded to a folder of that name. */
+    articleId: string;
     /** Unsaved edits from an earlier session, waiting for a decision. */
     hasBackup: boolean;
     onRestore: () => void;
@@ -84,6 +90,7 @@ export function EditorTab({
     savedAt,
     slugLocked,
     slugStatus,
+    articleId,
     hasBackup,
     onRestore,
     onDismissBackup,
@@ -99,7 +106,7 @@ export function EditorTab({
     const [focus, setFocus] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [historyOpen, setHistoryOpen] = useState(false);
-    const imageDrop = useImageDrop(setPost);
+    const imageDrop = useImageDrop(setPost, articleFolder(articleId));
 
     const isLive = post.published === true;
     const wordCount = post.content ? post.content.trim().split(/\s+/).filter(Boolean).length : 0;
@@ -167,6 +174,7 @@ export function EditorTab({
             dark={theme !== "light"}
             height={focus ? "calc(100dvh - 12rem)" : 520}
             imageDrop={imageDrop}
+            articleId={articleId}
         />
     );
 
@@ -240,6 +248,7 @@ export function EditorTab({
                                     setManualSlug={setManualSlug}
                                     slugLocked={slugLocked}
                                     slugStatus={slugStatus}
+                                    articleId={articleId}
                                     layout="stack"
                                 />
                             </div>
@@ -402,6 +411,7 @@ export function EditorTab({
                 setManualSlug={setManualSlug}
                 slugLocked={slugLocked}
                 slugStatus={slugStatus}
+                articleId={articleId}
             />
 
             {canvas}
@@ -449,6 +459,7 @@ function Canvas({
     dark,
     height,
     imageDrop,
+    articleId,
 }: {
     view: EditorView;
     setView: (view: EditorView) => void;
@@ -457,9 +468,38 @@ function Canvas({
     dark: boolean;
     height: number | string;
     imageDrop: ReturnType<typeof useImageDrop>;
+    articleId: string;
 }) {
     const { dragging, uploading, handlers } = imageDrop;
     const fixedHeight = typeof height === "number" ? `${height}px` : height;
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const editorRef = useRef<HTMLDivElement>(null);
+
+    /** Puts the picked image into the text at the caret (or replaces the selection), on its own paragraph. */
+    const insertImage = (image: { name: string; url: string }) => {
+        const area = editorRef.current?.querySelector("textarea") ?? null;
+        const start = area?.selectionStart ?? Number.MAX_SAFE_INTEGER;
+        const end = area?.selectionEnd ?? start;
+
+        let caret = 0;
+        setPost((prev) => {
+            const content = prev.content ?? "";
+            const from = Math.min(start, content.length);
+            const to = Math.min(Math.max(end, from), content.length);
+            const before = from > 0 && content[from - 1] !== "\n" ? "\n\n" : "";
+            const after = to < content.length && content[to] !== "\n" ? "\n\n" : "";
+            const text = before + imageMarkdown(image.name, image.url) + after;
+            caret = from + text.length;
+            return { ...prev, content: content.slice(0, from) + text + content.slice(to) };
+        });
+
+        // Return focus to the text with the caret after the image
+        setTimeout(() => {
+            const field = editorRef.current?.querySelector("textarea");
+            field?.focus();
+            field?.setSelectionRange(caret, caret);
+        }, 0);
+    };
 
     return (
         <div className="space-y-2">
@@ -487,7 +527,17 @@ function Canvas({
                         </button>
                     ))}
                 </div>
-                <span className="font-mono text-[11px]">
+                <button
+                    type="button"
+                    onClick={() => setPickerOpen(true)}
+                    disabled={view === "preview"}
+                    title={view === "preview" ? "Switch to Write or Split to insert an image" : "Insert an image at the cursor"}
+                    className="press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-secondary/30 hover:bg-secondary text-[11px] font-semibold text-foreground disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                    <ImageIcon size={13} />
+                    <span>Insert image</span>
+                </button>
+                <span className="font-mono text-[11px] basis-full sm:basis-auto">
                     {uploading > 0
                         ? `Uploading ${uploading} image${uploading === 1 ? "" : "s"}…`
                         : "Paste or drop images · Ctrl+S save · Ctrl+Shift+P publish · Ctrl+. focus"}
@@ -497,6 +547,7 @@ function Canvas({
             <div className={clsx("grid gap-4", view === "split" ? "lg:grid-cols-2" : "grid-cols-1")}>
                 {view !== "preview" && (
                     <div
+                        ref={editorRef}
                         data-color-mode={dark ? "dark" : "light"}
                         {...handlers}
                         className={clsx(
@@ -525,6 +576,13 @@ function Canvas({
                     />
                 )}
             </div>
+
+            <MediaPicker
+                open={pickerOpen}
+                onClose={() => setPickerOpen(false)}
+                onPick={insertImage}
+                articleId={articleId}
+            />
         </div>
     );
 }

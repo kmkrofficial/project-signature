@@ -54,13 +54,23 @@ function compressImage(file: File): Promise<Blob> {
     });
 }
 
-/** Compresses an image in the browser and uploads it to `media/` in Firebase Storage. */
-export async function uploadImage(file: File, onProgress?: (fraction: number) => void): Promise<UploadedImage> {
+/** Images uploaded on purpose from the Media tab, for use anywhere. Older uploads live in `media/`. */
+export const LIBRARY_FOLDER = "library";
+
+/** The folder holding the images added while writing one article. */
+export const articleFolder = (articleId: string) => `articles/${articleId}`;
+
+/** Compresses an image in the browser and uploads it to `folder` in Firebase Storage. */
+export async function uploadImage(
+    file: File,
+    onProgress?: (fraction: number) => void,
+    folder: string = LIBRARY_FOLDER
+): Promise<UploadedImage> {
     const blob = await compressImage(file);
 
     const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
     const unique = Math.random().toString(36).slice(2, 6);
-    const fullPath = `media/${Date.now()}_${unique}_${cleanName}`;
+    const fullPath = `${folder}/${Date.now()}_${unique}_${cleanName}`;
     const fileRef = ref(storage, fullPath);
 
     const task = uploadBytesResumable(fileRef, blob);

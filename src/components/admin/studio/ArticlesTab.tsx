@@ -396,7 +396,7 @@ export function ArticlesTab({
             <ConfirmDialog
                 open={confirmForeverId !== null}
                 title="Delete this article forever?"
-                description="This removes the article and its saved versions. It cannot be undone."
+                description="This removes the article, its saved versions and the images uploaded for it. It cannot be undone."
                 onClose={() => setConfirmForeverId(null)}
                 actions={[
                     { label: "Cancel", onClick: () => setConfirmForeverId(null) },

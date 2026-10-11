@@ -2,20 +2,16 @@ import { useCallback, useState } from "react";
 import type { ClipboardEvent, Dispatch, DragEvent, SetStateAction } from "react";
 import { useToast } from "@/context/ToastContext";
 import { uploadImage } from "@/lib/upload-image";
+import { altTextFor } from "../image-markdown";
 import type { DraftPost } from "../types";
 
 const isImage = (file: File) => file.type.startsWith("image/");
-
-function altTextFor(file: File): string {
-    const name = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
-    return !name || name.toLowerCase() === "image" ? "Pasted image" : name;
-}
 
 /**
  * Paste or drop images straight into the markdown editor. A placeholder goes in at the cursor right away
  * and is replaced with the final image markdown when the upload finishes.
  */
-export function useImageDrop(setPost: Dispatch<SetStateAction<DraftPost>>) {
+export function useImageDrop(setPost: Dispatch<SetStateAction<DraftPost>>, folder: string) {
     const { addToast } = useToast();
     const [dragging, setDragging] = useState(false);
     const [uploading, setUploading] = useState(0);
@@ -24,7 +20,7 @@ export function useImageDrop(setPost: Dispatch<SetStateAction<DraftPost>>) {
         (files: File[], at: number) => {
             const jobs = files.map((file, index) => ({
                 file,
-                placeholder: `![Uploading ${altTextFor(file)}-${Date.now()}${index}…]()`,
+                placeholder: `![Uploading ${altTextFor(file.name)}-${Date.now()}${index}…]()`,
             }));
 
             setPost((prev) => {
@@ -36,9 +32,9 @@ export function useImageDrop(setPost: Dispatch<SetStateAction<DraftPost>>) {
 
             for (const { file, placeholder } of jobs) {
                 setUploading((count) => count + 1);
-                uploadImage(file)
+                uploadImage(file, undefined, folder)
                     .then(({ url }) => {
-                        const markdown = `![${altTextFor(file)}](${url})`;
+                        const markdown = `![${altTextFor(file.name)}](${url})`;
                         setPost((prev) => ({ ...prev, content: (prev.content ?? "").replace(placeholder, markdown) }));
                     })
                     .catch((err: unknown) => {
@@ -49,7 +45,7 @@ export function useImageDrop(setPost: Dispatch<SetStateAction<DraftPost>>) {
                     .finally(() => setUploading((count) => count - 1));
             }
         },
-        [addToast, setPost]
+        [addToast, folder, setPost]
     );
 
     /** Where in the text the image should go: the editor's caret (or the end if it can't be found). */

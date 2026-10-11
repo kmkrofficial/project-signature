@@ -121,6 +121,8 @@ src/
   - Responses carry `X-Robots-Tag: noindex`, `Referrer-Policy: no-referrer` and `Cache-Control: no-store`. `/preview` is in `robots.txt`, and previews never appear in the sitemap, feed or search index.
   - Creating, listing and revoking links are Server Actions that require the admin claim (`src/app/admin/actions.ts`, `src/lib/previews.ts`).
 - **Storage:** uploads must be raster images under 5 MB (no SVG or HTML). Files are publicly fetchable but not listable.
+  - **Layout:** images added while writing an article (paste, drop, cover, Insert image) go to `articles/<articleId>/`; images uploaded from the Media tab go to `library/`; older uploads stay in `media/` and show up in the library. A new article gets its id up front, and its first save creates the document under that id, so the folder and the document always match.
+  - **Cleanup:** deleting an article forever (or the 30-day trash purge) also deletes its `articles/<articleId>/` folder. The library is never touched.
 - **Server routes:**
   - `/api/likes` is same-origin only, validates its input, deduplicates per reader, and runs in a transaction.
   - `revalidateContent()` verifies the ID token and the admin claim.
