@@ -41,10 +41,11 @@ export async function revalidateContent(idToken: string, scope: "posts" | "confi
 
 /**
  * First sign-in for an allowlisted admin: grants the `admin` claim if the account's verified Google email is
- * in ADMIN_EMAILS (NEXT_PUBLIC_ADMIN_EMAILS is still read as a fallback). Everyone else gets "denied".
+ * in ADMIN_EMAILS. The list is server-only (no NEXT_PUBLIC_ prefix, which would publish it to every
+ * visitor's browser). Everyone else gets "denied".
  */
 export async function claimAdminAccess(idToken: string): Promise<AdminAccessResult> {
-    const allowed = parseAdminEmails(process.env.ADMIN_EMAILS || process.env.NEXT_PUBLIC_ADMIN_EMAILS);
+    const allowed = parseAdminEmails(process.env.ADMIN_EMAILS);
     return grantAdminIfAllowed(auth, idToken, allowed);
 }
 
