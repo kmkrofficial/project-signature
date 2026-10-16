@@ -26,7 +26,7 @@
     "@tiptap/extension-task-list": "^3.31.4",
     "@tiptap/markdown": "^3.31.4",
     "@tiptap/pm": "^3.31.4",
-    "@tiptap/react": "^3.31.4",
+    "@tiptap/react": "^3.32.0",
     "@tiptap/starter-kit": "^3.31.4",
     "@tiptap/suggestion": "^3.31.4",
     "@uiw/react-md-editor": "^4.1.2",
